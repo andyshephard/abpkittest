@@ -20,7 +20,7 @@ extension FilterList {
     /// Returns URL for rules without parsing them.
     func getRulesURL(for name: FilterListName) -> FilterListFileURL? {
         let util = ContentBlockerUtility()
-        if let url = try? util.getFilterListFileURL(name: name) {
+        if let url = try? util.getBundledFilterListFileURL(name: name) {
             return url
         }
         return nil
@@ -31,8 +31,9 @@ extension FilterList {
     /// - parameters:
     ///   - name: Unique name for the filter list.
     ///   - dictionary: NSDictionary from legacy data model.
-    public init?(named name: String,
-                 fromDictionary dictionary: [String: Any]?) {
+    public
+    init?(named name: String,
+          fromDictionary dictionary: [String: Any]?) {
         guard let uwDict = dictionary else { return nil }
         self.name = name
         taskIdentifier = uwDict["taskIdentifier"] as? Int
@@ -48,11 +49,12 @@ extension FilterList {
         version = uwDict["version"] as? String
         self.downloadCount = uwDict["downloadCount"] as? Int
         rules = nil // default value that prevents a build error
-        rules = getRulesURL(for: name)
+        rules = getRulesURL(for: name) // only gets bundled rules
     }
 
     /// - Returns: A dictionary suitable for use with Objective-C.
-    public func toDictionary() -> [String: Any]? {
+    public
+    func toDictionary() -> [String: Any]? {
         var dict = [String: Any]()
         dict["taskIdentifier"] = taskIdentifier
         dict["updatingGroupIdentifier"] = updatingGroupIdentifier

@@ -24,6 +24,8 @@ class BlockListDownloadTests: XCTestCase {
     let mdlr = FilterListTestModeler()
     let timeout: TimeInterval = 15
     let totalBytes = Int64(9383979)
+    let totalRules = 45899
+    let vldtr = RulesValidator()
     var bag: DisposeBag!
     var dler: BlockListDownloader!
     var filterLists = [FilterList]()
@@ -56,58 +58,99 @@ class BlockListDownloadTests: XCTestCase {
         }
     }
 
-    func testDownloadDelegation() {
+    func testRemoteSource() {
+        testList.source = "https://easylist-downloads.adblockplus.org/easylist_content_blocker.json"
+        testList.fileName = "easylist_content_blocker.json"
+        guard let result = try? self.pstr.saveFilterListModel(self.testList),
+                  result == true
+        else {
+            XCTFail("Failed to save test list.")
+            return
+        }
+        runDownloadDelegation(remoteSource: true)
+    }
+
+    func testLocalSource() {
+        runDownloadDelegation()
+    }
+
+    func runDownloadDelegation(remoteSource: Bool = false) {
         let expect = expectation(description: #function)
+        var cnt = 0
         dler.blockListDownload(for: testList,
                                runInBackground: false)
             .flatMap { task -> Observable<DownloadEvent> in
-                let taskID = UIBackgroundTaskIdentifier(rawValue: task.taskIdentifier)
-                self.testList.taskIdentifier = taskID.rawValue
-                self.testList.downloaded = true
-                guard let result = try? self.pstr.saveFilterListModel(self.testList),
-                      result == true
-                else {
-                    XCTFail("Failed to save test list.")
-                    return Observable.empty()
-                }
-                self.setupEvents(taskID: taskID)
-                guard let subj = self.dler.downloadEvents[taskID] else {
-                    XCTFail("Bad publish subject.")
-                    return Observable.empty()
-                }
                 task.resume()
-                return subj.asObservable()
+                return self.downloadEvents(for: task)
             }
-            .subscribe(onNext: { evt in
+            .flatMap { evt -> Observable<DownloadEvent> in
                 XCTAssert(evt.error == nil,
                           "🚨 Error during event handling: \(String(describing: evt.error?.localizedDescription)))")
-                if evt.didFinishDownloading == true {
-                    XCTAssert(evt.totalBytesWritten == self.totalBytes,
-                              "🚨 Bytes wrong.")
-                    guard let name = self.testList.name else {
-                        XCTFail("Bad model name.")
-                        return
-                    }
-                    let rulesURL = self.getRulesURL(for: name)
-                    XCTAssert(rulesURL != nil,
-                              "Bad rules URL.")
-                }
+                return Observable.just(evt)
+            }
+            .filter {
+                $0.didFinishDownloading == true &&
+                $0.errorWritten == true
+            }
+            .flatMap { evt -> Observable<BlockingRule> in
+                return self.downloadedRules(for: evt,
+                                            remoteSource: remoteSource)
+            }
+            .subscribe(onNext: { rule in
+                cnt += [rule].count
             }, onCompleted: {
+                if !remoteSource {
+                    XCTAssert(cnt == self.totalRules,
+                              "Rule count is wrong.")
+                }
                 expect.fulfill()
             }).disposed(by: bag)
-        wait(for: [expect],
-             timeout: timeout)
+            wait(for: [expect],
+                 timeout: timeout)
     }
 
-    private
-    func getRulesURL(for name: FilterListName) -> FilterListFileURL? {
-        let util = ContentBlockerUtility()
-        let tbndl = Bundle(for: type(of: self))
-        if let url = try? util.getFilterListFileURL(name: name,
-                                                    bundle: tbndl) {
-            return url
+    func downloadEvents(for task: URLSessionDownloadTask) -> Observable<DownloadEvent> {
+        let taskID = UIBackgroundTaskIdentifier(rawValue: task.taskIdentifier)
+        self.testList.taskIdentifier = taskID.rawValue
+        guard let result = try? self.pstr.saveFilterListModel(self.testList),
+              result == true
+        else {
+            XCTFail("Failed to save test list.")
+            return Observable.empty()
         }
-        return nil
+        self.setupEvents(taskID: taskID)
+        guard let subj = self.dler.downloadEvents[taskID] else {
+            XCTFail("Bad publish subject.")
+            return Observable.empty()
+        }
+        return subj.asObservable()
+    }
+
+    func downloadedRules(for finalEvent: DownloadEvent,
+                         remoteSource: Bool = false) -> Observable<BlockingRule> {
+        self.testList.downloaded = true
+        guard let result = try? self.pstr.saveFilterListModel(self.testList),
+              result == true
+        else {
+            XCTFail("Failed to save test list.")
+            return Observable.empty()
+        }
+        if !remoteSource {
+            XCTAssert(finalEvent.totalBytesWritten == self.totalBytes,
+                      "🚨 Bytes wrong.")
+        }
+        guard let name = self.testList.name else {
+            XCTFail("Bad model name.")
+            return Observable.empty()
+        }
+        let util = ContentBlockerUtility()
+        guard let url = try? util.getRulesURL(for: name),
+              let rulesURL = url
+        else {
+            XCTFail("Bad rules URL.")
+            return Observable.empty()
+        }
+        return self.vldtr.validatedRules(for: rulesURL)
     }
 
     private

@@ -17,10 +17,11 @@
 
 import Foundation
 
-/// This file contains constants intended for global scope.
+// This file contains constants intended for global scope.
 
-/// Type aliases.
+// Type aliases.
 public typealias AppGroupName = String
+public typealias AppGroupContainerURL = URL
 public typealias BlockListData = Data
 public typealias BlockListDirectoryURL = URL
 public typealias BlockListFilename = String
@@ -36,11 +37,13 @@ public typealias FilterListLastVersion = String
 public typealias FilterListName = String
 public typealias FilterListV2Sources = [[String: String]]
 public typealias LegacyFilterLists = [String: [String: Any]]
+public typealias RulesStoreFileURL = URL
 public typealias WhitelistedHostname = String
 public typealias WhitelistedWebsites = [String]
 
 /// Constants that are global to the framework.
-public struct Constants {
+public
+struct Constants {
     /// Limit for background operations, less than the allowed limit to allow time for content blocker reloading.
     static let backgroundOperationLimit: TimeInterval = 28
     /// Default interval for expiration of a filter list.
@@ -74,21 +77,24 @@ public struct Constants {
 }
 
 /// ABPKit configuration class for accessing globally relevant functions.
-public class Config {
+public
+class Config {
     let baseProduct = "AdblockPlusSafari"
     let adblockPlusSafariExtension = "AdblockPlusSafariExtension"
     let adblockPlusSafariActionExtension = "AdblockPlusSafariActionExtension"
     let backgroundSession = "BackgroundSession"
 
-    public init() {
-        // Left empty
+    public
+    init() {
+        // Intentionally empty.
     }
 
     /// References the host app.
     /// Returns app identifier prefix such as:
     /// * org.adblockplus.devbuilds or
     /// * org.adblockplus
-    private func bundlePrefix() -> BundlePrefix? {
+    private
+    func bundlePrefix() -> BundlePrefix? {
         if let comps = Bundle.main.bundleIdentifier?.components(separatedBy: ".") {
             var newComps = [String]()
             if comps.contains(Constants.devbuildsName) {
@@ -103,20 +109,23 @@ public class Config {
 
     /// Bundle reference for resources including:
     /// * bundled blocklists
-    public func bundle() -> Bundle {
+    public
+    func bundle() -> Bundle {
         return Bundle(for: Config.self)
     }
 
-    public func appGroup() throws -> AppGroupName {
+    public
+    func appGroup() throws -> AppGroupName {
         if let name = bundlePrefix() {
             let grp = "group.\(name).\(baseProduct)"
             return grp
         }
-        throw ABPContentBlockerError.invalidAppGroup
+        throw ABPConfigurationError.invalidAppGroup
     }
 
     /// This suite name comes from the legacy app.
-    public func defaultsSuiteName() throws -> DefaultsSuiteName {
+    public
+    func defaultsSuiteName() throws -> DefaultsSuiteName {
         guard let name = try? appGroup() else {
             throw ABPMutableStateError.missingsDefaultsSuiteName
         }
@@ -126,17 +135,29 @@ public class Config {
     /// A copy of the content blocker identifier function found in the legacy ABP implementation.
     /// - returns: A content blocker ID such as
     ///            "org.adblockplus.devbuilds.AdblockPlusSafari.AdblockPlusSafariExtension" or nil
-    public func contentBlockerIdentifier() -> ContentBlockerIdentifier? {
+    public
+    func contentBlockerIdentifier() -> ContentBlockerIdentifier? {
         if let name = bundlePrefix() {
             return "\(name).\(baseProduct).\(adblockPlusSafariExtension)"
         }
         return nil
     }
 
-    public func backgroundSessionConfigurationIdentifier() throws -> String {
+    public
+    func backgroundSessionConfigurationIdentifier() throws -> String {
         guard let prefix = bundlePrefix() else {
             throw ABPConfigurationError.invalidBundlePrefix
         }
         return "\(prefix).\(baseProduct).\(backgroundSession)"
+    }
+
+    func containerURL() throws -> AppGroupContainerURL {
+        let mgr = FileManager.default
+        guard let grp = try? appGroup(),
+              let url = mgr.containerURL(forSecurityApplicationGroupIdentifier: grp)
+        else {
+            throw ABPConfigurationError.invalidAppGroup
+        }
+        return url
     }
 }

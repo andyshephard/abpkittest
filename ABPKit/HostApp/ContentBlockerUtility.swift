@@ -20,12 +20,46 @@ import RxSwift
 
 /// Utility functions related to content blocking.
 /// These support the ABP Safari iOS app.
-public class ContentBlockerUtility {
-    var bag: DisposeBag!
+public
+class ContentBlockerUtility {
     let jsonExtension = "json"
+    var bag: DisposeBag!
+    var pstr: Persistor!
 
     public init() {
         bag = DisposeBag()
+        pstr = Persistor()
+    }
+
+    /// Return the file URL for rules in a named model contained in a bundle or
+    /// stored in the app group container.
+    public
+    func getRulesURL(for name: FilterListName,
+                     bundle: Bundle = Config().bundle()) throws -> FilterListFileURL? {
+        let lists = try? pstr.loadFilterListModels()
+        if let url = try? getBundledFilterListFileURL(name: name,
+                                                      bundle: bundle) {
+            return url
+        }
+        var fname: String?
+        var cnt = 0
+        lists?.forEach {
+            if $0.name == name {
+                fname = $0.fileName
+                cnt += 1
+            }
+        }
+        if cnt != 0 && cnt != 1 {
+            throw ABPFilterListError.ambiguousModels
+        }
+        let url = try? Config().containerURL()
+        let mgr = FileManager.default
+        let pathURL = fname != nil ? url?.appendingPathComponent(fname!) : nil
+        let result = pathURL != nil ? mgr.fileExists(atPath: pathURL!.path) : false
+        if result {
+            return pathURL
+        }
+        return nil
     }
 
     /// Get NS item provider for a resource matching filter list rules.
@@ -106,7 +140,7 @@ public class ContentBlockerUtility {
             guard let name = activeFilterListName() else {
                 throw ABPFilterListError.missingName
             }
-            return try getFilterListFileURL(name: name)
+            return try getBundledFilterListFileURL(name: name)
         }
         throw ABPFilterListError.notFound
     }
@@ -114,8 +148,8 @@ public class ContentBlockerUtility {
     /// Retrieve a reference (file URL) to a blocklist file in persistent storage.
     /// - parameter name: The given name for a filter list.
     /// - parameter bundle: Defaults to config bundle.
-    func getFilterListFileURL(name: FilterListName,
-                              bundle: Bundle = Config().bundle()) throws -> FilterListFileURL {
+    func getBundledFilterListFileURL(name: FilterListName,
+                                     bundle: Bundle = Config().bundle()) throws -> FilterListFileURL {
         let ignoreDownloaded = false // don't check the downloaded flag for special cases
         guard let pstr = Persistor() else {
             throw ABPMutableStateError.missingDefaults

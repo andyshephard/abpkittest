@@ -18,18 +18,24 @@
 /// Custom errors for ABP.
 
 /// Error cases for configuration.
+/// - invalidAppGroup: App group is not valid.
 /// - invalidBundlePrefix: Bundle prefix is not valid.
 public
 enum ABPConfigurationError: Error {
+    case invalidAppGroup
     case invalidBundlePrefix
 }
 
 /// Error cases for download tasks.
 /// - badAppGroup: App group was not obtained successfully.
+/// - badContainerURL: Container URL is not valid.
+/// - badDestinationURL: Bad destination URL for a file operation.
 /// - badFilename: Bad filename for filter list rules.
 /// - badFilterListModel: Bad model object.
 /// - badFilterListModelName: Bad name for model object.
 /// - failedFilterListModelSave: Failed to save model object.
+/// - failedMove: Failure during file move operation.
+/// - failedRemoval: Failure during file remove operation.
 /// - failedToMakeBackgroundSession: Failed during background session creation.
 /// - failedToMakeDownloadTask: Download task could not be created for the download.
 /// - invalidResponse: Web server response was invalid.
@@ -37,10 +43,14 @@ enum ABPConfigurationError: Error {
 public
 enum ABPDownloadTaskError: Error {
     case badAppGroup
+    case badContainerURL
+    case badDestinationURL
     case badFilename
     case badFilterListModel
     case badFilterListModelName
     case failedFilterListModelSave
+    case failedMove
+    case failedRemoval
     case failedToMakeBackgroundSession
     case failedToMakeDownloadTask
     case invalidResponse

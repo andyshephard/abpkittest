@@ -44,6 +44,7 @@
 		6581089E217FDCE9001D6FFE /* RxCocoa.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B26216EC85B00470103 /* RxCocoa.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		658108A0217FDCEC001D6FFE /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B25216EC85B00470103 /* RxSwift.framework */; };
 		658108A1217FDCEC001D6FFE /* RxSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B25216EC85B00470103 /* RxSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		65B0DC9F21828673002AF562 /* RulesValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B0DC9E21828673002AF562 /* RulesValidator.swift */; };
 		65CC336A217FBB5100FF0CEF /* test_easylist_content_blocker.json in Resources */ = {isa = PBXBuildFile; fileRef = 65CC3360217FBB5100FF0CEF /* test_easylist_content_blocker.json */; };
 		65CC336B217FBB5100FF0CEF /* v2 easylist short.json in Resources */ = {isa = PBXBuildFile; fileRef = 65CC3361217FBB5100FF0CEF /* v2 easylist short.json */; };
 		65CC336C217FBB5100FF0CEF /* v2 easylist short partial.json in Resources */ = {isa = PBXBuildFile; fileRef = 65CC3362217FBB5100FF0CEF /* v2 easylist short partial.json */; };
@@ -154,6 +155,8 @@
 		65810888217FDCB3001D6FFE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6581088D217FDCB3001D6FFE /* HostApp-iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "HostApp-iOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		65810893217FDCB3001D6FFE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		65B0DC9E21828673002AF562 /* RulesValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RulesValidator.swift; sourceTree = "<group>"; };
+		65B0DCA021828794002AF562 /* HostApp-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "HostApp-iOS.entitlements"; sourceTree = "<group>"; };
 		65CC3360217FBB5100FF0CEF /* test_easylist_content_blocker.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = test_easylist_content_blocker.json; sourceTree = "<group>"; };
 		65CC3361217FBB5100FF0CEF /* v2 easylist short.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "v2 easylist short.json"; sourceTree = "<group>"; };
 		65CC3362217FBB5100FF0CEF /* v2 easylist short partial.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "v2 easylist short partial.json"; sourceTree = "<group>"; };
@@ -270,6 +273,7 @@
 		6575615C217FBA6100D8A4F2 /* Parsing */ = {
 			isa = PBXGroup;
 			children = (
+				65B0DC9E21828673002AF562 /* RulesValidator.swift */,
 				6575615D217FBA6100D8A4F2 /* V1FilterListParser.swift */,
 				6575615E217FBA6100D8A4F2 /* V2FilterListParser.swift */,
 			);
@@ -335,6 +339,7 @@
 			isa = PBXGroup;
 			children = (
 				65810871217FDCB2001D6FFE /* AppDelegate.swift */,
+				65B0DCA021828794002AF562 /* HostApp-iOS.entitlements */,
 				6581087D217FDCB3001D6FFE /* Info.plist */,
 				658108A2217FDD33001D6FFE /* UI */,
 				65810873217FDCB2001D6FFE /* ViewController.swift */,
@@ -587,6 +592,11 @@
 				TargetAttributes = {
 					6581086E217FDCB2001D6FFE = {
 						CreatedOnToolsVersion = 10.0;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.iOS = {
+								enabled = 1;
+							};
+						};
 					};
 					65810881217FDCB3001D6FFE = {
 						CreatedOnToolsVersion = 10.0;
@@ -744,6 +754,7 @@
 				6575617D217FBA6100D8A4F2 /* ContentBlockerUtility+FileManager.swift in Sources */,
 				6575617F217FBA6100D8A4F2 /* ContentBlockerUtility.swift in Sources */,
 				6575618D217FBA6100D8A4F2 /* URLComponents+Encoding.swift in Sources */,
+				65B0DC9F21828673002AF562 /* RulesValidator.swift in Sources */,
 				65756186217FBA6100D8A4F2 /* FilterList+ObjectiveC.swift in Sources */,
 				6575615B217FBA5500D8A4F2 /* Errors.swift in Sources */,
 				65756183217FBA6100D8A4F2 /* DownloadEvent.swift in Sources */,
@@ -821,6 +832,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "HostApp-iOS/HostApp-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = G5LEUTX2F6;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -833,7 +845,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.adblockplus.HostApp-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.adblockplus.devbuilds.HostApp-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -844,6 +856,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "HostApp-iOS/HostApp-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = G5LEUTX2F6;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -856,7 +869,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.adblockplus.HostApp-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.adblockplus.devbuilds.HostApp-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";

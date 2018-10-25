@@ -36,7 +36,6 @@ extension BlockListDownloader {
     /// A download task for a filter list has finished downloading. Update the user's filter list
     /// metadata and move the downloaded file. Future optimization can include retrying the
     /// post-download operations if an error is encountered.
-    // swiftlint:disable function_body_length
     public
     func urlSession(_ session: URLSession,
                     downloadTask: URLSessionDownloadTask,
@@ -44,39 +43,37 @@ extension BlockListDownloader {
         let taskInt = downloadTask.taskIdentifier
         let taskIdentifier = UIBackgroundTaskIdentifier(rawValue: taskInt)
         guard let name = try? filterListName(for: taskInt) else {
-            reportError(identifier: taskInt, error: .badFilterListModelName)
-            return
+            reportError(identifier: taskInt, error: .badFilterListModelName); return
         }
         guard let result = try? filterList(withName: name),
-            var list = result
+              var list = result
         else {
-            reportError(identifier: taskInt, error: .badFilterListModel)
-            return
+            reportError(identifier: taskInt, error: .badFilterListModel); return
         }
         let response = downloadTask.response as? HTTPURLResponse
         if !validURLResponse(response) {
-            reportError(identifier: taskInt, error: .invalidResponse)
-            return
+            reportError(identifier: taskInt, error: .invalidResponse); return
         }
-        let fileManager = FileManager.default
-        guard let group = try? cfg.appGroup() else {
-            reportError(identifier: taskInt, error: .badAppGroup)
-            return
+        guard let containerURL = try? cfg.containerURL() else {
+            reportError(identifier: taskInt, error: .badContainerURL); return
         }
-        let containerURL = fileManager.containerURL(forSecurityApplicationGroupIdentifier: group)
         guard let fileName = list.fileName else {
-            reportError(identifier: taskInt, error: .badFilename)
-            return
+            reportError(identifier: taskInt, error: .badFilename); return
         }
         let destination =
-            containerURL?.appendingPathComponent(fileName,
-                                                 isDirectory: false)
-        moveOrReplaceItem(source: location,
-                          destination: destination)
-        list.lastUpdate = Date()
-        list.downloaded = true
-        list.lastUpdateFailed = false
-        list.updating = false
+            containerURL
+                .appendingPathComponent(fileName,
+                                        isDirectory: false)
+        do {
+            try moveOrReplaceItem(source: location,
+                                  destination: destination)
+        } catch let error {
+            let fileError = error as? ABPDownloadTaskError
+            if fileError != nil {
+                reportError(identifier: taskInt, error: fileError!)
+            }
+        }
+        list = downloadedModelState(list: list)
         downloadedVersion += 1
         if var newEvent = lastDownloadEvent(taskID: taskIdentifier) {
             newEvent.didFinishDownloading = true
@@ -86,11 +83,9 @@ extension BlockListDownloader {
         guard let saveResult = try? pstr.saveFilterListModel(list),
               saveResult == true
         else {
-            reportError(identifier: taskInt, error: .failedFilterListModelSave)
-            return
+            reportError(identifier: taskInt, error: .failedFilterListModelSave); return
         }
     }
-    // swiftlint:enable function_body_length
 
     /// A URL session task has finished transferring data.
     /// Download events are updated.
@@ -103,14 +98,12 @@ extension BlockListDownloader {
         let taskIdentifier = UIBackgroundTaskIdentifier(rawValue: taskInt)
         guard let name = try? filterListName(for: taskInt)
         else {
-            reportError(identifier: taskInt, error: .badFilterListModelName)
-            return
+            reportError(identifier: taskInt, error: .badFilterListModelName); return
         }
         guard let result = try? filterList(withName: name),
               var list = result
         else {
-            reportError(identifier: taskInt, error: .badFilterListModel)
-            return
+            reportError(identifier: taskInt, error: .badFilterListModel); return
         }
         list.lastUpdateFailed = true
         list.updating = false
@@ -118,8 +111,7 @@ extension BlockListDownloader {
         guard let saveResult = try? pstr.saveFilterListModel(list),
               saveResult == true
         else {
-            reportError(identifier: taskInt, error: .failedFilterListModelSave)
-            return
+            reportError(identifier: taskInt, error: .failedFilterListModelSave); return
         }
         downloadTasksByID[taskIdentifier] = nil
         if var newEvent = lastDownloadEvent(taskID: taskIdentifier) {
@@ -132,6 +124,18 @@ extension BlockListDownloader {
         }
     }
 
+    /// Set state of list that is downloaded.
+    private
+    func downloadedModelState(list: FilterList) -> FilterList {
+        var mutable = list
+        mutable.lastUpdate = Date()
+        mutable.downloaded = true
+        mutable.lastUpdateFailed = false
+        mutable.updating = false
+        return mutable
+    }
+
+    /// Generate a new event and report an error.
     private
     func reportError(identifier: Int,
                      error: ABPDownloadTaskError) {

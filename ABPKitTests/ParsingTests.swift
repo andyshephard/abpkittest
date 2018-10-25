@@ -39,7 +39,8 @@ class ParsingTests: XCTestCase {
     var v2PartialFileURL: URL!
     var bag: DisposeBag!
 
-    override func setUp() {
+    override
+    func setUp() {
         super.setUp()
         bag = DisposeBag()
         let util = TestingFileUtility()
@@ -48,6 +49,26 @@ class ParsingTests: XCTestCase {
         v1FileURL = util.fileURL(resource: "v1 easylist short", ext: "json")
         v2FileURL = util.fileURL(resource: "v2 easylist short", ext: "json")
         v2PartialFileURL = util.fileURL(resource: "v2 easylist short partial", ext: "json")
+    }
+
+    func testRulesValidation() {
+        let expect = expectation(description: #function)
+        guard let url = v1FileURL else {
+            XCTFail("Missing url")
+            return
+        }
+        var cnt = 0
+        RulesValidator()
+            .validatedRules(for: url)
+            .subscribe(onNext: { rule in
+                cnt += [rule].count
+            }, onCompleted: {
+                expect.fulfill()
+            }).disposed(by: bag)
+        waitForExpectations(timeout: 5) { _ in
+            XCTAssert(cnt == self.testingRuleCount,
+                      "Wrong rule count.")
+        }
     }
 
     /// Test parsing v1 filter lists.
@@ -77,7 +98,8 @@ class ParsingTests: XCTestCase {
     /// - parameter sources: Contents of the v2 filter list sources key
     /// - returns: Sorted FilterListV2Sources
     /// - throws: ABPFilterListError
-    private func sort(_ sources: FilterListV2Sources) throws -> FilterListV2Sources {
+    private
+    func sort(_ sources: FilterListV2Sources) throws -> FilterListV2Sources {
         let key = "url"
         return try sources.sorted {
             if let valA = $0[key], let valB = $1[key] {
@@ -93,7 +115,8 @@ class ParsingTests: XCTestCase {
     ///   - dictA: A dictionary to be compared
     ///   - dictB: A dictionary to be compared
     /// - returns: True if equal, otherwise false
-    private func equal<T>(dictA: [T: T], dictB: [T: T]) -> Bool {
+    private
+    func equal<T>(dictA: [T: T], dictB: [T: T]) -> Bool {
         var mismatch = false
         dictA.keys.forEach { key in
             if dictA[key] != dictB[key] { mismatch = true }
@@ -105,7 +128,8 @@ class ParsingTests: XCTestCase {
     /// - parameter url: File URL of the data
     /// - returns: Data of the filter list
     /// - throws: ABPKitTestingError
-    private func filterListData(url: URL) throws -> Data {
+    private
+    func filterListData(url: URL) throws -> Data {
         guard let data = try? Data(contentsOf: url,
                                    options: .uncached)
         else {
@@ -122,7 +146,8 @@ class ParsingTests: XCTestCase {
         case partial
     }
 
-    private func runV2ParsingTest(type: V2ParseTestType) {
+    private
+    func runV2ParsingTest(type: V2ParseTestType) {
         var url: URL?
         switch type {
         case .short:

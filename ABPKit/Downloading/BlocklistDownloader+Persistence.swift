@@ -56,28 +56,30 @@ extension BlockListDownloader {
     /// If the operation cannot be completed, the function will return without an error.
     internal
     func moveOrReplaceItem(source: URL,
-                           destination: URL?) {
-        guard let uwDestination = destination else { return }
+                           destination: URL?) throws {
+        guard let dest = destination else {
+            throw ABPDownloadTaskError.badDestinationURL
+        }
         let fileManager = FileManager.default
-        let destPath = uwDestination.path
+        let destPath = dest.path
         let exists = fileManager.fileExists(atPath: destPath)
         var removeError: Error?
         if exists {
-            do { try fileManager.removeItem(atPath: destPath)
+            do {
+                try fileManager.removeItem(atPath: destPath)
             } catch let error {
                 removeError = error
             }
         }
         if removeError == nil {
-            do { try fileManager.moveItem(at: source,
-                                          to: uwDestination)
+            do {
+                try fileManager.moveItem(at: source,
+                                          to: dest)
             } catch {
-                // Move error occurred.
-                return
+                throw ABPDownloadTaskError.failedMove
             }
         } else {
-            // Remove error occurred.
-            return
+            throw ABPDownloadTaskError.failedRemoval
         }
     }
 }
