@@ -35,12 +35,9 @@ class ContentBlockerUtility {
     /// stored in the app group container.
     public
     func getRulesURL(for name: FilterListName,
-                     bundle: Bundle = Config().bundle()) throws -> FilterListFileURL? {
+                     bundle: Bundle = Config().bundle(),
+                     ignoreBundle: Bool = false) throws -> FilterListFileURL? {
         let lists = try? pstr.loadFilterListModels()
-        if let url = try? getBundledFilterListFileURL(name: name,
-                                                      bundle: bundle) {
-            return url
-        }
         var fname: String?
         var cnt = 0
         lists?.forEach {
@@ -49,7 +46,9 @@ class ContentBlockerUtility {
                 cnt += 1
             }
         }
-        if cnt != 0 && cnt != 1 {
+        if cnt == 0 {
+            throw ABPFilterListError.notFound
+        } else if cnt != 0 && cnt != 1 {
             throw ABPFilterListError.ambiguousModels
         }
         let url = try? Config().containerURL()
@@ -58,6 +57,12 @@ class ContentBlockerUtility {
         let result = pathURL != nil ? mgr.fileExists(atPath: pathURL!.path) : false
         if result {
             return pathURL
+        }
+        // If URL not found in the container, look in the bundle:
+        if !ignoreBundle,
+           let url = try? getBundledFilterListFileURL(name: name,
+                                                      bundle: bundle) {
+            return url
         }
         return nil
     }
@@ -150,23 +155,21 @@ class ContentBlockerUtility {
     /// - parameter bundle: Defaults to config bundle.
     func getBundledFilterListFileURL(name: FilterListName,
                                      bundle: Bundle = Config().bundle()) throws -> FilterListFileURL {
-        let ignoreDownloaded = false // don't check the downloaded flag for special cases
         guard let pstr = Persistor() else {
             throw ABPMutableStateError.missingDefaults
         }
         guard let models = try? pstr.loadFilterListModels() else {
             throw ABPFilterListError.invalidData
         }
+        // Bundle-based filenames can be potentially be confused with container-based filenames.
         if let model = try? getFilterList(for: name,
                                           filterLists: models),
            let filename = model.fileName {
-            if model.downloaded == true || ignoreDownloaded {
-                if let url = bundle.url(forResource: filename,
-                                        withExtension: "") {
-                    return url
-                } else {
-                    throw ABPFilterListError.notFound
-                }
+            if let url = bundle.url(forResource: filename,
+                                    withExtension: "") {
+                return url
+            } else {
+                throw ABPFilterListError.notFound
             }
         }
         throw ABPFilterListError.notFound

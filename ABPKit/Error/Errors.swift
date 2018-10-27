@@ -33,6 +33,7 @@ enum ABPConfigurationError: Error {
 /// - badFilename: Bad filename for filter list rules.
 /// - badFilterListModel: Bad model object.
 /// - badFilterListModelName: Bad name for model object.
+/// - failedCopy: Failure during copy operation.
 /// - failedFilterListModelSave: Failed to save model object.
 /// - failedMove: Failure during file move operation.
 /// - failedRemoval: Failure during file remove operation.
@@ -48,6 +49,7 @@ enum ABPDownloadTaskError: Error {
     case badFilename
     case badFilterListModel
     case badFilterListModelName
+    case failedCopy
     case failedFilterListModelSave
     case failedMove
     case failedRemoval
@@ -66,6 +68,8 @@ enum ABPDownloadTaskError: Error {
 /// - failedEncoding: A list model could not be encoded.
 /// - failedFileCreation: Could not make a file.
 /// - failedLoadModels: Could not load models.
+/// - failedRemoveModels: Failed to remove model(s).
+/// - failedRemoveRules: Failed to remove rules.
 /// - invalidData: Data could not be read from the list.
 /// - missingName: Name could not be read.
 /// - missingRules: Rules could not be read.
@@ -80,6 +84,8 @@ enum ABPFilterListError: Error {
     case failedEncoding
     case failedFileCreation
     case failedLoadModels
+    case failedRemoveModels
+    case failedRemoveRules
     case invalidData
     case missingName
     case missingRules

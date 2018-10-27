@@ -20,7 +20,8 @@
 import Foundation
 
 class FilterListTestModeler: NSObject {
-    let testFilename = "test_easylist_content_blocker.json"
+    let cfg = Config()
+    let testBundleFilename = "test_easylist_content_blocker.json"
     let testVersion = "20181020"
     var bundle: Bundle!
     var pstr: Persistor!
@@ -33,32 +34,60 @@ class FilterListTestModeler: NSObject {
     }
 
     /// This model object is for testing the delegate with local data.
-    func localBlockList() throws -> FilterList {
+    func localBlockList(bundledRules: Bool = true) throws -> FilterList {
+        let listName = "📜" + UUID().uuidString
+        let listFilename = UUID().uuidString + ".json"
         var list = FilterList()
-        let localSource: () -> URL? = {
+        let fromBundle: () -> URL? = {
             guard let url =
                 self.bundle
-                    .url(forResource: self.testFilename,
+                    .url(forResource: self.testBundleFilename,
                          withExtension: "")
             else {
                 return nil
             }
             return url
         }
-        guard let src = localSource() else {
+        let fromContainer: () -> URL? = {
+            let dler = BlockListDownloader()
+            guard let src =
+                self.bundle
+                    .url(forResource: self.testBundleFilename,
+                         withExtension: "")
+            else {
+                return nil
+            }
+            guard let containerURL = try? self.cfg.containerURL() else { return nil }
+            let dst =
+                containerURL
+                    .appendingPathComponent(listFilename,
+                                            isDirectory: false)
+            // swiftlint:disable unused_optional_binding
+            guard let _ =
+                try? dler
+                    .copyItem(source: src, destination: dst)
+            else {
+                return nil
+            }
+            // swiftlint:enable unused_optional_binding
+            return dst
+        }
+        let src = bundledRules ? fromBundle() : fromContainer()
+        guard let source = src else {
             throw ABPKitTestingError.invalidData
         }
-        list.source = src.absoluteString
+        list.source = source.absoluteString
         list.lastVersion = testVersion
-        list.name = UUID().uuidString
-        list.fileName = testFilename
+        list.name = listName
+        list.fileName = listFilename
         return list
     }
 
     /// Save a given number of test lists to local storage.
-    func populateTestModels(count: Int) throws {
+    func populateTestModels(count: Int,
+                            bundledRules: Bool = true) throws {
         for _ in 1...count {
-            guard let testList = try? localBlockList() else {
+            guard let testList = try? localBlockList(bundledRules: bundledRules) else {
                 throw ABPKitTestingError.failedModelCreation
             }
             let result = try? pstr.saveFilterListModel(testList)

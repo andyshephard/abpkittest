@@ -39,12 +39,12 @@ class BlockListDownloadTests: XCTestCase {
         dler = BlockListDownloader()
         dler.isTest = true
         pstr = Persistor()
-        // swiftlint:disable unused_optional_binding
-        guard let _ = try? pstr.clearFilterListModels() else {
-            XCTFail("Failed to clear models.")
+        do {
+            try pstr.clearFilterListModels()
+        } catch let err {
+            XCTFail("Failed to clear models with error: \(err)")
             return
         }
-        // swiftlint:enable unused_optional_binding
         guard let list = try? mdlr.localBlockList() else {
             XCTFail("Failed to make test list.")
             return

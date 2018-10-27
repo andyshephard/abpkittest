@@ -60,26 +60,35 @@ extension BlockListDownloader {
         guard let dest = destination else {
             throw ABPDownloadTaskError.badDestinationURL
         }
-        let fileManager = FileManager.default
+        let mgr = FileManager.default
         let destPath = dest.path
-        let exists = fileManager.fileExists(atPath: destPath)
+        let exists = mgr.fileExists(atPath: destPath)
         var removeError: Error?
         if exists {
             do {
-                try fileManager.removeItem(atPath: destPath)
-            } catch let error {
-                removeError = error
+                try mgr.removeItem(atPath: destPath)
+            } catch let rmErr {
+                removeError = rmErr
             }
         }
         if removeError == nil {
             do {
-                try fileManager.moveItem(at: source,
-                                          to: dest)
+                try mgr.moveItem(at: source, to: dest)
             } catch {
                 throw ABPDownloadTaskError.failedMove
             }
         } else {
             throw ABPDownloadTaskError.failedRemoval
+        }
+    }
+
+    func copyItem(source: URL,
+                  destination: URL) throws {
+        let mgr = FileManager.default
+        do {
+            try mgr.copyItem(at: source, to: destination)
+        } catch {
+            throw ABPDownloadTaskError.failedCopy
         }
     }
 }
