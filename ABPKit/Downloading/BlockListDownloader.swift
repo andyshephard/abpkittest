@@ -30,9 +30,9 @@ class BlockListDownloader: NSObject,
     /// For download tasks.
     var foregroundSession: URLSession!
     /// Filter list download tasks keyed by task ID.
-    var downloadTasksByID = [UIBackgroundTaskIdentifier: URLSessionTask]()
+    var downloadTasksByID = [DownloadTaskID: URLSessionTask]()
     /// Download events keyed by task ID.
-    var downloadEvents = [UIBackgroundTaskIdentifier: BehaviorSubject<DownloadEvent>]()
+    var downloadEvents = [DownloadTaskID: BehaviorSubject<DownloadEvent>]()
 
     // MARK: - Legacy Properties -
 
@@ -69,7 +69,7 @@ class BlockListDownloader: NSObject,
     /// - parameter filterList: A filter List model object.
     /// - parameter runInBackground: If true, a background session will be used.
     /// - returns: A download task observable.
-    func blockListDownload(for filterList: ABPKit.FilterList,
+    func blockListDownload(for filterList: FilterList,
                            runInBackground: Bool = true) -> Observable<URLSessionDownloadTask> {
         guard let urlString = filterList.source,
             let url = URL(string: urlString),
@@ -93,8 +93,8 @@ class BlockListDownloader: NSObject,
                     self.foregroundSession = self.newForegroundSession()
                     task = self.foregroundSession.downloadTask(with: newURL)
                 }
-                let identifier = UIBackgroundTaskIdentifier(rawValue: task.taskIdentifier)
-                self.downloadTasksByID[identifier] = task
+                let taskID = task.taskIdentifier
+                self.downloadTasksByID[taskID] = task
                 observer.onNext(task)
                 observer.onCompleted()
             } else {
@@ -130,7 +130,7 @@ class BlockListDownloader: NSObject,
     /// - parameter taskID: A background task identifier.
     /// - returns: The download event value if it exists, otherwise nil.
     internal
-    func lastDownloadEvent(taskID: UIBackgroundTaskIdentifier) -> DownloadEvent? {
+    func lastDownloadEvent(taskID: Int) -> DownloadEvent? {
         if let subject = downloadEvents[taskID] {
             if let lastEvent = try? subject.value() {
                 return lastEvent

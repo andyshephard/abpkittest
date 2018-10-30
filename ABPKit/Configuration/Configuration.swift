@@ -31,6 +31,7 @@ public typealias BundlePrefix = String
 public typealias ContentBlockerIdentifier = String
 public typealias DefaultsSuiteName = String
 public typealias DownloadEventID = String
+public typealias DownloadTaskID = Int
 public typealias FilterListFileURL = URL
 public typealias FilterListID = String
 public typealias FilterListLastVersion = String

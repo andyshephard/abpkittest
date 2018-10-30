@@ -110,8 +110,8 @@ class BlockListDownloadTests: XCTestCase {
     }
 
     func downloadEvents(for task: URLSessionDownloadTask) -> Observable<DownloadEvent> {
-        let taskID = UIBackgroundTaskIdentifier(rawValue: task.taskIdentifier)
-        self.testList.taskIdentifier = taskID.rawValue
+        let taskID = task.taskIdentifier
+        self.testList.taskIdentifier = taskID
         guard let result = try? self.pstr.saveFilterListModel(self.testList),
               result == true
         else {
@@ -154,7 +154,7 @@ class BlockListDownloadTests: XCTestCase {
     }
 
     private
-    func setupEvents(taskID: UIBackgroundTaskIdentifier) {
+    func setupEvents(taskID: DownloadTaskID) {
         dler.downloadEvents[taskID] =
             BehaviorSubject<DownloadEvent>(
                 value: DownloadEvent(filterListName: self.testList.name,

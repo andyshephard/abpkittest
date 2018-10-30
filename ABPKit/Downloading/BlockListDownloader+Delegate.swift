@@ -26,10 +26,10 @@ extension BlockListDownloader {
                     didWriteData bytesWritten: Int64,
                     totalBytesWritten: Int64,
                     totalBytesExpectedToWrite: Int64) {
-        let identifier = UIBackgroundTaskIdentifier(rawValue: downloadTask.taskIdentifier)
-        if var newEvent = lastDownloadEvent(taskID: identifier) {
+        let taskID = downloadTask.taskIdentifier
+        if var newEvent = lastDownloadEvent(taskID: taskID) {
             newEvent.totalBytesWritten = totalBytesWritten
-            downloadEvents[identifier]?.onNext(newEvent) // make a new event
+            downloadEvents[taskID]?.onNext(newEvent) // make a new event
         }
     }
 
@@ -40,25 +40,24 @@ extension BlockListDownloader {
     func urlSession(_ session: URLSession,
                     downloadTask: URLSessionDownloadTask,
                     didFinishDownloadingTo location: URL) {
-        let taskInt = downloadTask.taskIdentifier
-        let taskIdentifier = UIBackgroundTaskIdentifier(rawValue: taskInt)
-        guard let name = try? filterListName(for: taskInt) else {
-            reportError(identifier: taskInt, error: .badFilterListModelName); return
+        let taskID = downloadTask.taskIdentifier
+        guard let name = try? filterListName(for: taskID) else {
+            reportError(taskID: taskID, error: .badFilterListModelName); return
         }
         guard let result = try? filterList(withName: name),
               var list = result
         else {
-            reportError(identifier: taskInt, error: .badFilterListModel); return
+            reportError(taskID: taskID, error: .badFilterListModel); return
         }
         let response = downloadTask.response as? HTTPURLResponse
         if !validURLResponse(response) {
-            reportError(identifier: taskInt, error: .invalidResponse); return
+            reportError(taskID: taskID, error: .invalidResponse); return
         }
         guard let containerURL = try? cfg.containerURL() else {
-            reportError(identifier: taskInt, error: .badContainerURL); return
+            reportError(taskID: taskID, error: .badContainerURL); return
         }
         guard let fileName = list.fileName else {
-            reportError(identifier: taskInt, error: .badFilename); return
+            reportError(taskID: taskID, error: .badFilename); return
         }
         let destination =
             containerURL
@@ -70,20 +69,20 @@ extension BlockListDownloader {
         } catch let error {
             let fileError = error as? ABPDownloadTaskError
             if fileError != nil {
-                reportError(identifier: taskInt, error: fileError!)
+                reportError(taskID: taskID, error: fileError!)
             }
         }
         list = downloadedModelState(list: list)
         downloadedVersion += 1
-        if var newEvent = lastDownloadEvent(taskID: taskIdentifier) {
+        if var newEvent = lastDownloadEvent(taskID: taskID) {
             newEvent.didFinishDownloading = true
-            downloadEvents[taskIdentifier]?.onNext(newEvent) // new event
+            downloadEvents[taskID]?.onNext(newEvent) // new event
         }
         AppExtensionRelay.sharedInstance().downloadedVersion.accept(downloadedVersion)
         guard let saveResult = try? pstr.saveFilterListModel(list),
               saveResult == true
         else {
-            reportError(identifier: taskInt, error: .failedFilterListModelSave); return
+            reportError(taskID: taskID, error: .failedFilterListModelSave); return
         }
     }
 
@@ -94,16 +93,15 @@ extension BlockListDownloader {
     func urlSession(_ session: URLSession,
                     task: URLSessionTask,
                     didCompleteWithError error: Error?) {
-        let taskInt = task.taskIdentifier
-        let taskIdentifier = UIBackgroundTaskIdentifier(rawValue: taskInt)
-        guard let name = try? filterListName(for: taskInt)
+        let taskID = task.taskIdentifier
+        guard let name = try? filterListName(for: taskID)
         else {
-            reportError(identifier: taskInt, error: .badFilterListModelName); return
+            reportError(taskID: taskID, error: .badFilterListModelName); return
         }
         guard let result = try? filterList(withName: name),
               var list = result
         else {
-            reportError(identifier: taskInt, error: .badFilterListModel); return
+            reportError(taskID: taskID, error: .badFilterListModel); return
         }
         list.lastUpdateFailed = true
         list.updating = false
@@ -111,16 +109,16 @@ extension BlockListDownloader {
         guard let saveResult = try? pstr.saveFilterListModel(list),
               saveResult == true
         else {
-            reportError(identifier: taskInt, error: .failedFilterListModelSave); return
+            reportError(taskID: taskID, error: .failedFilterListModelSave); return
         }
-        downloadTasksByID[taskIdentifier] = nil
-        if var newEvent = lastDownloadEvent(taskID: taskIdentifier) {
+        downloadTasksByID[taskID] = nil
+        if var newEvent = lastDownloadEvent(taskID: taskID) {
             if error != nil {
                 newEvent.error = error
             }
             newEvent.errorWritten = true
-            downloadEvents[taskIdentifier]?.onNext(newEvent)
-            downloadEvents[taskIdentifier]?.onCompleted()
+            downloadEvents[taskID]?.onNext(newEvent)
+            downloadEvents[taskID]?.onCompleted()
         }
     }
 
@@ -137,13 +135,12 @@ extension BlockListDownloader {
 
     /// Generate a new event and report an error.
     private
-    func reportError(identifier: Int,
+    func reportError(taskID: DownloadTaskID,
                      error: ABPDownloadTaskError) {
-        let taskIdentifier = UIBackgroundTaskIdentifier(rawValue: identifier)
-        if var newEvent = lastDownloadEvent(taskID: taskIdentifier) {
+        if var newEvent = lastDownloadEvent(taskID: taskID) {
             newEvent.error = error
             newEvent.errorWritten = true
-            downloadEvents[taskIdentifier]?.onNext(newEvent) // new event
+            downloadEvents[taskID]?.onNext(newEvent) // new event
         }
     }
 }

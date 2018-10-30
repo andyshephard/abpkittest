@@ -15,10 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import <Foundation/Foundation.h>
+import Cocoa
 
-//! Project version number for ABPKit.
-FOUNDATION_EXPORT double ABPKitVersionNumber;
-
-//! Project version string for ABPKit.
-FOUNDATION_EXPORT const unsigned char ABPKitVersionString[];
+@NSApplicationMain
+class AppDelegate: NSObject,
+                   NSApplicationDelegate {
+}

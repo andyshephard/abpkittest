@@ -15,7 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// Custom errors for ABP.
+/// Global custom errors for ABPKit.
 
 /// Error cases for configuration.
 /// - invalidAppGroup: App group is not valid.
@@ -24,6 +24,26 @@ public
 enum ABPConfigurationError: Error {
     case invalidAppGroup
     case invalidBundlePrefix
+}
+
+/// Error cases for managing content blocking.
+/// - invalidAppGroup: Invalid app group.
+/// - invalidFilterListAttachment: Filter list attachment is invalid.
+/// - invalidFilterListName: Filter list name is invalid.
+/// - invalidIdentifier: Invalid ID.
+public
+enum ABPContentBlockerError: Error {
+    case invalidAppGroup
+    case invalidFilterListAttachment
+    case invalidFilterListName
+    case invalidIdentifier
+}
+
+/// Error cases for managing device tokens.
+/// - invalidEndpoint: Endpoint URL was not found.
+public
+enum ABPDeviceTokenSaveError: Error {
+    case invalidEndpoint
 }
 
 /// Error cases for download tasks.
@@ -92,26 +112,6 @@ enum ABPFilterListError: Error {
     case notFound
 }
 
-/// Error cases for managing device tokens.
-/// - invalidEndpoint: Endpoint URL was not found.
-public
-enum ABPDeviceTokenSaveError: Error {
-    case invalidEndpoint
-}
-
-/// Error cases for managing content blocking.
-/// - invalidAppGroup: Invalid app group.
-/// - invalidFilterListAttachment: Filter list attachment is invalid.
-/// - invalidFilterListName: Filter list name is invalid.
-/// - invalidIdentifier: Invalid ID.
-public
-enum ABPContentBlockerError: Error {
-    case invalidAppGroup
-    case invalidFilterListAttachment
-    case invalidFilterListName
-    case invalidIdentifier
-}
-
 /// Error cases related to mutable state.
 /// - invalidData: Indicates error with data.
 /// - invalidType: Indicates error with a type.
@@ -124,4 +124,23 @@ enum ABPMutableStateError: Error {
     case invalidType
     case missingDefaults
     case missingsDefaultsSuiteName
+}
+
+// ------------------------------------------------------------
+// MARK: - Testing -
+// ------------------------------------------------------------
+
+/// Custom errors for ABPKit tests.
+
+/// Error cases for download tasks.
+/// - failedModelCreation: Failed when making a model object.
+/// - failedSave: Unable to save data.
+/// - invalidData: Unable to obtain valid data.
+/// - invalidURL: Unable to obtain a valid URL.
+public
+enum ABPKitTestingError: Error {
+    case failedModelCreation
+    case failedSave
+    case invalidData
+    case invalidURL
 }

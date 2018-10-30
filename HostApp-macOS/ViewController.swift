@@ -15,17 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// Custom errors for ABPKit tests.
+import Cocoa
 
-/// Error cases for download tasks.
-/// - failedModelCreation: Failed when making a model object.
-/// - failedSave: Unable to save data.
-/// - invalidData: Unable to obtain valid data.
-/// - invalidURL: Unable to obtain a valid URL.
-public
-enum ABPKitTestingError: Error {
-    case failedModelCreation
-    case failedSave
-    case invalidData
-    case invalidURL
+class ViewController: NSViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+    }
 }
