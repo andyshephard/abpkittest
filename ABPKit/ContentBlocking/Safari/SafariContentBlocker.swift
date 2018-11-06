@@ -82,7 +82,7 @@ public class SafariContentBlocker: NSObject {
     /// - returns: An Observable.
     private func contentBlockerReload(completion: ((Error?) -> Void)?) -> Observable<Void> {
         return Observable.create { observer in
-            guard let cbID = Config().contentBlockerIdentifier() else {
+            guard let cbID = Config().contentBlockerIdentifier(platform: .ios) else {
                 observer.onError(ABPContentBlockerError.invalidIdentifier)
                 return Disposables.create()
             }

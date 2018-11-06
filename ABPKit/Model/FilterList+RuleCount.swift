@@ -25,7 +25,8 @@ extension FilterList {
         return data
     }
 
-    private func count(_ rules: Observable<BlockingRule>) -> Observable<Int> {
+    private
+    func count(_ rules: Observable<BlockingRule>) -> Observable<Int> {
         return rules
             .reduce(0, accumulator: { acc, _ in
                 return acc + 1
@@ -35,12 +36,15 @@ extension FilterList {
     /// Count of rules in for a corresponding filter list.
     /// V2 filter lists are first attempted to be parsed before failing over to v1 parsing.
     /// - Returns: Observable of the count while defaulting to zero on parsing failures.
-    public func ruleCount() -> Observable<Int> {
-        guard let rules = self.rules else {
+    public
+    func ruleCount(bundle: Bundle = Config().bundle()) -> Observable<Int> {
+        guard let rules = try? self.rulesURL(bundle: bundle),
+              let uwRules = rules
+        else {
             return Observable.just(0)
         }
         let decoder = JSONDecoder()
-        if let data = self.filterListData(url: rules) {
+        if let data = self.filterListData(url: uwRules) {
             if let list = try? decoder.decode(V2FilterList.self,
                                               from: data) {
                 return count(list.rules())

@@ -15,8 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import XCTest
+import ABPKit
 
+public
 class TestingFileUtility {
     /// Get a file URL for a bundled resource.
     /// - parameters:
@@ -30,7 +31,6 @@ class TestingFileUtility {
             testingBundle.path(forResource: resource,
                                ofType: ext)
         guard let path = localPath else {
-            XCTFail("Resource \(resource) missing")
             return nil
         }
         return URL(fileURLWithPath: path)

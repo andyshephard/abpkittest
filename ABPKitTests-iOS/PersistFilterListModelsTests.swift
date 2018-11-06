@@ -20,16 +20,17 @@
 import XCTest
 
 class PersistFilterListModelsTests: XCTestCase {
-    let rulesExt = "json"
     var filterLists = [FilterList]()
     var pstr: Persistor!
     var testModeler: FilterListTestModeler!
+    var util: TestingFileUtility!
 
     override
     func setUp() {
         super.setUp()
         pstr = Persistor()
         testModeler = FilterListTestModeler()
+        util = TestingFileUtility()
         // swiftlint:disable unused_optional_binding
         guard let _ = try? pstr.clearFilterListModels() else {
             XCTFail("Failed clear.")
@@ -37,7 +38,11 @@ class PersistFilterListModelsTests: XCTestCase {
         }
         // swiftlint:enable unused_optional_binding
         // Remove all stored rules:
-        listRulesFiles(remove: true)
+        do {
+            try pstr.clearRulesFiles()
+        } catch let err {
+            XCTFail("Error during clearing: \(err)")
+        }
     }
 
     func testSaveLoadModelFilterListModels() {
@@ -68,7 +73,11 @@ class PersistFilterListModelsTests: XCTestCase {
             XCTFail("Failed populating models.")
             return
         }
-        listRulesFiles(remove: false)
+        do {
+            try pstr.logRulesFiles()
+        } catch let err {
+            XCTFail("Error during logging: \(err)")
+        }
         guard let _ = try? pstr.clearFilterListModels() else {
             XCTFail("Failed clear.")
             return
@@ -81,36 +90,4 @@ class PersistFilterListModelsTests: XCTestCase {
         XCTAssert(models.count == 0,
                   "Model count mismatch.")
     }
-
-    private
-    func listRulesFiles(remove: Bool = false) {
-        let mgr = FileManager.default
-        guard let url = try? Config().containerURL() else {
-            XCTFail("Bad url.")
-            return
-        }
-        guard let enmrtr =
-            mgr.enumerator(at: url,
-                           includingPropertiesForKeys: [.isDirectoryKey,
-                                                        .nameKey],
-                           options: [.skipsHiddenFiles,
-                                    .skipsPackageDescendants],
-                           errorHandler: { url, err -> Bool in
-            XCTFail("Error during enumeration: \(err) for URL: \(url)")
-            return true
-        })
-        else {
-            XCTFail("Failed to make enumerator.")
-            return
-        }
-        while let path = enmrtr.nextObject() as? URL {
-            if path
-                .lastPathComponent
-                .split(separator: ".")
-                .contains(Substring(rulesExt)) {
-                if remove { try? mgr.removeItem(at: path) }
-            }
-        }
-    }
-
 }

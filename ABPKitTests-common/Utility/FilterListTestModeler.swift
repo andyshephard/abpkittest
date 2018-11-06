@@ -19,12 +19,13 @@
 
 import Foundation
 
+/// Override testBundleFilename, if needed.
 class FilterListTestModeler: NSObject {
     let cfg = Config()
-    let testBundleFilename = "test_easylist_content_blocker.json"
     let testVersion = "20181020"
     var bundle: Bundle!
     var pstr: Persistor!
+    var testBundleFilename = "test_easylist_content_blocker.json"
 
     override
     init() {
@@ -34,9 +35,10 @@ class FilterListTestModeler: NSObject {
     }
 
     /// This model object is for testing the delegate with local data.
-    func localBlockList(bundledRules: Bool = true) throws -> FilterList {
+    /// Returns a model filter list.
+    func makeLocalBlockList(bundledRules: Bool = true) throws -> FilterList {
         let listName = "📜" + UUID().uuidString
-        let listFilename = UUID().uuidString + ".json"
+        let listFilename = UUID().uuidString + "." + Constants.rulesExtension
         var list = FilterList()
         let fromBundle: () -> URL? = {
             guard let url =
@@ -87,7 +89,7 @@ class FilterListTestModeler: NSObject {
     func populateTestModels(count: Int,
                             bundledRules: Bool = true) throws {
         for _ in 1...count {
-            guard let testList = try? localBlockList(bundledRules: bundledRules) else {
+            guard let testList = try? makeLocalBlockList(bundledRules: bundledRules) else {
                 throw ABPKitTestingError.failedModelCreation
             }
             let result = try? pstr.saveFilterListModel(testList)

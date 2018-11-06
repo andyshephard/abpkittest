@@ -205,21 +205,25 @@ class ContentBlockerUtilityTests: XCTestCase {
     // ------------------------------------------------------------
 
     private func localTestFilterListRules() -> BlockListFileURL? {
-        let bundle = Bundle(for: ContentBlockerUtilityTests.self)
         var list = FilterList()
         list.name = "v1 easylist short"
         list.fileName = "v1 easylist short.json"
-        if let url = bundle.url(forResource: list.fileName!,
-                                withExtension: "") {
-            list.rules = url
-        } else {
-            XCTFail("Bad local list resource.")
-        }
-        // Adding a list for testing to the relay does not work because the host app loads its own lists into the relay.
-        guard let rules = list.rules else {
+        guard let pstr = Persistor() else {
+            XCTFail("Failed making Peristor.")
             return nil
         }
-        return rules
+        // Adding a list for testing to the relay does not work because the host app loads its own lists into the relay.
+        do {
+            let result = try pstr.saveFilterListModel(list)
+            if !result { XCTFail("Failed saving model.") }
+            let url = try list.rulesURL(bundle: Bundle(for: ContentBlockerUtilityTests.self))
+            if url != nil {
+                return url!
+            }
+        } catch let err {
+            XCTFail("Error getting rules: \(err)")
+        }
+        return nil
     }
 
     private func ruleCount(rules: Data,

@@ -32,8 +32,7 @@ enum TriggerResourceType: String,
     case popup
 }
 
-struct Trigger: Decodable,
-                Encodable {
+struct Trigger: Codable {
     var ifDomain: [String]?
     var loadType: [String]?
     var resourceType: [TriggerResourceType]?
@@ -53,8 +52,7 @@ struct Trigger: Decodable,
     }
 }
 
-struct Action: Decodable,
-               Encodable {
+struct Action: Codable {
     // Keys here are intended to be comprehensive for WebKit content-blocking actions.
     var selector: String?
     var type: String?
@@ -62,8 +60,8 @@ struct Action: Decodable,
 
 /// A filter list WebKit content blocking rule.
 /// Used for decoding individual rules.
-public struct BlockingRule: Decodable,
-                            Encodable {
+public
+struct BlockingRule: Codable {
     var action: Action?
     var trigger: Trigger?
 
@@ -80,10 +78,12 @@ public struct BlockingRule: Decodable,
 ///
 /// This struct is used for decoding all rules where the rules are unkeyed.
 /// This is for verification and handling of v1 filter lists in JSON format.
-public struct V1FilterList: Decodable {
+public
+struct V1FilterList: Decodable {
     var container: UnkeyedDecodingContainer!
 
-    public init(from decoder: Decoder) {
+    public
+    init(from decoder: Decoder) {
         guard let container = try? decoder.unkeyedContainer() else {
             return
         }
@@ -93,6 +93,7 @@ public struct V1FilterList: Decodable {
 
 extension V1FilterList {
     /// - returns: Observable of filter list rules
+    public
     func rules() -> Observable<BlockingRule> {
         var mself = self // copy
         guard let container = mself.container,

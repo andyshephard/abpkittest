@@ -17,30 +17,7 @@
 
 import Foundation
 
-// This file contains constants intended for global scope.
-
-// Type aliases.
-public typealias AppGroupName = String
-public typealias AppGroupContainerURL = URL
-public typealias BlockListData = Data
-public typealias BlockListDirectoryURL = URL
-public typealias BlockListFilename = String
-public typealias BlockListFileURL = URL
-public typealias BundleName = String
-public typealias BundlePrefix = String
-public typealias ContentBlockerIdentifier = String
-public typealias DefaultsSuiteName = String
-public typealias DownloadEventID = String
-public typealias DownloadTaskID = Int
-public typealias FilterListFileURL = URL
-public typealias FilterListID = String
-public typealias FilterListLastVersion = String
-public typealias FilterListName = String
-public typealias FilterListV2Sources = [[String: String]]
-public typealias LegacyFilterLists = [String: [String: Any]]
-public typealias RulesStoreFileURL = URL
-public typealias WhitelistedHostname = String
-public typealias WhitelistedWebsites = [String]
+// Constants and functions intended for global scope.
 
 /// Constants that are global to the framework.
 public
@@ -71,17 +48,24 @@ struct Constants {
     public static let blocklistArrayEnd = "]"
     public static let blocklistRuleSeparator = ","
 
+    public static let contentRuleStoreID = "wk-content-rule-list-store"
+    public static let rulesExtension = "json"
+
     public static let organization = "org.adblockplus"
 
     /// Internal distribution label for eyeo.
     public static let devbuildsName = "devbuilds"
+
+    public static let groupMac = "group.org.adblockplus.abpkit-macos"
+    public static let productNameIOS = "AdblockPlusSafari"
+    public static let productNameMacOS = "HostApp-macOS"
+    public static let extensionSafariNameIOS = "AdblockPlusSafariExtension"
+    public static let extensionSafariNameMacOS = "HostCBExt-macOS"
 }
 
 /// ABPKit configuration class for accessing globally relevant functions.
 public
 class Config {
-    let baseProduct = "AdblockPlusSafari"
-    let adblockPlusSafariExtension = "AdblockPlusSafariExtension"
     let adblockPlusSafariActionExtension = "AdblockPlusSafariActionExtension"
     let backgroundSession = "BackgroundSession"
 
@@ -118,7 +102,11 @@ class Config {
     public
     func appGroup() throws -> AppGroupName {
         if let name = bundlePrefix() {
-            let grp = "group.\(name).\(baseProduct)"
+            #if os(iOS)
+            let grp = "group.\(name).\(Constants.productNameIOS)"
+            #else
+            let grp = Constants.groupMac
+            #endif
             return grp
         }
         throw ABPConfigurationError.invalidAppGroup
@@ -128,7 +116,7 @@ class Config {
     public
     func defaultsSuiteName() throws -> DefaultsSuiteName {
         guard let name = try? appGroup() else {
-            throw ABPMutableStateError.missingsDefaultsSuiteName
+            throw ABPMutableStateError.missingDefaultsSuiteName
         }
         return name
     }
@@ -137,11 +125,14 @@ class Config {
     /// - returns: A content blocker ID such as
     ///            "org.adblockplus.devbuilds.AdblockPlusSafari.AdblockPlusSafariExtension" or nil
     public
-    func contentBlockerIdentifier() -> ContentBlockerIdentifier? {
-        if let name = bundlePrefix() {
-            return "\(name).\(baseProduct).\(adblockPlusSafariExtension)"
+    func contentBlockerIdentifier(platform: ABPPlatform) -> ContentBlockerIdentifier? {
+        guard let name = bundlePrefix() else { return nil }
+        switch platform {
+        case .ios:
+            return "\(name).\(Constants.productNameIOS).\(Constants.extensionSafariNameIOS)"
+        case .macos:
+            return "\(name).\(Constants.productNameMacOS).\(Constants.extensionSafariNameMacOS)"
         }
-        return nil
     }
 
     public
@@ -149,9 +140,10 @@ class Config {
         guard let prefix = bundlePrefix() else {
             throw ABPConfigurationError.invalidBundlePrefix
         }
-        return "\(prefix).\(baseProduct).\(backgroundSession)"
+        return "\(prefix).\(Constants.productNameIOS).\(backgroundSession)"
     }
 
+    public
     func containerURL() throws -> AppGroupContainerURL {
         let mgr = FileManager.default
         guard let grp = try? appGroup(),
@@ -159,6 +151,17 @@ class Config {
         else {
             throw ABPConfigurationError.invalidAppGroup
         }
+        // 🗣️
+//        try? mgr.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
         return url
+    }
+
+    public
+    func rulesStoreIdentifier() throws -> URL {
+        do {
+            let cntr = try containerURL()
+            let rsid = cntr.appendingPathComponent(Constants.contentRuleStoreID)
+            return rsid
+        } catch let err { throw err }
     }
 }

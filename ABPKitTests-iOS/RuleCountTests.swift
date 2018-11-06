@@ -31,16 +31,25 @@ class RuleCountTests: XCTestCase {
 
     func testRuleCounting() {
         let expect = expectation(description: #function)
-        var list = FilterList()
+        guard let pstr = Persistor() else {
+            XCTFail("Failed making Peristor.")
+            return
+        }
         testLists.forEach { key, _ in
-            let util = TestingFileUtility()
-            list.rules =
-                util.fileURL(resource: key,
-                             ext: "json")
-            list.ruleCount().subscribe(onNext: { cnt in
-                XCTAssert(cnt == self.testLists[key],
-                          "Rule count of \(cnt) doesn't match \(String(describing: self.testLists[key])) for \(key)")
-            }).disposed(by: bag)
+            var list = FilterList()
+            list.name = UUID().uuidString
+            list.fileName = key + "." + Constants.rulesExtension
+            do {
+                let success = try pstr.saveFilterListModel(list)
+                if !success { XCTFail("Failed save of \(String(describing: list.name))") }
+            } catch let err {
+                XCTFail("Error during save: \(err)")
+            }
+            list.ruleCount(bundle: Bundle(for: RuleCountTests.self))
+                .subscribe(onNext: { cnt in
+                    XCTAssert(cnt == self.testLists[key],
+                              "Rule count of \(cnt) doesn't match \(String(describing: self.testLists[key])) for \(key)")
+                }).disposed(by: bag)
         }
         expect.fulfill()
         wait(for: [expect],

@@ -18,20 +18,23 @@
 import ABPKit
 
 /// This is an extension that is called during CB operations as indicated by the
-/// principal class in the extensions plist in the CB extension target. It also
-/// depends on the bundle ID such as the following:
-///     org.adblockplus.devbuilds.HostApp-macOS.HostCBExt-macOS
+/// principal class in the extensions plist. It also depends on the bundle ID eg
+/// org.adblockplus.HostApp-macOS.HostCBExt-macOS.
 class ContentBlockerRequestHandler: NSObject,
                                     NSExtensionRequestHandling {
     func beginRequest(with context: NSExtensionContext) {
-        let attachment =
-            NSItemProvider(contentsOf: Bundle.main.url(forResource: "empty",
-                                                       withExtension: "json"))!
+        let rsrc = "easylist-42perc"
+        guard let attachment =
+            NSItemProvider(contentsOf: Bundle.main.url(forResource: rsrc,
+                                                       withExtension: Constants.rulesExtension))
+        else {
+            return
+        }
         let item = NSExtensionItem()
         item.attachments = [attachment]
         context.completeRequest(returningItems: [item],
-                                completionHandler: { _ in
-            // Handle err.
+                                completionHandler: { err in
+            ABPKit.log("Error during beginRequest: \(err)")
         })
     }
 }

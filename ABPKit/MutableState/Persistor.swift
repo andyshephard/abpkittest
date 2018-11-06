@@ -23,12 +23,14 @@ import RxSwift
 /// * save
 /// * load
 /// * clear
+public
 class Persistor {
     typealias Action = (_ value: Any) -> Void
     /// Scheduler for all operations, main thread subscription is necessary for correct results.
     let scheduler = MainScheduler.asyncInstance
     let defaults: UserDefaults!
 
+    public
     init?() {
         let cfg = Config()
         guard let dflts = try? UserDefaults(suiteName: cfg.defaultsSuiteName()) else {
@@ -100,12 +102,12 @@ class Persistor {
         return res
     }
 
+    /// Set value nil should be an equivalent action here.
     func clear(key: ABPMutableState.LegacyStateName) throws {
         guard let defaults = self.defaults else {
             throw ABPMutableStateError.missingDefaults
         }
         defaults
-            .setValue(nil,
-                      forKey: key.rawValue)
+            .removeObject(forKey: key.rawValue)
     }
 }

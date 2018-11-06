@@ -22,49 +22,12 @@ import RxSwift
 /// These support the ABP Safari iOS app.
 public
 class ContentBlockerUtility {
-    let jsonExtension = "json"
     var bag: DisposeBag!
     var pstr: Persistor!
 
     public init() {
         bag = DisposeBag()
         pstr = Persistor()
-    }
-
-    /// Return the file URL for rules in a named model contained in a bundle or
-    /// stored in the app group container.
-    public
-    func getRulesURL(for name: FilterListName,
-                     bundle: Bundle = Config().bundle(),
-                     ignoreBundle: Bool = false) throws -> FilterListFileURL? {
-        let lists = try? pstr.loadFilterListModels()
-        var fname: String?
-        var cnt = 0
-        lists?.forEach {
-            if $0.name == name {
-                fname = $0.fileName
-                cnt += 1
-            }
-        }
-        if cnt == 0 {
-            throw ABPFilterListError.notFound
-        } else if cnt != 0 && cnt != 1 {
-            throw ABPFilterListError.ambiguousModels
-        }
-        let url = try? Config().containerURL()
-        let mgr = FileManager.default
-        let pathURL = fname != nil ? url?.appendingPathComponent(fname!) : nil
-        let result = pathURL != nil ? mgr.fileExists(atPath: pathURL!.path) : false
-        if result {
-            return pathURL
-        }
-        // If URL not found in the container, look in the bundle:
-        if !ignoreBundle,
-           let url = try? getBundledFilterListFileURL(name: name,
-                                                      bundle: bundle) {
-            return url
-        }
-        return nil
     }
 
     /// Get NS item provider for a resource matching filter list rules.
@@ -74,7 +37,7 @@ class ContentBlockerUtility {
         let bndl = Bundle(for: ContentBlockerUtility.self)
         let itemProvider =
             NSItemProvider(contentsOf: bndl.url(forResource: resource,
-                                                withExtension: jsonExtension))
+                                                withExtension: Constants.rulesExtension))
         return itemProvider
     }
 

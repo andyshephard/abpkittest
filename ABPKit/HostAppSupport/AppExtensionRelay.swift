@@ -81,7 +81,7 @@ public class AppExtensionRelay: NSObject {
 
     @objc
     public func legacyContentBlockerIdentifier() -> ContentBlockerIdentifier? {
-        return Config().contentBlockerIdentifier()
+        return Config().contentBlockerIdentifier(platform: .ios)
     }
 
     @objc

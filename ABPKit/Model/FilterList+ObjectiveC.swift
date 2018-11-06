@@ -48,8 +48,6 @@ extension FilterList {
         userTriggered = uwDict["userTriggered"] as? Bool
         version = uwDict["version"] as? String
         self.downloadCount = uwDict["downloadCount"] as? Int
-        rules = nil // default value that prevents a build error
-        rules = getRulesURL(for: name) // only gets bundled rules
     }
 
     /// - Returns: A dictionary suitable for use with Objective-C.

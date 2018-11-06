@@ -21,11 +21,11 @@ import RxSwift
 import XCTest
 
 class BlockListDownloadTests: XCTestCase {
+    let hlpr = RulesHelper()
     let mdlr = FilterListTestModeler()
     let timeout: TimeInterval = 15
     let totalBytes = Int64(9383979)
     let totalRules = 45899
-    let vldtr = RulesValidator()
     var bag: DisposeBag!
     var dler: BlockListDownloader!
     var filterLists = [FilterList]()
@@ -45,7 +45,7 @@ class BlockListDownloadTests: XCTestCase {
             XCTFail("Failed to clear models with error: \(err)")
             return
         }
-        guard let list = try? mdlr.localBlockList() else {
+        guard let list = try? mdlr.makeLocalBlockList() else {
             XCTFail("Failed to make test list.")
             return
         }
@@ -139,18 +139,18 @@ class BlockListDownloadTests: XCTestCase {
             XCTAssert(finalEvent.totalBytesWritten == self.totalBytes,
                       "🚨 Bytes wrong.")
         }
-        guard let name = self.testList.name else {
-            XCTFail("Bad model name.")
+        do {
+            let rulesURL = try testList.rulesURL(bundle: Bundle(for: BlockListDownloadTests.self))
+            if let url = rulesURL {
+                return self.hlpr.validatedRules(for: url)
+            } else {
+                XCTFail("Bad rules URL.")
+            }
+        } catch let err {
+            XCTFail("Failed with error: \(err)")
             return Observable.empty()
         }
-        let util = ContentBlockerUtility()
-        guard let url = try? util.getRulesURL(for: name),
-              let rulesURL = url
-        else {
-            XCTFail("Bad rules URL.")
-            return Observable.empty()
-        }
-        return self.vldtr.validatedRules(for: rulesURL)
+        return Observable.empty()
     }
 
     private

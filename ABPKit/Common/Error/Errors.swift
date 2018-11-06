@@ -115,15 +115,30 @@ enum ABPFilterListError: Error {
 /// Error cases related to mutable state.
 /// - invalidData: Indicates error with data.
 /// - invalidType: Indicates error with a type.
+/// - missingContainer: Storage container not found.
 /// - missingDefaults: UserDefaults not found.
-/// - missingsDefaultsSuiteName: Suite name not found.
+/// - missingDefaultsSuiteName: Suite name not found.
+/// - missingModels:
 public
 enum ABPMutableStateError: Error {
     case failedClear
     case invalidData
     case invalidType
+    case missingContainer
     case missingDefaults
-    case missingsDefaultsSuiteName
+    case missingDefaultsSuiteName
+    case missingModels
+}
+
+/// Error cases for the rule store.
+/// - invalidData: Bad data.
+/// - missingRules: Rules not found.
+/// - missingRuleList: Rule list not found.
+public
+enum ABPWKRuleStoreError: Error {
+    case invalidData
+    case missingRules
+    case missingRuleList
 }
 
 // ------------------------------------------------------------

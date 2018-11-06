@@ -46,9 +46,9 @@ class ParsingTests: XCTestCase {
         let util = TestingFileUtility()
 
         // Load test filter list URLs.
-        v1FileURL = util.fileURL(resource: "v1 easylist short", ext: "json")
-        v2FileURL = util.fileURL(resource: "v2 easylist short", ext: "json")
-        v2PartialFileURL = util.fileURL(resource: "v2 easylist short partial", ext: "json")
+        v1FileURL = util.fileURL(resource: "v1 easylist short", ext: Constants.rulesExtension)
+        v2FileURL = util.fileURL(resource: "v2 easylist short", ext: Constants.rulesExtension)
+        v2PartialFileURL = util.fileURL(resource: "v2 easylist short partial", ext: Constants.rulesExtension)
     }
 
     func testRulesValidation() {
@@ -58,7 +58,7 @@ class ParsingTests: XCTestCase {
             return
         }
         var cnt = 0
-        RulesValidator()
+        RulesHelper()
             .validatedRules(for: url)
             .subscribe(onNext: { rule in
                 cnt += [rule].count
