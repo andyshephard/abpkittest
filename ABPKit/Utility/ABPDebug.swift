@@ -17,32 +17,30 @@
 
 /// Global functions for development only.
 
-/// Overrides definition of debugPrint to suppress debug printing in release
-/// builds.
-func debugPrint(items: Any...,
-                separator: String = " ",
-                terminator: String = "\n") {
-    // The following return should never be reached.
-    // It removes a compiler warning: All paths through this function will call itself.
-    if items.count == -1 { return }
+/// Log messages useful for debugging.
+public
+func log(_ message: String,
+         filename: String = #file,
+         line: Int = #line,
+         function: String = #function) {
     #if DEBUG
-        debugPrint(items: items,
-                   separator: separator,
-                   terminator: terminator)
+        let newMsg = "-[\((filename as NSString).lastPathComponent):\(line)] \(function) - \(message)"
+        NSLog(newMsg)
     #endif
 }
 
 /// Print out all of the user's filter lists.
+public
 func debugPrintFilterLists(_ lists: [FilterList],
                            caller: String? = nil) {
     #if DEBUG
         if caller != nil {
-            debugPrint("Called from \(caller!)")
+            NSLog("Called from \(caller!)")
         }
-        debugPrint("📜 Filter Lists:")
+        NSLog("📜 Filter Lists:")
         var cnt = 1
         for list in lists {
-            debugPrint("\(cnt). \(list)\n")
+            NSLog("\(cnt). \(list)\n")
             cnt += 1
         }
     #endif
