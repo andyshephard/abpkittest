@@ -1080,6 +1080,11 @@
 					};
 					65D4770621896E9400D4F5DA = {
 						CreatedOnToolsVersion = 10.0;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.Mac = {
+								enabled = 1;
+							};
+						};
 					};
 					65D4C75A2188C64C00B1E16F = {
 						CreatedOnToolsVersion = 10.0;
