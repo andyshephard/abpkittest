@@ -1522,7 +1522,6 @@
 				DEVELOPMENT_TEAM = G5LEUTX2F6;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
 				);
 				INFOPLIST_FILE = "HostApp-macOS/Info.plist";
@@ -1550,7 +1549,6 @@
 				DEVELOPMENT_TEAM = G5LEUTX2F6;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
 				);
 				INFOPLIST_FILE = "HostApp-macOS/Info.plist";
