@@ -139,7 +139,6 @@
 		65FB45CC219157590006274B /* Persistor+LocalStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65FB45CA219157590006274B /* Persistor+LocalStorage.swift */; };
 		65FF7B0A216EB8B300470103 /* ABPKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B00216EB8B200470103 /* ABPKit.framework */; };
 		65FF7B11216EB8B300470103 /* ABPKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 65FF7B03216EB8B200470103 /* ABPKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		65FF7B1C216EC60400470103 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 65FF7B1B216EC60400470103 /* README.md */; };
 		65FF7B27216EC85B00470103 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B25216EC85B00470103 /* RxSwift.framework */; };
 		65FF7B28216EC85B00470103 /* RxCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B26216EC85B00470103 /* RxCocoa.framework */; };
 /* End PBXBuildFile section */
@@ -1210,7 +1209,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				65FF7B1C216EC60400470103 /* README.md in Resources */,
 				65756188217FBA6100D8A4F2 /* empty.json in Resources */,
 				6575618A217FBA6100D8A4F2 /* easylist_content_blocker.json in Resources */,
 				65756189217FBA6100D8A4F2 /* easylist+exceptionrules_content_blocker.json in Resources */,
