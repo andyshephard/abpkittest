@@ -61,6 +61,8 @@ struct Constants {
     public static let productNameMacOS = "HostApp-macOS"
     public static let extensionSafariNameIOS = "AdblockPlusSafariExtension"
     public static let extensionSafariNameMacOS = "HostCBExt-macOS"
+    public static let abpkitDir = "ABPKit.framework"
+    public static let abpkitResourcesDir = "Resources"
 }
 
 /// ABPKit configuration class for accessing globally relevant functions.

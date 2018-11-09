@@ -28,15 +28,20 @@ extension Persistor {
         var saved = [FilterList]()
         do {
             saved = try loadFilterListModels()
-        } catch let error {
-            if let casted = error as? ABPMutableStateError,
+        } catch let err {
+            if let casted = err as? ABPMutableStateError,
                casted == .invalidType { // indicates type not defined yet, can ignore in production
                 // ignore it
-            } else { throw error }
+            } else {
+                throw err
+            }
         }
-        let newLists =
-            replaceFilterListModel(list,
-                                   lists: saved)
+        var newLists = [FilterList]()
+        do {
+            newLists = try replaceFilterListModel(list, lists: saved)
+        } catch let err {
+            throw err
+        }
         guard let data =
             try? PropertyListEncoder()
                 .encode(newLists)
@@ -80,12 +85,12 @@ extension Persistor {
         var models = [FilterList]()
         do {
             models = try loadFilterListModels()
-        } catch let error {
-            if let casted = error as? ABPMutableStateError,
+        } catch let err {
+            if let casted = err as? ABPMutableStateError,
                casted == .invalidType {
                  // indicates type not defined yet
             } else {
-                throw error
+                throw err
             }
         }
         // Remove associated rules:
@@ -111,13 +116,17 @@ extension Persistor {
                 }
                 // If the rules are bundled, a remove should not happen below.
                 if url != nil {
-                    let rmvError = remove(url!)
-                    if rmvError != nil {
-                        throw rmvError!
-                    }
-                    // Double check the file has been removed:
-                    if mgr.fileExists(atPath: url!.path) {
-                        failed = true
+                    // With Xcode 10.1, attempting removal from bundled
+                    // resources is an error.
+                    if !blocklistIsLocal(url: url!) {
+                        let rmvError = remove(url!)
+                        if rmvError != nil {
+                            throw rmvError!
+                        }
+                        // Double check the file has been removed:
+                        if mgr.fileExists(atPath: url!.path) {
+                            failed = true
+                        }
                     }
                 }
             }
@@ -167,6 +176,14 @@ extension Persistor {
     // swiftlint:enable function_body_length
 
     private
+    func blocklistIsLocal(url: URL) -> Bool {
+        let locals = Set([Constants.abpkitDir,
+                          Constants.abpkitResourcesDir])
+        return Set(url.pathComponents)
+            .intersection(locals) == locals
+    }
+
+    private
     func decodeListsModelsData(_ listsData: Data) throws -> [FilterList] {
         guard let decoded =
             try? PropertyListDecoder()
@@ -181,16 +198,19 @@ extension Persistor {
     /// Intended to prevent duplication of lists.
     private
     func replaceFilterListModel(_ list: FilterList,
-                                lists: [FilterList]) -> [FilterList] {
-        var newLists = [list]
-        var replaceCount = 0
-        lists.forEach {
-            if $0.name == list.name {
-                replaceCount += 1
-            } else {
-                newLists.append($0)
+                                lists: [FilterList]) throws -> [FilterList] {
+        var replaced = 0
+        return try lists
+            .filter {
+                if $0.name == list.name {
+                    replaced += 1
+                    return false
+                }
+                return true
             }
-        }
-        return newLists
+            .reduce([list]) {
+                if replaced > 1 { throw ABPFilterListError.ambiguousModels }
+                return $0 + [$1]
+            }
     }
 }

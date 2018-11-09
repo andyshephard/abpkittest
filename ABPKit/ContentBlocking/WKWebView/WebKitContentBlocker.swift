@@ -23,6 +23,7 @@ public
 class WebKitContentBlocker {
     let cfg = Config()
     var bag: DisposeBag!
+    public var bundle: Bundle?
     public var rulesStore: WKContentRuleListStore!
 
     public

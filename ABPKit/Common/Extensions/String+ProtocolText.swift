@@ -15,10 +15,13 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import UIKit
-
-class ViewController: UIViewController {
-    override func viewDidLoad() {
-        super.viewDidLoad()
+extension String {
+    public
+    func addingWebProtocol() -> String {
+        if hasPrefix("http://") ||
+           hasPrefix("https://") {
+            return self
+        }
+        return "http://" + self
     }
 }

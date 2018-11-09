@@ -28,9 +28,17 @@ extension WebKitContentBlocker {
         let sep = ","
         let arrStart = "["
         let arrEnd = "]"
-        guard let rulesURL = try? model.rulesURL(),
-              let url = rulesURL
-        else {
+        var rulesURL: URL?
+        do {
+            if bundle != nil {
+                rulesURL = try model.rulesURL(bundle: bundle!)
+            } else {
+                rulesURL = try model.rulesURL()
+            }
+        } catch let err {
+            return Observable.error(err)
+        }
+        guard let url = rulesURL else {
             return Observable.error(ABPWKRuleStoreError.missingRules)
         }
         let encoder = JSONEncoder()
@@ -63,25 +71,8 @@ extension WebKitContentBlocker {
         }
     }
 
-    /// Clear all rules in the WKRuleListStore.
-    func clearRules(completion: @escaping (NamedErrors) -> Void) {
-        var errors = NamedErrors()
-        rulesStore
-            .getAvailableContentRuleListIdentifiers { identifiers in
-                guard let ids = identifiers else {
-                    return
-                }
-                ids.forEach { identifier in
-                    self.rulesStore
-                        .removeContentRuleList(forIdentifier: identifier) { err in
-                            errors[identifier] = err
-                        }
-                    completion(errors)
-                }
-            }
-    }
-
     /// Clear all compiled rule lists.
+    public
     func clearedRulesAll() -> Observable<NamedErrors> {
         return clearedRules(clearAll: true)
     }

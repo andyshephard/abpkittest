@@ -87,15 +87,19 @@ class WebKitContentBlockingTests: XCTestCase {
     }
 
     /// Negative test for adding a model filter list with missing rules.
+    /// Specific error ABPFilterListError.notFound is expected. This was updated
+    /// after errors were being reported for attempting to delete bundled
+    /// resources. It wasn't an error condition before Xcode 10.1, apparently.
     func testListWithoutRules() {
         let expect = expectation(description: #function)
         var list = FilterList()
         list.name = "test"
+        // List has no filename.
         try? pstr.logRulesFiles()
         wkcb.addedWKStoreRules(addList: list)
             .subscribe(onError: { err in
                 switch err {
-                case ABPWKRuleStoreError.missingRules:
+                case ABPFilterListError.notFound:
                     expect.fulfill()
                 default:
                     XCTFail("🚨 Error during add: \(err)")
@@ -104,7 +108,7 @@ class WebKitContentBlockingTests: XCTestCase {
                 XCTFail("Unexpected completion.")
             }).disposed(by: bag)
         wait(for: [expect],
-             timeout: 5)
+             timeout: timeout / 4)
     }
 
     func testRuleListIDs() {

@@ -1,21 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13122.16" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina5_9" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13104.12"/>
+        <deployment version="4352" identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
+        <!--Web ViewVC-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="WebViewVC" customModule="HostApp_iOS" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Enter URL here" textAlignment="natural" minimumFontSize="16" translatesAutoresizingMaskIntoConstraints="NO" id="OWk-2w-3vT" userLabel="URL Field">
+                                <rect key="frame" x="8" y="44" width="304" height="38"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="38" id="PMU-5G-W8m"/>
+                                </constraints>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="URL" returnKeyType="go" enablesReturnKeyAutomatically="YES" smartDashesType="no" smartInsertDeleteType="no" smartQuotesType="no" textContentType="url"/>
+                            </textField>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HUh-7h-FuL">
+                                <rect key="frame" x="312" y="44" width="63" height="38"/>
+                                <inset key="contentEdgeInsets" minX="8" minY="0.0" maxX="8" maxY="0.0"/>
+                                <state key="normal" title="Reload"/>
+                                <connections>
+                                    <action selector="reloadWasPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Pds-Kd-2Tt"/>
+                                </connections>
+                            </button>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Unit Testing is Active" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Msw-Cc-Qex">
+                                <rect key="frame" x="97" y="394" width="181" height="24"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <wkWebView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UX8-rR-XY8">
+                                <rect key="frame" x="0.0" y="82" width="375" height="696"/>
+                                <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <wkWebViewConfiguration key="configuration" allowsAirPlayForMediaPlayback="NO">
+                                    <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" none="YES"/>
+                                    <wkPreferences key="preferences"/>
+                                </wkWebViewConfiguration>
+                            </wkWebView>
+                        </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="OWk-2w-3vT" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="8" id="Bbs-GL-4Nb"/>
+                            <constraint firstItem="UX8-rR-XY8" firstAttribute="top" secondItem="OWk-2w-3vT" secondAttribute="bottom" id="DLD-rC-fmf"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="UX8-rR-XY8" secondAttribute="bottom" id="MZb-Nt-JEJ"/>
+                            <constraint firstItem="UX8-rR-XY8" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="TdQ-QL-od0"/>
+                            <constraint firstItem="HUh-7h-FuL" firstAttribute="centerY" secondItem="OWk-2w-3vT" secondAttribute="centerY" id="aBX-zd-dyh"/>
+                            <constraint firstItem="HUh-7h-FuL" firstAttribute="height" secondItem="OWk-2w-3vT" secondAttribute="height" id="bXK-42-8aH"/>
+                            <constraint firstItem="HUh-7h-FuL" firstAttribute="leading" secondItem="OWk-2w-3vT" secondAttribute="trailing" id="o5o-ar-Huk"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="HUh-7h-FuL" secondAttribute="trailing" id="pGh-Bo-FC8"/>
+                            <constraint firstItem="OWk-2w-3vT" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="r9F-vQ-7ZT"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="UX8-rR-XY8" secondAttribute="trailing" id="tC9-xc-1l5"/>
+                            <constraint firstItem="Msw-Cc-Qex" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="uHq-sS-goL"/>
+                            <constraint firstItem="Msw-Cc-Qex" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="yag-13-75W"/>
+                        </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
+                    <connections>
+                        <outlet property="reloadButton" destination="HUh-7h-FuL" id="sc5-Ft-Xbz"/>
+                        <outlet property="unitTestingLabel" destination="Msw-Cc-Qex" id="g3p-1S-Ea7"/>
+                        <outlet property="urlField" destination="OWk-2w-3vT" id="ddS-Tt-GD8"/>
+                        <outlet property="webView" destination="UX8-rR-XY8" id="yMv-5l-J8c"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>

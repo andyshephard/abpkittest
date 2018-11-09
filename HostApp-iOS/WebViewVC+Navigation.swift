@@ -15,10 +15,28 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
+import ABPKit
+import WebKit
 
-class ViewController: NSViewController {
-    override func viewDidLoad() {
-        super.viewDidLoad()
+extension WebViewVC {
+    func webView(_ webView: WKWebView,
+                 didFailProvisionalNavigation navigation: WKNavigation!,
+                 withError error: Error) {
+        log("🚨 Error during provisional navigation: \(error)")
+    }
+
+    func webView(_ webView: WKWebView,
+                 didStartProvisionalNavigation navigation: WKNavigation!) {
+        // Handle start.
+    }
+
+    func webView(_ webView: WKWebView,
+                 didCommit navigation: WKNavigation!) {
+        // Handle commit.
+    }
+
+    func webView(_ webView: WKWebView,
+                 didFinish navigation: WKNavigation!) {
+        // Handle finish.
     }
 }

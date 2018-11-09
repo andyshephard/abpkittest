@@ -130,15 +130,24 @@ enum ABPMutableStateError: Error {
     case missingModels
 }
 
+/// Error cases for the web blocker.
+/// - badURL: URL is invalid.
+public
+enum ABPWebViewBlockerError: Error {
+    case badURL
+}
+
 /// Error cases for the rule store.
 /// - invalidData: Bad data.
 /// - missingRules: Rules not found.
 /// - missingRuleList: Rule list not found.
+/// - ruleListErrors(errorDictionary: NamedErrors): Errors named after lists in the store.
 public
 enum ABPWKRuleStoreError: Error {
     case invalidData
     case missingRules
     case missingRuleList
+    case ruleListErrors(errorDictionary: NamedErrors)
 }
 
 // ------------------------------------------------------------

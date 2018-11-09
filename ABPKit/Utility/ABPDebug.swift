@@ -45,3 +45,9 @@ func debugPrintFilterLists(_ lists: [FilterList],
         }
     #endif
 }
+
+/// Return true when tests are running.
+public
+func isTesting() -> Bool {
+    return ProcessInfo().environment["XCTestConfigurationFilePath"] != nil
+}

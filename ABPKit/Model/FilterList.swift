@@ -61,7 +61,11 @@ struct FilterList: Codable {
 }
 
 extension FilterList {
-    /// Return URL for local content blocking rules, the JSON file.
+    /// Return URL for local content blocking rules, the JSON file. The bundle may
+    /// need to be explicitly set when accessing rules from a bundle other than the
+    /// Config's bundle.
+    /// Example:
+    /// rulesURL(bundle: Bundle(for: ...))
     public
     func rulesURL(bundle: Bundle = Config().bundle(),
                   ignoreBundle: Bool = false) throws -> URL? {
