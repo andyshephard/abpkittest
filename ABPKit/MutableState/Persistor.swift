@@ -42,7 +42,7 @@ class Persistor {
     /// Observe changes in the value for a key in defaults.
     /// Perform an action on every next event.
     func observe<T>(dataType: T.Type,
-                    key: ABPMutableState.LegacyStateName,
+                    key: ABPMutableState.StateName,
                     nextAction: @escaping Action) -> Disposable? where T: (KVORepresentable) {
         return defaults?.rx
             .observe(dataType,
@@ -61,7 +61,7 @@ class Persistor {
 
     /// Return an observer for non KVORepresentable types.
     func unsafeObserve<T>(dataType: T.Type,
-                          key: ABPMutableState.LegacyStateName,
+                          key: ABPMutableState.StateName,
                           nextAction: @escaping Action) -> Disposable? {
         return defaults?.rx
             .observe(dataType,
@@ -81,7 +81,7 @@ class Persistor {
     /// Save a value to a key path in defaults.
     func save<T>(type: T.Type,
                  value: T,
-                 key: ABPMutableState.LegacyStateName) throws {
+                 key: ABPMutableState.StateName) throws {
         guard let defaults = self.defaults else {
             throw ABPMutableStateError.missingDefaults
         }
@@ -92,7 +92,7 @@ class Persistor {
 
     /// This function should not not return nil.
     func load<T>(type: T.Type,
-                 key: ABPMutableState.LegacyStateName) throws -> T {
+                 key: ABPMutableState.StateName) throws -> T {
         guard let defaults = self.defaults else {
             throw ABPMutableStateError.missingDefaults
         }
@@ -103,7 +103,7 @@ class Persistor {
     }
 
     /// Set value nil should be an equivalent action here.
-    func clear(key: ABPMutableState.LegacyStateName) throws {
+    func clear(key: ABPMutableState.StateName) throws {
         guard let defaults = self.defaults else {
             throw ABPMutableStateError.missingDefaults
         }

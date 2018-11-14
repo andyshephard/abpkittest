@@ -17,17 +17,19 @@
 
 public
 struct ABPMutableState {
-    /// Enum is named legacy to indicate source of cases.
+    /// Legacy cases are separated.
     public
-    enum LegacyStateName: String,
-                          CaseIterable {
+    enum StateName: String,
+                    CaseIterable {
         case empty
+        case enabled
+        case filterLists
+        case user
+        // Legacy cases:
         case acceptableAdsEnabled
         case customFilterListEnabled
         case defaultFilterListEnabled
         case downloadedVersion
-        case enabled
-        case filterLists
         case group
         case installedVersion
         case lastActivity
@@ -48,6 +50,6 @@ struct ABPMutableState {
     public var whitelistedWebsites: [WhitelistedHostname]?
 
     init() {
-        // Intentionally empty
+        // Intentionally empty.
     }
 }

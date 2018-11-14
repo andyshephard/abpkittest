@@ -59,7 +59,7 @@ class BlockListDownloadTests: XCTestCase {
     }
 
     func testRemoteSource() {
-        testList.source = "https://easylist-downloads.adblockplus.org/easylist_content_blocker.json"
+        testList.source = RemoteBlockList.easylist.rawValue
         testList.fileName = "easylist_content_blocker.json"
         guard let result = try? self.pstr.saveFilterListModel(self.testList),
                   result == true
@@ -105,8 +105,8 @@ class BlockListDownloadTests: XCTestCase {
                 }
                 expect.fulfill()
             }).disposed(by: bag)
-            wait(for: [expect],
-                 timeout: timeout)
+        wait(for: [expect],
+             timeout: timeout)
     }
 
     func downloadEvents(for task: URLSessionDownloadTask) -> Observable<DownloadEvent> {

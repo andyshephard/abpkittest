@@ -15,9 +15,41 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+protocol AcceptableAdsEnableable {
+    func hasAcceptableAds() -> Bool
+}
+
+/// Raw values are filenames in a bundle.
 public
-enum BundledBlockList: String {
+enum BundledBlockList: String,
+                       AcceptableAdsEnableable {
     public typealias RawValue = String
     case easylist = "easylist_content_blocker.json"
     case easylistPlusExceptions = "easylist+exceptionrules_content_blocker"
+
+    func hasAcceptableAds() -> Bool {
+        switch self {
+        case .easylist:
+            return false
+        case .easylistPlusExceptions:
+            return true
+        }
+    }
+}
+
+public
+enum RemoteBlockList: String,
+                      AcceptableAdsEnableable {
+    public typealias RawValue = String
+    case easylist = "https://easylist-downloads.adblockplus.org/easylist_content_blocker.json"
+    case easylistPlusExceptions = "https://easylist-downloads.adblockplus.org/easylist+exceptionrules_content_blocker.json"
+
+    func hasAcceptableAds() -> Bool {
+        switch self {
+        case .easylist:
+            return false
+        case .easylistPlusExceptions:
+            return true
+        }
+    }
 }

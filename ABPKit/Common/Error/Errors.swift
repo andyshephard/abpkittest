@@ -130,6 +130,17 @@ enum ABPMutableStateError: Error {
     case missingModels
 }
 
+/// Error cases for the user model.
+/// - badDataUser: Data for user is invalid.
+/// - failedDecodingUser: Data decoding failed.
+/// - failedEncodingUser: Data encoding failed.
+public
+enum ABPUserModelError: Error {
+    case badDataUser
+    case failedDecodingUser
+    case failedEncodingUser
+}
+
 /// Error cases for the web blocker.
 /// - badURL: URL is invalid.
 public

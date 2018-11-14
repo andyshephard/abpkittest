@@ -153,8 +153,6 @@ class Config {
         else {
             throw ABPConfigurationError.invalidAppGroup
         }
-        // 🗣️
-//        try? mgr.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
         return url
     }
 

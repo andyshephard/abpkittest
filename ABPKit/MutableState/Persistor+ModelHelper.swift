@@ -52,7 +52,7 @@ extension Persistor {
         guard let _ =
             try? save(type: Data.self,
                       value: data,
-                      key: ABPMutableState.LegacyStateName.filterLists)
+                      key: ABPMutableState.StateName.filterLists)
         else {
             return false
         }
@@ -64,7 +64,7 @@ extension Persistor {
         var modelData: Data?
         do {
             modelData = try load(type: Data.self,
-                                 key: ABPMutableState.LegacyStateName.filterLists)
+                                 key: ABPMutableState.StateName.filterLists)
         } catch let err {
             throw err
         }
@@ -118,7 +118,7 @@ extension Persistor {
                 if url != nil {
                     // With Xcode 10.1, attempting removal from bundled
                     // resources is an error.
-                    if !blocklistIsLocal(url: url!) {
+                    if try !blocklistIsBundled(url: url!) {
                         let rmvError = remove(url!)
                         if rmvError != nil {
                             throw rmvError!
@@ -137,7 +137,7 @@ extension Persistor {
         // not have reported a correct count here during testing.
         if !failed {
             // swiftlint:disable unused_optional_binding
-            guard let _ = try? clear(key: ABPMutableState.LegacyStateName.filterLists) else {
+            guard let _ = try? clear(key: ABPMutableState.StateName.filterLists) else {
                 throw ABPMutableStateError.failedClear
             }
             // swiftlint:enable unused_optional_binding
@@ -151,7 +151,7 @@ extension Persistor {
             guard let _ =
                 try? save(type: Data.self,
                           value: data,
-                          key: ABPMutableState.LegacyStateName.filterLists)
+                          key: ABPMutableState.StateName.filterLists)
             else {
                 throw ABPFilterListError.failedRemoveModels
             }
@@ -175,12 +175,21 @@ extension Persistor {
     // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
+    /// Determines if a file is part of the bundle. Since the framework name +
+    /// extension is used, that path component shouldn't appear outside of a
+    /// context involving bundled resources.
     private
-    func blocklistIsLocal(url: URL) -> Bool {
-        let locals = Set([Constants.abpkitDir,
-                          Constants.abpkitResourcesDir])
+    func blocklistIsBundled(url: URL) throws -> Bool {
+        #if os(macOS)
+        let bundleComps = Set([Constants.abpkitDir,
+                               Constants.abpkitResourcesDir])
+        #elseif os(iOS)
+        let bundleComps = Set([Constants.abpkitDir])
+        #else
+        throw ABPFilterListError.notFound
+        #endif
         return Set(url.pathComponents)
-            .intersection(locals) == locals
+            .intersection(bundleComps) == bundleComps
     }
 
     private

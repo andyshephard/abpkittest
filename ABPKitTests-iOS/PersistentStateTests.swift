@@ -29,11 +29,10 @@ import XCTest
 /// * Int
 /// * Date
 /// * [String]
-// swiftlint:disable type_body_length
 class PersistentStateTests: XCTestCase {
     let abpms = ABPMutableState()
+    let stateUtil = RandomStateUtility()
     var defaults: UserDefaults!
-    let random = { maxInt in return Int(arc4random_uniform(maxInt + 1)) }
     let scheduler = MainScheduler.asyncInstance
     let testInterval = { return max(Double(arc4random_uniform(3)) * 0.1, 0.01) }
     let testLength = 15.0
@@ -130,8 +129,8 @@ class PersistentStateTests: XCTestCase {
     }
 
     func stateTester<U>(metatype: U.Type,
-                        key: ABPMutableState.LegacyStateName,
-                        setType: DefaultsSetType) -> Observable<(Int, ABPMutableState.LegacyStateName)> {
+                        key: ABPMutableState.StateName,
+                        setType: DefaultsSetType) -> Observable<(Int, ABPMutableState.StateName)> {
         var iterCnt = 0
         return Observable<Int>
             .interval(testInterval(),
@@ -140,8 +139,8 @@ class PersistentStateTests: XCTestCase {
                 if self.obsCnt > 3 { return false }
                 return true
             }
-            .flatMap { count -> Observable<(Int, ABPMutableState.LegacyStateName)> in
-                guard let state = self.randomState(for: U.self) else {
+            .flatMap { count -> Observable<(Int, ABPMutableState.StateName)> in
+                guard let state = self.stateUtil.randomState(for: U.self) else {
                     XCTFail(ABPMutableStateError.invalidData.localizedDescription)
                     return Observable.error(ABPMutableStateError.invalidData)
                 }
@@ -165,7 +164,7 @@ class PersistentStateTests: XCTestCase {
             }
     }
 
-    func resetter() -> Observable<(Int, ABPMutableState.LegacyStateName)> {
+    func resetter() -> Observable<(Int, ABPMutableState.StateName)> {
         return Observable<Int>
             .interval(testInterval(),
                       scheduler: scheduler)
@@ -173,7 +172,7 @@ class PersistentStateTests: XCTestCase {
                 if cnt > 1 { return false }
                 return true
             }
-            .flatMap { _ -> Observable<(Int, ABPMutableState.LegacyStateName)> in
+            .flatMap { _ -> Observable<(Int, ABPMutableState.StateName)> in
                 self.obsCnt = 0
                 return Observable.just((0, .empty))
             }
@@ -259,7 +258,7 @@ class PersistentStateTests: XCTestCase {
     // ------------------------------------------------------------
 
     func setValue<U>(val: U,
-                     key: ABPMutableState.LegacyStateName) {
+                     key: ABPMutableState.StateName) {
         self.updateCurrentState(val: val)
         // swiftlint:disable unused_optional_binding
         guard let _ =
@@ -285,30 +284,4 @@ class PersistentStateTests: XCTestCase {
             currentArrayStringState = val as? [String]
         }
     }
-
-    func randomState<U>(for metatype: U.Type) -> U? {
-        if metatype == Bool.self {
-            if random(1) == 1 { return true as? U }
-            return false as? U
-        } else if metatype == Int.self {
-            if random(1) == 1 { return 1 as? U }
-            return 0 as? U
-        } else if metatype == Date.self {
-            return Date() +
-                   TimeInterval(random(10)) *
-                   Constants.defaultFilterListExpiration as? U
-        } else if metatype == [String].self {
-            let chars = "abcdefghijklmnopqrstuvwxyz"
-            let countMax = random(11)
-            var arr = [String]()
-            for _ in 0...countMax {
-                let idx = chars.index(chars.startIndex,
-                                      offsetBy: random(UInt32(chars.count - 1)))
-                arr.append(String(chars[idx]))
-            }
-            return arr as? U
-        }
-        return nil
-    }
 }
-// swiftlint:enable type_body_length
