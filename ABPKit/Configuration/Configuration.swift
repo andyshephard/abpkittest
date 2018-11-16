@@ -47,6 +47,11 @@ struct Constants {
     public static let blocklistArrayStart = "["
     public static let blocklistArrayEnd = "]"
     public static let blocklistRuleSeparator = ","
+    public static let srcSep = "/"
+    public static let srcBundled = "bundled"
+    public static let srcRemote = "remote"
+    public static let srcEasylist = "easylist"
+    public static let srcEasylistPlusExceptions = "easylistPlusExceptions"
 
     public static let contentRuleStoreID = "wk-content-rule-list-store"
     public static let rulesExtension = "json"

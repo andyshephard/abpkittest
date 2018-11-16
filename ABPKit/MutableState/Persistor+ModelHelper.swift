@@ -22,6 +22,7 @@ import RxSwift
 // * load
 // * clear
 extension Persistor {
+    /// Save and replace, if needed.
     /// Return true if save succeeded.
     public
     func saveFilterListModel(_ list: FilterList) throws -> Bool {
@@ -42,16 +43,10 @@ extension Persistor {
         } catch let err {
             throw err
         }
-        guard let data =
-            try? PropertyListEncoder()
-                .encode(newLists)
-        else {
-            throw ABPFilterListError.failedEncoding
-        }
         // swiftlint:disable unused_optional_binding
         guard let _ =
             try? save(type: Data.self,
-                      value: data,
+                      value: encodeModel(newLists),
                       key: ABPMutableState.StateName.filterLists)
         else {
             return false
@@ -61,18 +56,8 @@ extension Persistor {
     }
 
     func loadFilterListModels() throws -> [FilterList] {
-        var modelData: Data?
-        do {
-            modelData = try load(type: Data.self,
-                                 key: ABPMutableState.StateName.filterLists)
-        } catch let err {
-            throw err
-        }
-        guard let data = modelData,
-              let decoded = try? decodeListsModelsData(data) else {
-            throw ABPFilterListError.failedDecoding
-        }
-        return decoded
+        return try loadModels(type: [FilterList].self,
+                              state: .filterLists)
     }
 
     /// Clears filter list models and their associated rules, if they exist.
@@ -140,14 +125,11 @@ extension Persistor {
             guard let _ = try? clear(key: ABPMutableState.StateName.filterLists) else {
                 throw ABPMutableStateError.failedClear
             }
-            // swiftlint:enable unused_optional_binding
             guard let data =
-                try? PropertyListEncoder()
-                    .encode([FilterList]())
+                try? encodeModel([FilterList]())
             else {
                 throw ABPFilterListError.failedEncoding
             }
-            // swiftlint:disable unused_optional_binding
             guard let _ =
                 try? save(type: Data.self,
                           value: data,
@@ -155,6 +137,7 @@ extension Persistor {
             else {
                 throw ABPFilterListError.failedRemoveModels
             }
+            // swiftlint:enable unused_optional_binding
             do {
                 models = try loadFilterListModels()
             } catch let error {
@@ -175,6 +158,36 @@ extension Persistor {
     // swiftlint:enable cyclomatic_complexity
     // swiftlint:enable function_body_length
 
+    func loadModels<T: Decodable>(type: T.Type,
+                                  state: ABPMutableState.StateName) throws -> T {
+        return try decodeModelData(type: T.self,
+                                   modelData: load(type: Data.self,
+                                                   key: state))
+    }
+
+    func decodeModelData<T: Decodable>(type: T.Type,
+                                       modelData: Data) throws -> T {
+        return try PropertyListDecoder().decode(T.self,
+                                                from: modelData)
+    }
+
+    func saveModel<T: Encodable>(_ model: T,
+                                 state: ABPMutableState.StateName) throws -> Bool {
+        // swiftlint:disable unused_optional_binding
+        guard let _ = try? save(type: Data.self,
+                                value: encodeModel(model),
+                                key: state)
+        else {
+            return false
+        }
+        // swiftlint:enable unused_optional_binding
+        return true
+    }
+
+    func encodeModel<T: Encodable>(_ model: T) throws -> Data {
+        return try PropertyListEncoder().encode(model)
+    }
+
     /// Determines if a file is part of the bundle. Since the framework name +
     /// extension is used, that path component shouldn't appear outside of a
     /// context involving bundled resources.
@@ -192,33 +205,28 @@ extension Persistor {
             .intersection(bundleComps) == bundleComps
     }
 
-    private
-    func decodeListsModelsData(_ listsData: Data) throws -> [FilterList] {
-        guard let decoded =
-            try? PropertyListDecoder()
-                .decode([FilterList].self,
-                        from: listsData)
-        else {
-            throw ABPFilterListError.badData
-        }
-        return decoded
-    }
-
     /// Intended to prevent duplication of lists.
     private
     func replaceFilterListModel(_ list: FilterList,
                                 lists: [FilterList]) throws -> [FilterList] {
+        return try replaceModel(list,
+                                models: lists)
+    }
+
+    private
+    func replaceModel<T: Persistable>(_ model: T,
+                                      models: [T]) throws -> [T] {
         var replaced = 0
-        return try lists
+        return try models
             .filter {
-                if $0.name == list.name {
+                if $0.name == model.name {
                     replaced += 1
                     return false
                 }
                 return true
             }
-            .reduce([list]) {
-                if replaced > 1 { throw ABPFilterListError.ambiguousModels }
+            .reduce([model]) {
+                if replaced > 1 { throw ABPMutableStateError.ambiguousModels }
                 return $0 + [$1]
             }
     }

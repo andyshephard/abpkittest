@@ -29,21 +29,28 @@ class PersistUserModelTests: XCTestCase {
         pstr = Persistor()
     }
 
-    func testUserSave() {
-        var user = User(withDefaultValues: true)
-        let aae = rndutil.randomState(for: Bool.self)
+    func testUserSave() throws {
+        var user = try User(withDefaultValues: true)
+        guard let aae = rndutil.randomState(for: Bool.self) else { XCTFail("Bad state."); return }
         let hosts = rndutil.randomState(for: [WhitelistedHostname].self)
+        var src: BlockListSourceable!
         user.acceptableAdsEnabled = aae
-        user.whitelistedHosts = hosts
-        do {
-            let res = try user.save()
-            XCTAssert(res == true,
-                      "Failed save.")
-        } catch let err {
-            XCTFail("Error saving: \(err)")
+        switch aae {
+        case true:
+            src = BundledBlockList.easylistPlusExceptions
+            user.blockList?.source = src
+        case false:
+            src = BundledBlockList.easylist
+            user.blockList?.source = src
         }
-        let saved = try? User(fromPersistentStorage: true)
+        user.whitelistedHosts = hosts
+        let res = try user.save()
+        XCTAssert(res == true,
+                  "Failed save.")
+        let saved = try User(fromPersistentStorage: true,
+                             identifier: nil)
         XCTAssert(saved?.acceptableAdsEnabled == aae &&
+                  saved?.blockList?.source as? BundledBlockList == src as? BundledBlockList &&
                   saved?.whitelistedHosts == hosts,
                   "Bad user state.")
     }

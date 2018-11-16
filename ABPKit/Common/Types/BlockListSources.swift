@@ -15,18 +15,19 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-protocol AcceptableAdsEnableable {
-    func hasAcceptableAds() -> Bool
-}
+// Coding scheme for these custom BlockList types is a string corresponding to:
+//     blocklisttype/source
+// AcceptableAdsEnableable allows verification of AA states compared to sources.
 
 /// Raw values are filenames in a bundle.
 public
 enum BundledBlockList: String,
-                       AcceptableAdsEnableable {
+                       BlockListSourceable {
     public typealias RawValue = String
     case easylist = "easylist_content_blocker.json"
     case easylistPlusExceptions = "easylist+exceptionrules_content_blocker"
 
+    public
     func hasAcceptableAds() -> Bool {
         switch self {
         case .easylist:
@@ -39,11 +40,12 @@ enum BundledBlockList: String,
 
 public
 enum RemoteBlockList: String,
-                      AcceptableAdsEnableable {
+                      BlockListSourceable {
     public typealias RawValue = String
     case easylist = "https://easylist-downloads.adblockplus.org/easylist_content_blocker.json"
     case easylistPlusExceptions = "https://easylist-downloads.adblockplus.org/easylist+exceptionrules_content_blocker.json"
 
+    public
     func hasAcceptableAds() -> Bool {
         switch self {
         case .easylist:

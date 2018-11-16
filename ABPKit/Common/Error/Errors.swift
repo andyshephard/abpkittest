@@ -80,9 +80,11 @@ enum ABPDownloadTaskError: Error {
 }
 
 /// Error cases for filter list processing.
+/// - aaStateMismatch: Acceptable ads state is mismatched.
 /// - ambiguousModels: Model objects are not unique or are missing.
 /// - badContainer: Container could not be accessed.
 /// - badData: Valid data was not obtained.
+/// - badSource: BlockList source is invalid.
 /// - failedDecoding: Could not decode a list.
 /// - failedEncodeRule: A rule could not be encoded.
 /// - failedEncoding: A list model could not be encoded.
@@ -96,9 +98,11 @@ enum ABPDownloadTaskError: Error {
 /// - notFound: Count not find a matching filter list.
 public
 enum ABPFilterListError: Error {
+    case aaStateMismatch
     case ambiguousModels
     case badContainer
     case badData
+    case badSource
     case failedDecoding
     case failedEncodeRule
     case failedEncoding
@@ -113,21 +117,22 @@ enum ABPFilterListError: Error {
 }
 
 /// Error cases related to mutable state.
+/// - ambiguousModels: Model objects are not unique or are missing.
+/// - failedClear: Clearing models failed.
 /// - invalidData: Indicates error with data.
 /// - invalidType: Indicates error with a type.
 /// - missingContainer: Storage container not found.
 /// - missingDefaults: UserDefaults not found.
 /// - missingDefaultsSuiteName: Suite name not found.
-/// - missingModels:
 public
 enum ABPMutableStateError: Error {
+    case ambiguousModels
     case failedClear
     case invalidData
     case invalidType
     case missingContainer
     case missingDefaults
     case missingDefaultsSuiteName
-    case missingModels
 }
 
 /// Error cases for the user model.

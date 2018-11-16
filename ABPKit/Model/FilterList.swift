@@ -22,7 +22,7 @@ import Foundation
 ///
 /// Some legacy properties exist but will be removed in future versions.
 public
-struct FilterList: Codable {
+struct FilterList: Persistable {
     /// Counter for number of successful downloads.
     public var downloadCount: Int?
 
@@ -56,7 +56,29 @@ struct FilterList: Codable {
 
     public
     init() {
-        // Intentionally empty
+        // Intentionally empty.
+    }
+
+    init(withDefaultValues: Bool) throws {
+        name = UUID().uuidString
+    }
+
+    init?(fromPersistentStorage: Bool,
+          identifier: String?) throws {
+        guard let idr = identifier else { return nil }
+        if let matched =
+            try Persistor()?
+                .loadFilterListModels()
+                .filter { $0.name == idr } {
+                    switch matched.count {
+                    case let cnt where cnt == 1:
+                        self = matched.first!
+                    case let cnt where cnt > 1:
+                        throw ABPMutableStateError.ambiguousModels
+                    default:
+                        return nil
+                    }
+                }
     }
 }
 
@@ -69,43 +91,16 @@ extension FilterList {
     public
     func rulesURL(bundle: Bundle = Config().bundle(),
                   ignoreBundle: Bool = false) throws -> URL? {
-        guard let pstr = Persistor() else {
-            throw ABPMutableStateError.missingDefaults
-        }
-        guard let modelName = name else {
-            throw ABPFilterListError.missingName
-        }
-        let lists = try? pstr.loadFilterListModels()
-        var fname: String?
-        var cnt = 0
-        lists?.forEach {
-            if $0.name == modelName {
-                fname = $0.fileName
-                cnt += 1
-            }
-        }
-        if cnt == 0 {
-            throw ABPFilterListError.notFound
-        } else if cnt != 0 && cnt != 1 {
-            throw ABPFilterListError.ambiguousModels
-        }
-        let url = try? Config().containerURL()
-        let mgr = FileManager.default
-        let pathURL = fname != nil ? url?.appendingPathComponent(fname!) : nil
-        let result = pathURL != nil ? mgr.fileExists(atPath: pathURL!.path) : false
-        if result {
-            return pathURL
-        }
-        // If URL not found in the container, look in the bundle:
-        let cbutil = ContentBlockerUtility()
-        if !ignoreBundle,
-            let url =
-                try? cbutil
-                    .getBundledFilterListFileURL(name: modelName,
-                                                 bundle: bundle) {
-            return url
-        }
-        return nil
+        guard let name = self.name else { throw ABPFilterListError.missingName }
+        return try RulesHelper()
+            .rulesURL(identifier: name,
+                      bundle: bundle,
+                      ignoreBundle: ignoreBundle)
+    }
+
+    func save() throws -> Bool {
+        guard let pstr = Persistor() else { throw ABPMutableStateError.missingDefaults }
+        return try pstr.saveFilterListModel(self)
     }
 
     /// This is not using an expiration interval from a v2 filter list as that data is not yet available.

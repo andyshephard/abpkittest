@@ -16,80 +16,38 @@
  */
 
 public
-struct User: Codable {
+struct User: Persistable {
+    var name: String?
     var acceptableAdsEnabled: Bool?
+    var blockList: BlockList?
     var whitelistedHosts: [WhitelistedHostname]?
 
-    init(withDefaultValues: Bool) {
+    init(withDefaultValues: Bool) throws {
         if withDefaultValues {
-            acceptableAdsEnabled = false
+            self.name = UUID().uuidString
+            acceptableAdsEnabled = true
+            blockList = try BlockList(withAcceptableAds: true,
+                                      source: BundledBlockList.easylistPlusExceptions)
             whitelistedHosts = []
         }
     }
 
-    init(fromPersistentStorage: Bool) throws {
-        guard fromPersistentStorage else { self.init(withDefaultValues: true); return }
+    /// Only a single user is supported here and identifier is not used.
+    /// Multiple user support will be in a future version.
+    init?(fromPersistentStorage: Bool,
+          identifier: String?) throws {
+        guard fromPersistentStorage else { try self.init(withDefaultValues: true); return }
         guard let pstr = Persistor() else { throw ABPMutableStateError.missingDefaults }
-        var modelData: Data?
-        do {
-            modelData = try pstr.load(type: Data.self,
-                                      key: ABPMutableState.StateName.user)
-        } catch let err {
-            throw err
-        }
-        self.init(withDefaultValues: false)
-        guard let data = modelData,
-              let decoded = try? decodeUserModelData(data)
-        else {
-            throw ABPUserModelError.failedDecodingUser
-        }
-        self = decoded
+        let data = try pstr.load(type: Data.self,
+                                 key: ABPMutableState.StateName.user)
+        try self.init(withDefaultValues: false)
+        self = try pstr.decodeModelData(type: User.self, modelData: data)
     }
 }
 
 extension User {
     public
     func save() throws -> Bool {
-        guard let pstr = Persistor() else { throw ABPMutableStateError.missingDefaults }
-        var data: Data?
-        do {
-            data = try self.encode()
-        } catch let err {
-            throw err
-        }
-        // swiftlint:disable unused_optional_binding
-        guard let uwData = data,
-              let _ =
-            try? pstr.save(type: Data.self,
-                           value: uwData,
-                           key: ABPMutableState.StateName.user)
-        else {
-            return false
-        }
-        // swiftlint:enable unused_optional_binding
-        return true
-    }
-
-    private
-    func encode() throws -> Data {
-        guard let data =
-            try? PropertyListEncoder()
-                .encode(self)
-        else {
-            throw ABPUserModelError.failedEncodingUser
-        }
-        return data
-    }
-
-    private
-    func decodeUserModelData(_ userData: Data) throws -> User {
-        guard let decoded =
-            try? PropertyListDecoder()
-                .decode(User.self,
-                        from: userData)
-            else {
-                throw ABPUserModelError.badDataUser
-        }
-        return decoded
+        return try Persistor()?.saveModel(self, state: .user) ?? false
     }
 }

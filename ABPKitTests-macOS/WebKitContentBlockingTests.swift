@@ -70,11 +70,8 @@ class WebKitContentBlockingTests: XCTestCase {
                   "Failed to clear rules.")
     }
 
-    func testAppGroupMac() {
-        guard let name = try? cfg.defaultsSuiteName() else {
-            XCTFail("Bad suite name.")
-            return
-        }
+    func testAppGroupMac() throws {
+        let name = try cfg.defaultsSuiteName()
         let dflts = UserDefaults(suiteName: name)
         XCTAssert(dflts != nil,
                   "Missing user defaults.")

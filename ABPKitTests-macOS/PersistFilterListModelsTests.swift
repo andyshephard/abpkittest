@@ -45,50 +45,41 @@ class PersistFilterListModelsTests: XCTestCase {
         }
     }
 
-    func testSaveLoadModelFilterListModels() {
+    func testSaveLoadModelFilterListModels() throws {
         let testCount = Int.random(in: 1...10)
-        // swiftlint:disable unused_optional_binding
-        guard let _ = try? testModeler.populateTestModels(count: testCount) else {
-            XCTFail("Failed populating models.")
-            return
-        }
-        // swiftlint:enable unused_optional_binding
-        guard let savedModels = try? pstr.loadFilterListModels() else {
-            XCTFail("Failed load.")
-            return
-        }
+        try testModeler.populateTestModels(count: testCount)
+        let savedModels = try pstr.loadFilterListModels()
         XCTAssert(savedModels.count == testCount,
                   "Expected count of \(testCount) but received count of \(savedModels.count).")
     }
 
     /// Somehow the file manager doesn't give an error when removing a bundled filter list for the first time.
     /// Therefore, the first test list will be reported as deleted though no removal actually occurs.
-    func testClearFilterListModels() {
+    func testClearFilterListModels() throws {
         let testCount = Int.random(in: 2...10)
-        // swiftlint:disable unused_optional_binding
-        guard let _ =
-            try? testModeler
-                .populateTestModels(count: testCount,
-                                    bundledRules: false)
-        else {
-            XCTFail("Failed populating models.")
-            return
-        }
-        do {
-            try pstr.logRulesFiles()
-        } catch let err {
-            XCTFail("Error during logging: \(err)")
-        }
-        guard let _ = try? pstr.clearFilterListModels() else {
-            XCTFail("Failed clear.")
-            return
-        }
-        // swiftlint:enable unused_optional_binding
+        try testModeler.populateTestModels(count: testCount,
+                                           bundledRules: false)
+        try pstr.logRulesFiles()
+        try pstr.clearFilterListModels()
         guard let models = try? pstr.loadFilterListModels() else {
             XCTFail("Failed to load models.")
             return
         }
         XCTAssert(models.count == 0,
                   "Model count mismatch.")
+    }
+
+    func testFilterListInitRetrieval() throws {
+        let list = try testModeler.makeLocalBlockList()
+        let name = list.name
+        XCTAssert(try list.save() == true,
+                  "Failed save.")
+        let savedModels = try pstr.loadFilterListModels()
+        XCTAssert(savedModels
+            .filter {
+                $0.name == name
+            }
+            .count == 1,
+            "List not found.")
     }
 }
