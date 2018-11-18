@@ -23,17 +23,17 @@ import RxSwift
 public
 class ContentBlockerUtility {
     var bag: DisposeBag!
-    var pstr: Persistor!
 
-    public init() {
+    public
+    init() throws {
         bag = DisposeBag()
-        pstr = Persistor()
     }
 
     /// Get NS item provider for a resource matching filter list rules.
     /// - parameter resource: Name of JSON filter list without extension
     /// - returns: NSItemProvider for the attachment
-    public func getAttachment(resource: String) -> NSItemProvider? {
+    public
+    func getAttachment(resource: String) -> NSItemProvider? {
         let bndl = Bundle(for: ContentBlockerUtility.self)
         let itemProvider =
             NSItemProvider(contentsOf: bndl.url(forResource: resource,
@@ -47,7 +47,8 @@ class ContentBlockerUtility {
     /// * State of custom filter list downloaded
     ///
     /// - returns: Name of filter list
-    public func activeFilterListName() -> FilterListName? {
+    public
+    func activeFilterListName() -> FilterListName? {
         let cstm = Constants.customFilterListName
         let dfltAA = Constants.defaultFilterListPlusExceptionRulesName
         let dflt = Constants.defaultFilterListName
@@ -58,10 +59,9 @@ class ContentBlockerUtility {
             return dflt
         } else {
             if let customList =
-                try? getFilterList(for: cstm,
-                                   filterLists: relay.filterLists.value) {
+                try? FilterList(fromPersistentStorage: true, identifier: cstm) {
                 if relay.defaultFilterListEnabled.value == true &&
-                    customList.downloaded == true {
+                   customList?.downloaded == true {
                     return cstm
                 }
             }
@@ -74,8 +74,7 @@ class ContentBlockerUtility {
     /// - returns: True if file exists, otherwise false
     func filterListFileExists(_ filename: String) -> Bool {
         let mgr = FileManager.default
-        let cfg = Config()
-        guard let group = try? cfg.appGroup() else {
+        guard let group = try? Config().appGroup() else {
             return false
         }
         var url = mgr.containerURL(forSecurityApplicationGroupIdentifier: group)
@@ -99,10 +98,11 @@ class ContentBlockerUtility {
         }
     }
 
-    /// Get the filter list rules file URL from the bundle.
+    /// Legacy function: Get the filter list rules file URL from the bundle.
     /// - returns: File URL for the filter list rules
     /// - throws: ABPFilterListError
-    public func activeFilterListsURL() throws -> FilterListFileURL {
+    public
+    func activeFilterListsURL() throws -> FilterListFileURL {
         let relay = AppExtensionRelay.sharedInstance()
         if relay.enabled.value == true {
             guard let name = activeFilterListName() else {
@@ -113,21 +113,13 @@ class ContentBlockerUtility {
         throw ABPFilterListError.notFound
     }
 
-    /// Retrieve a reference (file URL) to a blocklist file in persistent storage.
+    /// Retrieve a reference (file URL) to a blocklist file in a bundle.
     /// - parameter name: The given name for a filter list.
     /// - parameter bundle: Defaults to config bundle.
     func getBundledFilterListFileURL(name: FilterListName,
                                      bundle: Bundle = Config().bundle()) throws -> FilterListFileURL {
-        guard let pstr = Persistor() else {
-            throw ABPMutableStateError.missingDefaults
-        }
-        guard let models = try? pstr.loadFilterListModels() else {
-            throw ABPFilterListError.invalidData
-        }
-        // Bundle-based filenames can be potentially be confused with container-based filenames.
-        if let model = try? getFilterList(for: name,
-                                          filterLists: models),
-           let filename = model.fileName {
+        if let model = try? FilterList(fromPersistentStorage: true, identifier: name),
+           let filename = model?.fileName {
             if let url = bundle.url(forResource: filename,
                                     withExtension: "") {
                 return url
@@ -148,15 +140,15 @@ class ContentBlockerUtility {
         let maxRuleCount = 1 // for unit testing only
         let filename = "ww-\(filenameFromURL(sourceURL))"
         let encoder = JSONEncoder()
-        let decoder = JSONDecoder()
         let dir = self.rulesDir(blocklist: sourceURL)
         let dest = self.makeNewBlocklistFileURL(name: filename,
                                                 at: dir)
         guard let rulesData = try? self.blocklistData(blocklist: sourceURL) else {
             return Observable.error(ABPFilterListError.invalidData)
         }
-        guard let ruleList = try? decoder.decode(V1FilterList.self,
-                                                 from: rulesData) else {
+        guard let ruleList =
+            try? JSONDecoder().decode(V1FilterList.self,
+                                      from: rulesData) else {
             return Observable.error(ABPFilterListError.failedDecoding)
         }
         // swiftlint:disable unused_optional_binding
@@ -166,12 +158,12 @@ class ContentBlockerUtility {
         // swiftlint:enable unused_optional_binding
         var cnt = 0
         return ruleList.rules()
-            .takeWhile({ _ in
+            .takeWhile { _ in
                 if limitRuleMaxCount {
                     return cnt < maxRuleCount
                 }
                 return true
-            })
+            }
             .flatMap { (rule: BlockingRule) -> Observable<BlockListFileURL> in
                 cnt += 1
                 guard let coded = try? encoder.encode(rule) else {
@@ -197,26 +189,5 @@ class ContentBlockerUtility {
                     return Disposables.create()
                 }
             }
-    }
-
-    // ------------------------------------------------------------
-    // MARK: - Private -
-    // ------------------------------------------------------------
-    // May be set as public for testing.
-
-    /// Get a local FilterList struct for a given list name.
-    /// - parameters:
-    ///   - name: Filter list name
-    ///   - filterLists: Array of lists
-    /// - returns: Filter list struct
-    /// - throws: ABPFilterListError
-    public func getFilterList(for name: FilterListName,
-                              filterLists: [FilterList]) throws -> FilterList {
-        var cnt = 0
-        for list in filterLists where list.name == name {
-            cnt += 1
-            return list
-        }
-        throw ABPFilterListError.notFound
     }
 }

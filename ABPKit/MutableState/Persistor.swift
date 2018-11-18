@@ -31,10 +31,10 @@ class Persistor {
     let defaults: UserDefaults!
 
     public
-    init?() {
+    init() throws {
         let cfg = Config()
         guard let dflts = try? UserDefaults(suiteName: cfg.defaultsSuiteName()) else {
-            return nil
+            throw ABPMutableStateError.missingDefaults
         }
         defaults = dflts
     }

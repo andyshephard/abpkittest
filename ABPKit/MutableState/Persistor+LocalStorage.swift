@@ -18,22 +18,20 @@
 extension Persistor {
     public
     func logRulesFiles() throws {
-        do { try clearRulesFiles(onlyLog: true) } catch let err { throw err }
+        try clearRulesFiles(onlyLog: true)
     }
 
     /// Wipe out rules files in the current configured container.
     public
     func clearRulesFiles() throws {
-        do { try clearRulesFiles(onlyLog: false) } catch let err { throw err }
+        try clearRulesFiles(onlyLog: false)
     }
 
     private
     func clearRulesFiles(onlyLog: Bool = false) throws {
         let storeSuffix = "store"
         let mgr = FileManager.default
-        guard let url = try? Config().containerURL() else {
-            throw ABPMutableStateError.missingContainer
-        }
+        let url = try Config().containerURL()
         guard let enmrtr =
             mgr.enumerator(at: url,
                            includingPropertiesForKeys: [.isDirectoryKey,
@@ -44,9 +42,7 @@ extension Persistor {
                 ABPKit.log("Error during enumeration: \(err)")
                 return true
             })
-            else {
-                return
-            }
+            else { return }
         var paths = [String]()
         while let fileURL = enmrtr.nextObject() as? URL {
             if fileURL
@@ -57,9 +53,7 @@ extension Persistor {
                         do {
                             try mgr.removeItem(at: fileURL)
                             ABPKit.log("🗑️ \(fileURL.path)")
-                        } catch let err {
-                            throw err
-                        }
+                        } catch let err { throw err }
                     } else {
                         paths.append(fileURL.path)
                     }

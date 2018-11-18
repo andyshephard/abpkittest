@@ -21,5 +21,5 @@ protocol Persistable: Codable {
     init(withDefaultValues: Bool) throws
     init?(fromPersistentStorage: Bool,
           identifier: String?) throws
-    func save() throws -> Bool
+    func save() throws
 }

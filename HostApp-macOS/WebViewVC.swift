@@ -40,7 +40,7 @@ class WebViewVC: NSViewController,
         super.viewDidLoad()
         disableControls()
         if ABPKit.isTesting() { reportTesting(); return }
-        abp = ABPWebViewBlocker(host: self)
+        abp = try? ABPWebViewBlocker(host: self)
         webView.navigationDelegate = self
         webView.uiDelegate = self
         urlField.delegate = self

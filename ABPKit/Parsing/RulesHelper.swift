@@ -32,8 +32,7 @@ class RulesHelper {
     func rulesURL(identifier: String,
                   bundle: Bundle = Config().bundle(),
                   ignoreBundle: Bool = false) throws -> URL? {
-        guard let pstr = Persistor() else { throw ABPMutableStateError.missingDefaults }
-        let lists = try pstr.loadFilterListModels()
+        let lists = try Persistor().loadFilterListModels()
         let matched = lists
             .filter { $0.name == identifier }
         switch matched.count {
@@ -46,31 +45,28 @@ class RulesHelper {
         }
         let fname = matched.first?.fileName
         let url = try? Config().containerURL()
-        let mgr = FileManager.default
         let pathURL = fname != nil ? url?.appendingPathComponent(fname!) : nil
-        let result = pathURL != nil ? mgr.fileExists(atPath: pathURL!.path) : false
+        let result = pathURL != nil ? FileManager.default.fileExists(atPath: pathURL!.path) : false
         if result {
             return pathURL
         }
-        // If URL not found in the container, look in the bundle:
-        if !ignoreBundle,
-            let url =
-                try? ContentBlockerUtility()
-                    .getBundledFilterListFileURL(name: identifier,
-                                                 bundle: bundle) {
-                        return url
-                    }
+        // Nil checking below is essential. If URL not found in the container, look in the bundle:
+        if !ignoreBundle {
+            let url = try? ContentBlockerUtility()
+                .getBundledFilterListFileURL(name: identifier,
+                                             bundle: bundle)
+            if url != nil { return url } else { return nil }
+        }
         return nil
     }
 
     func validatedRules(for url: BlockListFileURL) -> Observable<BlockingRule> {
-        let decoder = JSONDecoder()
         guard let data = try? self.filterListData(url: url) else {
             return Observable.error(ABPFilterListError.badData)
         }
         guard let list =
-            try? decoder.decode(V1FilterList.self,
-                                from: data)
+            try? JSONDecoder().decode(V1FilterList.self,
+                                      from: data)
         else {
             return Observable.error(ABPFilterListError.badData)
         }

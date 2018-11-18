@@ -18,8 +18,8 @@
 // Objective-C bridging for FilterList model struct.
 extension FilterList {
     /// Returns URL for rules without parsing them.
-    func getRulesURL(for name: FilterListName) -> FilterListFileURL? {
-        let util = ContentBlockerUtility()
+    func getRulesURL(for name: FilterListName) throws -> FilterListFileURL? {
+        let util = try ContentBlockerUtility()
         if let url = try? util.getBundledFilterListFileURL(name: name) {
             return url
         }

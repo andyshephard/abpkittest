@@ -17,11 +17,8 @@
 
 extension BlockListDownloader {
     /// Return the filter list name for a given task identifier.
-    internal
     func filterListName(for taskIdentifier: Int) throws -> FilterListName? {
-        guard let models = try? pstr.loadFilterListModels() else {
-            return nil
-        }
+        let models = try Persistor().loadFilterListModels()
         var result: FilterListName?
         var cnt = 0
         for list in models where list.taskIdentifier == taskIdentifier {
@@ -34,12 +31,9 @@ extension BlockListDownloader {
         return result
     }
 
-    internal
     func filterList(withName name: String?) throws -> FilterList? {
         guard name != nil else { return nil }
-        guard let models = try? pstr.loadFilterListModels() else {
-            throw ABPFilterListError.failedLoadModels
-        }
+        let models = try Persistor().loadFilterListModels()
         var result: FilterList?
         var cnt = 0
         for list in models where list.name == name {
@@ -54,7 +48,6 @@ extension BlockListDownloader {
 
     /// Move a file to a destination. If the file exists, it will be first removed, if possible.
     /// If the operation cannot be completed, the function will return without an error.
-    internal
     func moveOrReplaceItem(source: URL,
                            destination: URL?) throws {
         guard let dest = destination else {

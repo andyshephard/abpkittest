@@ -79,11 +79,11 @@ extension BlockListDownloader {
             downloadEvents[taskID]?.onNext(newEvent) // new event
         }
         AppExtensionRelay.sharedInstance().downloadedVersion.accept(downloadedVersion)
-        guard let saveResult = try? pstr.saveFilterListModel(list),
-              saveResult == true
-        else {
+        // swiftlint:disable unused_optional_binding
+        guard let _ = try? Persistor().saveFilterListModel(list) else {
             reportError(taskID: taskID, error: .failedFilterListModelSave); return
         }
+        // swiftlint:enable unused_optional_binding
     }
 
     /// A URL session task has finished transferring data.
@@ -106,11 +106,11 @@ extension BlockListDownloader {
         list.lastUpdateFailed = true
         list.updating = false
         list.taskIdentifier = nil
-        guard let saveResult = try? pstr.saveFilterListModel(list),
-              saveResult == true
-        else {
+        // swiftlint:disable unused_optional_binding
+        guard let _ = try? Persistor().saveFilterListModel(list) else {
             reportError(taskID: taskID, error: .failedFilterListModelSave); return
         }
+        // swiftlint:enable unused_optional_bindin
         downloadTasksByID[taskID] = nil
         if var newEvent = lastDownloadEvent(taskID: taskID) {
             if error != nil {

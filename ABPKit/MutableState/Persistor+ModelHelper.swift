@@ -25,34 +25,15 @@ extension Persistor {
     /// Save and replace, if needed.
     /// Return true if save succeeded.
     public
-    func saveFilterListModel(_ list: FilterList) throws -> Bool {
+    func saveFilterListModel(_ list: FilterList) throws {
         var saved = [FilterList]()
         do {
             saved = try loadFilterListModels()
-        } catch let err {
-            if let casted = err as? ABPMutableStateError,
-               casted == .invalidType { // indicates type not defined yet, can ignore in production
-                // ignore it
-            } else {
-                throw err
-            }
-        }
-        var newLists = [FilterList]()
-        do {
-            newLists = try replaceFilterListModel(list, lists: saved)
-        } catch let err {
-            throw err
-        }
-        // swiftlint:disable unused_optional_binding
-        guard let _ =
-            try? save(type: Data.self,
-                      value: encodeModel(newLists),
-                      key: ABPMutableState.StateName.filterLists)
-        else {
-            return false
-        }
-        // swiftlint:enable unused_optional_binding
-        return true
+        } catch let err { try modelsNotYetExist(error: err) }
+        let newLists = try replaceFilterListModel(list, lists: saved)
+        return try save(type: Data.self,
+                        value: encodeModel(newLists),
+                        key: ABPMutableState.StateName.filterLists)
     }
 
     func loadFilterListModels() throws -> [FilterList] {
@@ -63,25 +44,15 @@ extension Persistor {
     /// Clears filter list models and their associated rules, if they exist.
     /// Rules file removal should not be attempted on bundled files as it can
     /// falsely report removal under certain conditions.
-    // swiftlint:disable cyclomatic_complexity
-    // swiftlint:disable function_body_length
     func clearFilterListModels() throws {
         let mgr = FileManager.default
         var models = [FilterList]()
         do {
             models = try loadFilterListModels()
-        } catch let err {
-            if let casted = err as? ABPMutableStateError,
-               casted == .invalidType {
-                 // indicates type not defined yet
-            } else {
-                throw err
-            }
-        }
+        } catch let err { try modelsNotYetExist(error: err) }
         // Remove associated rules:
         let remove: (URL) -> Error? = { url in
-            do { try mgr.removeItem(at: url) } catch let err { return err }
-            return nil
+            do { try mgr.removeItem(at: url) } catch let err { return err }; return nil
         }
         /// Custom bundle only used if defined.
         let rulesURL: (FilterList) -> (URL?, Error?) = { model in
@@ -96,67 +67,35 @@ extension Persistor {
         do {
             try models.forEach {
                 let (url, err) = rulesURL($0)
-                if err != nil {
-                    throw err!
-                }
+                if err != nil { throw err! }
                 // If the rules are bundled, a remove should not happen below.
                 if url != nil {
                     // With Xcode 10.1, attempting removal from bundled
                     // resources is an error.
                     if try !blocklistIsBundled(url: url!) {
-                        let rmvError = remove(url!)
-                        if rmvError != nil {
-                            throw rmvError!
-                        }
+                        if let rmvError = remove(url!) { throw rmvError }
                         // Double check the file has been removed:
-                        if mgr.fileExists(atPath: url!.path) {
-                            failed = true
-                        }
+                        if mgr.fileExists(atPath: url!.path) { failed = true }
                     }
                 }
             }
-        } catch let err {
-            throw err
-        }
+        } catch let err { throw err }
         // Removing rules using setobject nil or remove obj on defaults seems to
         // not have reported a correct count here during testing.
         if !failed {
-            // swiftlint:disable unused_optional_binding
-            guard let _ = try? clear(key: ABPMutableState.StateName.filterLists) else {
-                throw ABPMutableStateError.failedClear
-            }
-            guard let data =
-                try? encodeModel([FilterList]())
-            else {
-                throw ABPFilterListError.failedEncoding
-            }
-            guard let _ =
-                try? save(type: Data.self,
-                          value: data,
-                          key: ABPMutableState.StateName.filterLists)
-            else {
-                throw ABPFilterListError.failedRemoveModels
-            }
-            // swiftlint:enable unused_optional_binding
+            try clear(key: ABPMutableState.StateName.filterLists)
+            let data = try encodeModel([FilterList]())
+            try save(type: Data.self,
+                     value: data,
+                     key: ABPMutableState.StateName.filterLists)
             do {
                 models = try loadFilterListModels()
-            } catch let error {
-                if let casted = error as? ABPMutableStateError,
-                   casted == .invalidType {
-                    // indicates type not defined yet, ignore for now
-                } else {
-                    throw error
-                }
-            }
-            if models.count > 0 {
-                throw ABPFilterListError.failedRemoveModels
-            }
+            } catch let err { try modelsNotYetExist(error: err) }
+            if models.count > 0 { throw ABPFilterListError.failedRemoveModels }
         } else {
             throw ABPFilterListError.failedRemoveModels
         }
     }
-    // swiftlint:enable cyclomatic_complexity
-    // swiftlint:enable function_body_length
 
     func loadModels<T: Decodable>(type: T.Type,
                                   state: ABPMutableState.StateName) throws -> T {
@@ -172,16 +111,8 @@ extension Persistor {
     }
 
     func saveModel<T: Encodable>(_ model: T,
-                                 state: ABPMutableState.StateName) throws -> Bool {
-        // swiftlint:disable unused_optional_binding
-        guard let _ = try? save(type: Data.self,
-                                value: encodeModel(model),
-                                key: state)
-        else {
-            return false
-        }
-        // swiftlint:enable unused_optional_binding
-        return true
+                                 state: ABPMutableState.StateName) throws {
+        return try save(type: Data.self, value: encodeModel(model), key: state)
     }
 
     func encodeModel<T: Encodable>(_ model: T) throws -> Data {
@@ -229,5 +160,14 @@ extension Persistor {
                 if replaced > 1 { throw ABPMutableStateError.ambiguousModels }
                 return $0 + [$1]
             }
+    }
+
+    /// No models exist yet - bypass error condition.
+    private
+    func modelsNotYetExist(error: Error) throws {
+        if let casted = error as? ABPMutableStateError,
+           casted == .invalidType {
+            return
+        } else { throw error }
     }
 }

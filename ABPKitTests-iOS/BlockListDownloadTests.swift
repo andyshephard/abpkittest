@@ -38,7 +38,7 @@ class BlockListDownloadTests: XCTestCase {
         bag = DisposeBag()
         dler = BlockListDownloader()
         dler.isTest = true
-        pstr = Persistor()
+        if let uwrp = try? Persistor() { pstr = uwrp } else { XCTFail("Persistor failed init.") }
         do {
             try pstr.clearFilterListModels()
         } catch let err {
@@ -50,23 +50,18 @@ class BlockListDownloadTests: XCTestCase {
             return
         }
         testList = list
-        guard let result = try? pstr.saveFilterListModel(testList),
-              result == true
-        else {
+        // swiftlint:disable unused_optional_binding
+        guard let _ = try? pstr.saveFilterListModel(testList) else {
             XCTFail("Failed to save test list.")
             return
         }
+        // swiftlint:enable unused_optional_binding
     }
 
-    func testRemoteSource() {
+    func testRemoteSource() throws {
         testList.source = RemoteBlockList.easylist.rawValue
         testList.fileName = "easylist_content_blocker.json"
-        guard let result = try? self.pstr.saveFilterListModel(self.testList),
-                  result == true
-        else {
-            XCTFail("Failed to save test list.")
-            return
-        }
+        try self.pstr.saveFilterListModel(self.testList)
         runDownloadDelegation(remoteSource: true)
     }
 
@@ -112,12 +107,11 @@ class BlockListDownloadTests: XCTestCase {
     func downloadEvents(for task: URLSessionDownloadTask) -> Observable<DownloadEvent> {
         let taskID = task.taskIdentifier
         self.testList.taskIdentifier = taskID
-        guard let result = try? self.pstr.saveFilterListModel(self.testList),
-              result == true
-        else {
-            XCTFail("Failed to save test list.")
-            return Observable.empty()
+        // swiftlint:disable unused_optional_binding
+        guard let _ = try? self.pstr.saveFilterListModel(self.testList) else {
+            XCTFail("Failed to save test list."); return Observable.empty()
         }
+        // swiftlint:enable unused_optional_binding
         self.setupEvents(taskID: taskID)
         guard let subj = self.dler.downloadEvents[taskID] else {
             XCTFail("Bad publish subject.")
@@ -129,12 +123,11 @@ class BlockListDownloadTests: XCTestCase {
     func downloadedRules(for finalEvent: DownloadEvent,
                          remoteSource: Bool = false) -> Observable<BlockingRule> {
         self.testList.downloaded = true
-        guard let result = try? self.pstr.saveFilterListModel(self.testList),
-              result == true
-        else {
-            XCTFail("Failed to save test list.")
-            return Observable.empty()
+        // swiftlint:disable unused_optional_binding
+        guard let _ = try? self.pstr.saveFilterListModel(self.testList) else {
+            XCTFail("Failed to save test list."); return Observable.empty()
         }
+        // swiftlint:enable unused_optional_bindin
         if !remoteSource {
             XCTAssert(finalEvent.totalBytesWritten == self.totalBytes,
                       "🚨 Bytes wrong.")

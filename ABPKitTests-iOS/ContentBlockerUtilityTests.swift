@@ -22,23 +22,29 @@ import XCTest
 
 class ContentBlockerUtilityTests: XCTestCase {
     let timeout: TimeInterval = 5
-    var util: ContentBlockerUtility!
-    var relay: AppExtensionRelay!
-    var bag: DisposeBag!
     let whitelistDomains =
         ["test1.com",
          "test2.com",
          "test3.com"]
+    var bag: DisposeBag!
+    var relay: AppExtensionRelay!
     var testingFile: URL?
+    var util: ContentBlockerUtility!
 
-    override func setUp() {
+    override
+    func setUp() {
         super.setUp()
         bag = DisposeBag()
-        util = ContentBlockerUtility()
+        if let uwUtil = try? ContentBlockerUtility() {
+            util = uwUtil
+        } else {
+            XCTFail("CB util init failed.")
+        }
         relay = AppExtensionRelay.sharedInstance()
     }
 
-    override func tearDown() {
+    override
+    func tearDown() {
         if testingFile != nil {
             removeFile(testingFile!)
         }
@@ -97,14 +103,11 @@ class ContentBlockerUtilityTests: XCTestCase {
 
     /// Included within are tests for the following:
     /// * test getting a blocklist on disk
-    func testMergeWhitelistedWebsites() {
+    func testMergeWhitelistedWebsites() throws {
         let expect = expectation(description: #function)
         let ruleMax = 1 // max rules to read
         setupABPState(state: .defaultFilterListEnabled)
-        guard let source = localTestFilterListRules() else {
-            XCTFail("Bad rules.")
-            return
-        }
+        let source = try localTestFilterListRules()
         var destURL: BlockListFileURL?
         util.mergedFilterListRules(from: source,
                                    with: whitelistDomains,
@@ -134,105 +137,77 @@ class ContentBlockerUtilityTests: XCTestCase {
     /// Version of merge testing that doesn't use RxSwift inside ABPKit.
     /// Included within are tests for the following:
     /// * test getting a blocklist on disk
-    // swiftlint:disable function_body_length
-    func testMergeWhitelistedWebsitesNonRx() {
+    func testMergeWhitelistedWebsitesNonRx() throws {
         let expect = expectation(description: #function)
         let ruleMax = 1 // max rules to read
         let encoder = JSONEncoder()
         var rule: BlockingRule?
         let fmgr = FileManager.default
         setupABPState(state: .defaultFilterListEnabled)
-        guard let rules = localTestFilterListRules() else {
-            XCTFail("Bad rules.")
-            return
-        }
+        let rules = try localTestFilterListRules()
         let rulesDir = util.rulesDir(blocklist: rules)
-        guard let rulesData = fmgr.contents(atPath: rules.path) // get blocklist rules
-        else {
-            XCTFail("Bad rules.")
-            return
-        }
-        let decoder = JSONDecoder()
-        let ruleList = try? decoder.decode(V1FilterList.self,
-                                           from: rulesData)
+        // Get blocklist rules:
+        guard let rulesData = fmgr.contents(atPath: rules.path) else { XCTFail("Bad rules."); return }
+        let ruleList = try JSONDecoder().decode(V1FilterList.self, from: rulesData)
         var cnt = 0
-        let fileurl = util.makeNewBlocklistFileURL(name: "testfile",
-                                                   at: rulesDir)
+        let fileurl = util.makeNewBlocklistFileURL(name: "testfile", at: rulesDir)
         testingFile = fileurl
-        // swiftlint:disable unused_optional_binding
-        guard let _ = try? util.startBlockListFile(blocklist: fileurl) else {
-            XCTFail("Cannot make file.")
-            return
+        try util.startBlockListFile(blocklist: fileurl)
+        let encoded: (BlockingRule?) -> Data = {
+            // Empty Data only in testing:
+            guard let data = try? encoder.encode($0) else { XCTFail("Failed encoding."); return Data() }
+            return data
         }
-        // swiftlint:enable unused_optional_binding
-        ruleList?.rules()
-            .takeWhile({ _ in cnt < ruleMax })
+        ruleList.rules()
+            .takeWhile { _ in cnt < ruleMax }
             .subscribe(onNext: { rule in
                 cnt += 1
-                let encoder = JSONEncoder()
-                guard let coded = try? encoder.encode(rule) else {
-                    XCTFail("Failed to encode rule \(rule).")
-                    return
-                }
                 self.util.writeToEndOfFile(blocklist: fileurl,
-                                           with: coded)
+                                           with: encoded(rule))
                 self.util.addRuleSeparator(blocklist: fileurl)
             }, onCompleted: {
                 self.whitelistDomains.forEach {
                     rule = self.util.makeWhitelistRule(domain: $0)
-                    let data = try? encoder.encode(rule)
-                    self.util.writeToEndOfFile(blocklist: fileurl, with: data!)
+                    self.util.writeToEndOfFile(blocklist: fileurl, with: encoded(rule))
                     self.util.addRuleSeparator(blocklist: fileurl)
                 }
                 self.util.endBlockListFile(blocklist: fileurl)
                 do {
-                    let data = try self.util.blocklistData(blocklist: fileurl)
-                    self.ruleCount(rules: data, completion: { cnt in
+                    self.ruleCount(rules: try self.util.blocklistData(blocklist: fileurl),
+                                   completion: { cnt in
                         XCTAssert(cnt == ruleMax + self.whitelistDomains.count,
                                   "Rule count is wrong.")
                         expect.fulfill()
                     })
-                } catch let error {
-                    XCTFail("Failed with error: \(error)")
-                }
+                } catch let error { XCTFail("Failed with error: \(error)") }
             }).disposed(by: bag)
         waitForExpectations(timeout: timeout)
     }
-    // swiftlint:enable function_body_length
 
     // ------------------------------------------------------------
     // MARK: - Private -
     // ------------------------------------------------------------
 
-    private func localTestFilterListRules() -> BlockListFileURL? {
+    private
+    func localTestFilterListRules() throws -> BlockListFileURL {
         var list = FilterList()
         list.name = "v1 easylist short"
         list.fileName = "v1 easylist short.json"
-        guard let pstr = Persistor() else {
-            XCTFail("Failed making Peristor.")
-            return nil
-        }
         // Adding a list for testing to the relay does not work because the host app loads its own lists into the relay.
-        do {
-            let result = try pstr.saveFilterListModel(list)
-            if !result { XCTFail("Failed saving model.") }
-            let url = try list.rulesURL(bundle: Bundle(for: ContentBlockerUtilityTests.self))
-            if url != nil {
-                return url!
-            }
-        } catch let err {
-            XCTFail("Error getting rules: \(err)")
-        }
-        return nil
+        try Persistor().saveFilterListModel(list)
+        if let url = try list.rulesURL(bundle: Bundle(for: ContentBlockerUtilityTests.self)) {
+            return url
+        } else { throw ABPFilterListError.missingRules }
     }
 
-    private func ruleCount(rules: Data,
-                           completion: @escaping (Int) -> Void) {
+    private
+    func ruleCount(rules: Data,
+                   completion: @escaping (Int) -> Void) {
         var cnt = 0
-        let decoder = JSONDecoder()
         do {
-            let ruleList = try decoder.decode(V1FilterList.self,
-                                              from: rules)
+            let ruleList =
+                try JSONDecoder().decode(V1FilterList.self,
+                                         from: rules)
             ruleList.rules()
                 .subscribe(onNext: { _ in
                     cnt += 1
@@ -248,12 +223,14 @@ class ContentBlockerUtilityTests: XCTestCase {
         }
     }
 
-    private enum ABPState: String {
+    private
+    enum ABPState: String {
         case defaultFilterListEnabled
         case acceptableAdsEnabled
     }
 
-    private func setupABPState(state: ABPState) {
+    private
+    func setupABPState(state: ABPState) {
         relay.enabled.accept(true)
         switch state {
         case .defaultFilterListEnabled:
@@ -265,12 +242,11 @@ class ContentBlockerUtilityTests: XCTestCase {
         }
     }
 
-    private func removeFile(_ fileURL: URL) {
-        let fmgr = FileManager.default
+    private
+    func removeFile(_ fileURL: URL) {
         // swiftlint:disable unused_optional_binding
-        guard let _ = try? fmgr.removeItem(at: fileURL) else {
-            XCTFail("Failed to remove testing file with file URL: \(fileURL)")
-            return
+        guard let _ = try? FileManager.default.removeItem(at: fileURL) else {
+            XCTFail("Failed to remove testing file with file URL: \(fileURL)"); return
         }
         // swiftlint:enable unused_optional_binding
     }

@@ -37,7 +37,7 @@ struct User: Persistable {
     init?(fromPersistentStorage: Bool,
           identifier: String?) throws {
         guard fromPersistentStorage else { try self.init(withDefaultValues: true); return }
-        guard let pstr = Persistor() else { throw ABPMutableStateError.missingDefaults }
+        let pstr = try Persistor()
         let data = try pstr.load(type: Data.self,
                                  key: ABPMutableState.StateName.user)
         try self.init(withDefaultValues: false)
@@ -47,7 +47,7 @@ struct User: Persistable {
 
 extension User {
     public
-    func save() throws -> Bool {
-        return try Persistor()?.saveModel(self, state: .user) ?? false
+    func save() throws {
+        return try Persistor().saveModel(self, state: .user)
     }
 }

@@ -16,38 +16,36 @@
  */
 
 extension ContentBlockerUtility {
-    public func blocklistData(blocklist fileURL: BlockListFileURL) throws -> BlockListData {
-        let fmgr = FileManager.default
-        if let data = fmgr.contents(atPath: fileURL.path) {
-            return data
-        } else {
+    public
+    func blocklistData(blocklist fileURL: BlockListFileURL) throws -> BlockListData {
+        guard let data = FileManager.default.contents(atPath: fileURL.path) else {
             throw ABPFilterListError.notFound
         }
+        return data
     }
 
-    public func rulesDir(blocklist fileURL: BlockListFileURL) -> BlockListDirectoryURL {
-        var mutable = fileURL
-        mutable.deleteLastPathComponent()
-        return mutable
+    public
+    func rulesDir(blocklist fileURL: BlockListFileURL) -> BlockListDirectoryURL {
+        return fileURL.deletingLastPathComponent()
     }
 
-    public func makeNewBlocklistFileURL(name: BlockListFilename,
-                                        at directory: BlockListDirectoryURL) -> BlockListFileURL {
+    public
+    func makeNewBlocklistFileURL(name: BlockListFilename,
+                                 at directory: BlockListDirectoryURL) -> BlockListFileURL {
         return directory.appendingPathComponent(name)
     }
 
-    public func startBlockListFile(blocklist: BlockListFileURL) throws {
-        do {
+    public
+    func startBlockListFile(blocklist: BlockListFileURL) throws {
+        return
             try Constants.blocklistArrayStart
                 .write(to: blocklist,
                        atomically: true,
                        encoding: Constants.blocklistEncoding)
-        } catch let error {
-            throw error
-        }
     }
 
-    public func endBlockListFile(blocklist: BlockListFileURL) {
+    public
+    func endBlockListFile(blocklist: BlockListFileURL) {
         if let outStream = OutputStream(url: blocklist,
                                         append: true) {
             outStream.open()
@@ -57,10 +55,10 @@ extension ContentBlockerUtility {
         }
     }
 
-    public func addRuleSeparator(blocklist: BlockListFileURL) {
+    public
+    func addRuleSeparator(blocklist: BlockListFileURL) {
         if let outStream = OutputStream(url: blocklist,
                                         append: true) {
-
             outStream.open()
             outStream.write(Constants.blocklistRuleSeparator,
                             maxLength: 1)
@@ -68,8 +66,9 @@ extension ContentBlockerUtility {
         }
     }
 
-    public func writeToEndOfFile(blocklist: BlockListFileURL,
-                                 with data: Data) {
+    public
+    func writeToEndOfFile(blocklist: BlockListFileURL,
+                          with data: Data) {
         if let fileHandle = try? FileHandle(forWritingTo: blocklist) {
              defer {
                  fileHandle.closeFile()

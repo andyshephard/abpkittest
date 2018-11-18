@@ -83,7 +83,7 @@ class PersistentStateTests: XCTestCase {
     override func setUp() {
         super.setUp()
         bag = DisposeBag()
-        pstr = Persistor()
+        if let uwrp = try? Persistor() { pstr = uwrp } else { XCTFail("Persistor failed init.") }
         let cfg = Config()
         guard let dflts = try? UserDefaults(suiteName: cfg.defaultsSuiteName()) else {
             XCTFail("Bad user defaults.")

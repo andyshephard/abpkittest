@@ -24,14 +24,12 @@ class FilterListTestModeler: NSObject {
     let cfg = Config()
     let testVersion = "20181020"
     var bundle: Bundle!
-    var pstr: Persistor!
     var testBundleFilename = "test_easylist_content_blocker.json"
 
     override
     init() {
         super.init()
         bundle = Bundle(for: type(of: self))
-        pstr = Persistor()
     }
 
     /// This model object is for testing the delegate with local data.
@@ -92,10 +90,7 @@ class FilterListTestModeler: NSObject {
             guard let testList = try? makeLocalBlockList(bundledRules: bundledRules) else {
                 throw ABPKitTestingError.failedModelCreation
             }
-            let result = try? pstr.saveFilterListModel(testList)
-            if result != true {
-                throw ABPKitTestingError.failedSave
-            }
+            try Persistor().saveFilterListModel(testList)
         }
     }
 }

@@ -36,11 +36,11 @@ class ABPWebViewBlocker {
     weak var host: ABPBlockable!
 
     public
-    init(host: ABPBlockable) {
+    init(host: ABPBlockable) throws {
         bag = DisposeBag()
         self.host = host
         wkcb = WebKitContentBlocker()
-        pstr = Persistor()
+        pstr = try Persistor()
         ctrl = host.webView.configuration.userContentController
     }
 
@@ -74,9 +74,8 @@ class ABPWebViewBlocker {
     func addRules(completion: @escaping ([Error]?) -> Void) {
         var errors = [Error]()
         do {
-            let result = try pstr.saveFilterListModel(host.model)
+            try pstr.saveFilterListModel(host.model)
             try pstr.logRulesFiles()
-            assert(result == true)
         } catch let err {
             errors.append(err)
         }

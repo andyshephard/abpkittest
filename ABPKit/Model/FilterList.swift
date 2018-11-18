@@ -66,19 +66,19 @@ struct FilterList: Persistable {
     init?(fromPersistentStorage: Bool,
           identifier: String?) throws {
         guard let idr = identifier else { return nil }
-        if let matched =
-            try Persistor()?
+        let models: () throws -> ([FilterList]) = {
+            try Persistor()
                 .loadFilterListModels()
-                .filter { $0.name == idr } {
-                    switch matched.count {
-                    case let cnt where cnt == 1:
-                        self = matched.first!
-                    case let cnt where cnt > 1:
-                        throw ABPMutableStateError.ambiguousModels
-                    default:
-                        return nil
-                    }
-                }
+                .filter { $0.name == idr }
+        }
+        switch try models() {
+        case let arr where arr.count == 1:
+            self = arr.first!
+        case let arr where arr.count > 1:
+            throw ABPMutableStateError.ambiguousModels
+        default:
+            return nil
+        }
     }
 }
 
@@ -98,9 +98,8 @@ extension FilterList {
                       ignoreBundle: ignoreBundle)
     }
 
-    func save() throws -> Bool {
-        guard let pstr = Persistor() else { throw ABPMutableStateError.missingDefaults }
-        return try pstr.saveFilterListModel(self)
+    func save() throws {
+        return try Persistor().saveFilterListModel(self)
     }
 
     /// This is not using an expiration interval from a v2 filter list as that data is not yet available.

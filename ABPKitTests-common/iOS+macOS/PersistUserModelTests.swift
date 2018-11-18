@@ -21,13 +21,6 @@ import XCTest
 
 class PersistUserModelTests: XCTestCase {
     let rndutil = RandomStateUtility()
-    var pstr: Persistor!
-
-    override
-    func setUp() {
-        super.setUp()
-        pstr = Persistor()
-    }
 
     func testUserSave() throws {
         var user = try User(withDefaultValues: true)
@@ -44,9 +37,7 @@ class PersistUserModelTests: XCTestCase {
             user.blockList?.source = src
         }
         user.whitelistedHosts = hosts
-        let res = try user.save()
-        XCTAssert(res == true,
-                  "Failed save.")
+        try user.save()
         let saved = try User(fromPersistentStorage: true,
                              identifier: nil)
         XCTAssert(saved?.acceptableAdsEnabled == aae &&

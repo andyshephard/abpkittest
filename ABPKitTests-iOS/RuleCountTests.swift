@@ -29,22 +29,14 @@ class RuleCountTests: XCTestCase {
                      "v2 easylist short partial": 0,
                      "test_easylist_content_blocker": 45899]
 
-    func testRuleCounting() {
+    func testRuleCounting() throws {
         let expect = expectation(description: #function)
-        guard let pstr = Persistor() else {
-            XCTFail("Failed making Peristor.")
-            return
-        }
-        testLists.forEach { key, _ in
+        let pstr = try Persistor()
+        try testLists.forEach { key, _ in
             var list = FilterList()
             list.name = UUID().uuidString
             list.fileName = key + "." + Constants.rulesExtension
-            do {
-                let success = try pstr.saveFilterListModel(list)
-                if !success { XCTFail("Failed save of \(String(describing: list.name))") }
-            } catch let err {
-                XCTFail("Error during save: \(err)")
-            }
+            try pstr.saveFilterListModel(list)
             list.ruleCount(bundle: Bundle(for: RuleCountTests.self))
                 .subscribe(onNext: { cnt in
                     XCTAssert(cnt == self.testLists[key],

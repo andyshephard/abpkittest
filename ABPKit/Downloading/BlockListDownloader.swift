@@ -22,7 +22,6 @@ class BlockListDownloader: NSObject,
                            URLSessionDownloadDelegate {
     let updatingKey = "updatingGroupIdentifier"
     let cfg = Config()
-    var pstr: Persistor!
     /// True indicates testing.
     var isTest = false
     /// For download tasks.
@@ -44,21 +43,21 @@ class BlockListDownloader: NSObject,
     var setLegacyPerformingActivityTest: ((Bool) -> Void)?
     var downloadedVersion: Int!
 
+    // These inits will be refactored to be failable while supporting Objective-C in a future issue.
+
     public override
     init() {
         super.init()
-        pstr = Persistor()
         downloadedVersion = 0
     }
 
     /// For legacy ABP Safari iOS:
     public
-    init(legacyReloadingSetter: @escaping (Bool) -> Void,
-         legacyPerformingActivityTestSetter: @escaping (Bool) -> Void) {
+    init?(legacyReloadingSetter: @escaping (Bool) -> Void,
+          legacyPerformingActivityTestSetter: @escaping (Bool) -> Void) {
         self.setLegacyReloading = legacyReloadingSetter
         self.setLegacyPerformingActivityTest = legacyPerformingActivityTestSetter
         super.init()
-        pstr = Persistor()
         downloadedVersion = 0
     }
 

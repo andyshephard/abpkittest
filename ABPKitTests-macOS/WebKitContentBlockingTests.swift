@@ -40,7 +40,7 @@ class WebKitContentBlockingTests: XCTestCase {
         super.setUp()
         bag = DisposeBag()
         cfg = Config()
-        pstr = Persistor()
+        if let uwrp = try? Persistor() { pstr = uwrp } else { XCTFail("Persistor failed init.") }
         tfutil = TestingFileUtility()
         wkcb = WebKitContentBlocker()
         let clearModels = {
@@ -54,7 +54,7 @@ class WebKitContentBlockingTests: XCTestCase {
                     XCTFail("Error clearing store rules: \(errDict)")
                 }
                 clearModels()
-            }, onError: {err in
+            }, onError: { err in
                 XCTFail("🚨 Error during clear: \(err)")
             }, onCompleted: {
                 unlock.accept(true)
@@ -131,9 +131,7 @@ class WebKitContentBlockingTests: XCTestCase {
         do {
             try pstr.clearRulesFiles()
             let list = try mdlr.makeLocalBlockList(bundledRules: false)
-            let saveResult = try pstr.saveFilterListModel(list)
-            XCTAssert(saveResult == true,
-                      "Failed save.")
+            try pstr.saveFilterListModel(list)
             wkcb.addedWKStoreRules(addList: list)
                 .flatMap { _ -> Observable<NamedErrors> in
                     let models = try? self.pstr.loadFilterListModels()
@@ -150,9 +148,7 @@ class WebKitContentBlockingTests: XCTestCase {
                     self.logRules()
                     expect.fulfill()
                 }).disposed(by: bag)
-        } catch let err {
-            XCTFail("Error: \(err)")
-        }
+        } catch let err { XCTFail("Error: \(err)") }
         wait(for: [expect],
              timeout: timeout)
     }
@@ -165,11 +161,9 @@ class WebKitContentBlockingTests: XCTestCase {
             try pstr.clearRulesFiles()
             let list = try mdlr.makeLocalBlockList(bundledRules: false)
             guard let listName = list.name else {
-                XCTFail("Missing name.")
-                return
+                XCTFail("Missing name."); return
             }
-            let saveResult = try pstr.saveFilterListModel(list)
-            XCTAssert(saveResult == true, "Failed save.")
+            try pstr.saveFilterListModel(list)
             try pstr.logRulesFiles()
             let start = Date()
             wkcb.concatenatedRules(model: list)

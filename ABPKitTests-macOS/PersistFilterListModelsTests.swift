@@ -28,7 +28,7 @@ class PersistFilterListModelsTests: XCTestCase {
     override
     func setUp() {
         super.setUp()
-        pstr = Persistor()
+        if let uwrp = try? Persistor() { pstr = uwrp } else { XCTFail("Persistor failed init.") }
         testModeler = FilterListTestModeler()
         util = TestingFileUtility()
         // swiftlint:disable unused_optional_binding
@@ -72,8 +72,7 @@ class PersistFilterListModelsTests: XCTestCase {
     func testFilterListInitRetrieval() throws {
         let list = try testModeler.makeLocalBlockList()
         let name = list.name
-        XCTAssert(try list.save() == true,
-                  "Failed save.")
+        try list.save()
         let savedModels = try pstr.loadFilterListModels()
         XCTAssert(savedModels
             .filter {
