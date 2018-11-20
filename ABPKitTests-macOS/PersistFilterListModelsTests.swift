@@ -70,7 +70,7 @@ class PersistFilterListModelsTests: XCTestCase {
     }
 
     func testFilterListInitRetrieval() throws {
-        let list = try testModeler.makeLocalBlockList()
+        let list = try testModeler.makeLocalFilterList()
         let name = list.name
         try list.save()
         let savedModels = try pstr.loadFilterListModels()

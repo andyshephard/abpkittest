@@ -16,14 +16,22 @@
  */
 
 /// Represents content blocking lists for WKWebView and Safari.
-/// There is overlap with FilterList from the legacy app.
-/// Resolving these semantics is a future matter.
+/// FilterList represents the legacy data model that is linked to this newer model.
+/// FilterList will likely be reconfigured/renamed in the future.
+/// Currently, this struct is not separately Persistable, because it is stored in User.
 public
 struct BlockList: Codable {
-    public var source: BlockListSourceable?
+    /// Identifier.
+    public let name: String
+    public let source: BlockListSourceable
+    public var dateDownload: Date?
+    public var filename: String?
 
     enum CodingKeys: CodingKey {
+        case name
         case source
+        case dateDownload
+        case filename
     }
 
     public
@@ -32,14 +40,19 @@ struct BlockList: Codable {
         guard withAcceptableAds == source.hasAcceptableAds() else {
             throw ABPFilterListError.aaStateMismatch
         }
+        name = UUID().uuidString
         self.source = source
     }
 }
 
 extension BlockList {
+    // swiftlint:disable cyclomatic_complexity
     public
     init(from decoder: Decoder) throws {
         let vals = try decoder.container(keyedBy: CodingKeys.self)
+        name = try vals.decode(String.self, forKey: .name)
+        dateDownload = try vals.decode(Date?.self, forKey: .dateDownload)
+        filename = try vals.decode(String?.self, forKey: .filename)
         let src = try vals.decode(String.self, forKey: .source)
         switch src.components(separatedBy: Constants.srcSep) {
         case let cmp1 where cmp1.first == Constants.srcBundled:
@@ -60,34 +73,54 @@ extension BlockList {
             default:
                 throw ABPFilterListError.failedDecoding
             }
+        case let cmp1 where cmp1.first == Constants.srcTestingBundled:
+            switch cmp1 {
+            case let cmp2 where cmp2.last == Constants.srcTestingEasylist:
+                source = BundledTestingBlockList.testingEasylist
+            case let cmp2 where cmp2.last == Constants.srcTestingEasylistPlusExceptions:
+                source = BundledTestingBlockList.fakeExceptions
+            default:
+                throw ABPFilterListError.failedDecoding
+        }
         default:
             throw ABPFilterListError.failedDecoding
         }
     }
+    // swiftlint:enable cyclomatic_complexity
 }
 
 extension BlockList {
     public
     func encode(to encoder: Encoder) throws {
         var cntr = encoder.container(keyedBy: CodingKeys.self)
-        let enc: (Bool, Bool) throws -> Void = {
-            try cntr.encode(self.src2str($0, $1), forKey: .source)
+        try cntr.encode(name, forKey: .name)
+        try cntr.encode(dateDownload, forKey: .dateDownload)
+        try cntr.encode(filename, forKey: .filename)
+        let enc: (Bool, Bool, Bool) throws -> Void = {
+            try cntr.encode(self.src2str($0, $1, $2), forKey: .source)
         }
         // swiftlint:disable force_cast
         switch source {
         case let type where type is BundledBlockList:
             switch source as! BundledBlockList {
             case .easylist:
-                try enc(true, false)
+                try enc(true, false, false)
             case .easylistPlusExceptions:
-                try enc(true, true)
+                try enc(true, true, false)
             }
         case let type where type is RemoteBlockList:
             switch source as! RemoteBlockList {
             case .easylist:
-                try enc(false, false)
+                try enc(false, false, false)
             case .easylistPlusExceptions:
-                try enc(false, true)
+                try enc(false, true, false)
+            }
+        case let type where type is BundledTestingBlockList:
+            switch source as! BundledTestingBlockList {
+            case .testingEasylist:
+                try enc(true, false, true)
+            case .fakeExceptions:
+                try enc(true, true, true)
             }
         default:
             throw ABPFilterListError.badSource
@@ -96,12 +129,19 @@ extension BlockList {
     }
 
     private
-    func src2str(_ isBundled: Bool, _ isAA: Bool) -> String {
+    func src2str(_ isBundled: Bool, _ isAA: Bool, _ isTesting: Bool = false) -> String {
         let sep: (String) -> (String) -> String = { inp in
             return { [inp, $0].joined(separator: Constants.srcSep) }
         }
-        let type = isBundled ? Constants.srcBundled : Constants.srcRemote
-        let aae = !isAA ? Constants.srcEasylist : Constants.srcEasylistPlusExceptions
+        var type: String!
+        var aae: String!
+        if isTesting {
+            type = Constants.srcTestingBundled
+            aae = !isAA ? Constants.srcTestingEasylist : Constants.srcTestingEasylistPlusExceptions
+        } else {
+            type = isBundled ? Constants.srcBundled : Constants.srcRemote
+            aae = !isAA ? Constants.srcEasylist : Constants.srcEasylistPlusExceptions
+        }
         return sep(type)(aae)
     }
 }

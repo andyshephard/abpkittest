@@ -710,16 +710,16 @@
             </objects>
             <point key="canvasLocation" x="38" y="-93"/>
         </scene>
-        <!--Web ViewVC-->
+        <!--Web View VC-->
         <scene sceneID="hIz-AP-VOD">
             <objects>
-                <viewController id="XfG-lQ-9wD" customClass="WebViewVC" customModule="HostApp_macOS" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="XfG-lQ-9wD" userLabel="Web View VC" customClass="WebViewVC" customModule="HostApp_macOS" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" wantsLayer="YES" id="m2S-Jp-Qdl">
                         <rect key="frame" x="0.0" y="0.0" width="1024" height="576"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MlV-Bh-2ts" userLabel="URL Field">
-                                <rect key="frame" x="0.0" y="544" width="896" height="32"/>
+                                <rect key="frame" x="0.0" y="544" width="852" height="32"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="32" id="qR5-A3-Vp0"/>
                                 </constraints>
@@ -729,6 +729,16 @@
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="uLF-wk-Z8R" userLabel="AA Check Button">
+                                <rect key="frame" x="854" y="551" width="40" height="18"/>
+                                <buttonCell key="cell" type="check" title="AA" bezelStyle="regularSquare" imagePosition="left" inset="2" id="EBH-HV-UOR">
+                                    <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="aaPressed:" target="XfG-lQ-9wD" id="CKQ-xH-OTF"/>
+                                </connections>
+                            </button>
                             <button translatesAutoresizingMaskIntoConstraints="NO" id="6zy-Fk-lTH">
                                 <rect key="frame" x="896" y="544" width="128" height="32"/>
                                 <constraints>
@@ -741,7 +751,7 @@
                                     <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                                 </buttonCell>
                                 <connections>
-                                    <action selector="reloadWasPressed:" target="XfG-lQ-9wD" id="wGZ-7X-mR4"/>
+                                    <action selector="reloadPressed:" target="XfG-lQ-9wD" id="uQz-Dl-c8G"/>
                                 </connections>
                             </button>
                             <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ot7-Wj-oaA">
@@ -766,16 +776,18 @@
                             <constraint firstItem="mqB-yd-gtK" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" id="3rN-eE-4SG"/>
                             <constraint firstItem="6zy-Fk-lTH" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" id="4CE-vJ-ouv"/>
                             <constraint firstAttribute="trailing" secondItem="6zy-Fk-lTH" secondAttribute="trailing" id="GRQ-i5-V2g"/>
+                            <constraint firstItem="uLF-wk-Z8R" firstAttribute="centerY" secondItem="6zy-Fk-lTH" secondAttribute="centerY" id="KOZ-dM-ZKt"/>
                             <constraint firstAttribute="bottom" secondItem="mqB-yd-gtK" secondAttribute="bottom" id="LNA-Af-rwz"/>
-                            <constraint firstItem="MlV-Bh-2ts" firstAttribute="trailing" secondItem="6zy-Fk-lTH" secondAttribute="leading" id="cW8-dc-jZW"/>
+                            <constraint firstItem="MlV-Bh-2ts" firstAttribute="trailing" secondItem="uLF-wk-Z8R" secondAttribute="leading" constant="-4" id="M3s-Lp-tXN"/>
                             <constraint firstItem="MlV-Bh-2ts" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" id="ck0-0k-z8k"/>
                             <constraint firstItem="Ot7-Wj-oaA" firstAttribute="centerY" secondItem="m2S-Jp-Qdl" secondAttribute="centerY" id="dtf-rV-13y"/>
-                            <constraint firstItem="6zy-Fk-lTH" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" symbolic="YES" id="sQ6-Vm-hq3"/>
                             <constraint firstItem="Ot7-Wj-oaA" firstAttribute="centerX" secondItem="m2S-Jp-Qdl" secondAttribute="centerX" id="uEU-VL-jwY"/>
                             <constraint firstAttribute="trailing" secondItem="mqB-yd-gtK" secondAttribute="trailing" id="wDE-1Y-mhL"/>
+                            <constraint firstItem="6zy-Fk-lTH" firstAttribute="leading" secondItem="uLF-wk-Z8R" secondAttribute="trailing" constant="4" id="zXW-tF-pcb"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="aaCheckButton" destination="uLF-wk-Z8R" id="pj5-ka-oC6"/>
                         <outlet property="reloadButton" destination="6zy-Fk-lTH" id="mGn-h8-Vhh"/>
                         <outlet property="unitTestingField" destination="Ot7-Wj-oaA" id="TKn-zU-DWf"/>
                         <outlet property="urlField" destination="MlV-Bh-2ts" id="nRJ-bB-0hh"/>
@@ -784,7 +796,7 @@
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="38" y="717"/>
+            <point key="canvasLocation" x="38" y="648"/>
         </scene>
     </scenes>
 </document>

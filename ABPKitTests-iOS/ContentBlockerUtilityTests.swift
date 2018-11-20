@@ -190,7 +190,7 @@ class ContentBlockerUtilityTests: XCTestCase {
 
     private
     func localTestFilterListRules() throws -> BlockListFileURL {
-        var list = FilterList()
+        var list = try FilterList()
         list.name = "v1 easylist short"
         list.fileName = "v1 easylist short.json"
         // Adding a list for testing to the relay does not work because the host app loads its own lists into the relay.

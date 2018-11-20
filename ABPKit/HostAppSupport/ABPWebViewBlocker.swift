@@ -21,16 +21,15 @@ import WebKit
 @available(iOS 11.0, macOS 10.13, *)
 public
 protocol ABPBlockable: class {
-    var model: FilterList! { get }
     var webView: WKWebView! { get }
 }
 
 @available(iOS 11.0, macOS 10.13, *)
 public
 class ABPWebViewBlocker {
+    public var user: User!
     var bag: DisposeBag!
     var ctrl: WKUserContentController!
-    var pstr: Persistor!
     var ruleListID: String?
     var wkcb: WebKitContentBlocker!
     weak var host: ABPBlockable!
@@ -40,20 +39,14 @@ class ABPWebViewBlocker {
         bag = DisposeBag()
         self.host = host
         wkcb = WebKitContentBlocker()
-        pstr = try Persistor()
         ctrl = host.webView.configuration.userContentController
+        do {
+            user = try User(fromPersistentStorage: true)
+        } catch let err { throw err }
     }
 
     deinit {
         bag = nil
-    }
-
-    public
-    func makeTestModel(blockList: BundledBlockList) -> FilterList {
-        var list = FilterList()
-        list.name = UUID().uuidString
-        list.fileName = blockList.rawValue
-        return list
     }
 
     public
@@ -69,37 +62,22 @@ class ABPWebViewBlocker {
         }
     }
 
-    /// Clear and add rules for the host's model.
+    /// Add rules for the host's model.
+    /// Remove rules in store that are not in user history.
     public
     func addRules(completion: @escaping ([Error]?) -> Void) {
         var errors = [Error]()
-        do {
-            try pstr.saveFilterListModel(host.model)
-            try pstr.logRulesFiles()
-        } catch let err {
-            errors.append(err)
-        }
-        wkcb.clearedRulesAll()
-            .flatMap { errs -> Observable<WKContentRuleList> in
-                if errs.count > 0 {
-                    errors.append(ABPWKRuleStoreError.ruleListErrors(errorDictionary: errs))
-                }
-                return self.wkcb.addedWKStoreRules(addList: self.host.model)
+        self.wkcb.rulesAddedWKStore(user: self.user)
+            .flatMap { _ -> Observable<WKContentRuleList> in
+                return self.rulesAddToContentController()
             }
-            .subscribe(onNext: { list in
-                self.ruleListID = list.identifier
-                self.wkcb.rulesStore
-                    .lookUpContentRuleList(forIdentifier: self.ruleListID) { list, err in
-                        if err != nil {
-                            errors.append(err!)
-                        }
-                        if list != nil {
-                            self.ctrl.add(list!)
-                        } else {
-                            errors.append(ABPWKRuleStoreError.missingRules)
-                        }
-                    }
-            }, onError: { err in
+            .flatMap { _ -> Observable<Observable<String>> in
+                return self.wkcb.syncHistoryRemovers(user: self.user)
+            }
+            .flatMap { removed -> Observable<String> in
+                return removed
+            }
+            .subscribe(onError: { err in
                 errors.append(err)
                 completion(errors)
             }, onCompleted: {
@@ -110,5 +88,84 @@ class ABPWebViewBlocker {
                     completion(errors)
                 }
             }).disposed(by: bag)
+    }
+
+    /// Add rules if an entry in user history matches the existing rule lists in the store.
+      public
+      func addExistingRuleList(completion: @escaping (Bool) -> Void) throws {
+          let uhlp = UserStateHelper(user: user)
+          guard let blst = user.blockList else { throw ABPUserModelError.badDataUser }
+          let mtch = try uhlp.historyMatch()(blst.source)
+          rulesUseWithContentController(blockList: mtch)
+              .subscribe(onNext: { lists in
+                  self.wkcb.rulesStore
+                      .getAvailableContentRuleListIdentifiers { ids in
+                          log("🏪store \(String(describing: ids?.sorted()))")
+                          // Return true if there is a unique match.
+                          completion(lists.count > 0 && ids?.filter { $0 == mtch?.name }.count == 1)
+                      }
+              }, onError: { err in
+                  // Lookup error may have occurred. Try to clear rules to recover:
+                  log("🚨 \(err)")
+                  self.clearRules {
+                      completion(false)
+                  }
+              }).disposed(by: bag)
+      }
+
+      /// Clear all rules in store.
+      func clearRules(completion: @escaping () -> Void) {
+          wkcb.clearedRules(user: user, clearAll: true)
+              .subscribe(onNext: { _ in
+                  completion()
+              }, onError: { _ in
+                  completion()
+              }).disposed(by: bag)
+      }
+
+    /// Adds one rule list to the content controller if they exist for the user's current block list.
+    private
+    func rulesAddToContentController() -> Observable<WKContentRuleList> {
+        guard let user = self.user, let name = user.blockList?.name else {
+            return Observable.error(ABPUserModelError.badDataUser)
+        }
+        return Observable.create { observer in
+            // Remove lists from content controller:
+            self.ctrl.removeAllContentRuleLists()
+            self.wkcb.rulesStore
+                .lookUpContentRuleList(forIdentifier: name) { list, err in
+                    if err != nil { observer.onError(err!) }
+                    if list != nil {
+                        self.ctrl.add(list!)
+                        do { try self.user.updateHistory() } catch let err { observer.onError(err) }
+                        observer.onNext(list!)
+                        observer.onCompleted()
+                    }
+                }
+            return Disposables.create()
+        }
+    }
+
+    /// Add rules to content controller.
+    /// Return array with blocklist added so that dupes can be checked.
+    private
+    func rulesUseWithContentController(blockList: BlockList?) -> Observable<[BlockList]> {
+        var result = [BlockList]()
+        guard let blst = blockList else { return Observable.just(result) }
+        return Observable.create { observer in
+            self.wkcb.rulesStore
+                .lookUpContentRuleList(forIdentifier: blst.name) { rlist, err in
+                    if err != nil {
+                        observer.onError(err!)
+                    }
+                    if rlist != nil {
+                        self.ctrl.add(rlist!)
+                        result.append(blst)
+                    }
+                    observer.onNext(result)
+                    observer.onCompleted()
+                }
+            return Disposables.create()
+        }
     }
 }

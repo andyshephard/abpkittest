@@ -21,8 +21,8 @@ import XCTest
 
 class FilterListTests: XCTestCase {
     /// Test expired logic.
-    func testExpired() {
-        var filterList = ABPKit.FilterList()
+    func testExpired() throws {
+        var filterList = try ABPKit.FilterList()
         filterList.lastUpdate = Date()
         XCTAssert(!filterList.expired(),
                   "Last update is now - should not be expired")

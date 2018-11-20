@@ -118,6 +118,7 @@ enum ABPFilterListError: Error {
 
 /// Error cases related to mutable state.
 /// - ambiguousModels: Model objects are not unique or are missing.
+/// - badState: Encountered invalid state.
 /// - failedClear: Clearing models failed.
 /// - invalidData: Indicates error with data.
 /// - invalidType: Indicates error with a type.
@@ -127,6 +128,7 @@ enum ABPFilterListError: Error {
 public
 enum ABPMutableStateError: Error {
     case ambiguousModels
+    case badState
     case failedClear
     case invalidData
     case invalidType
@@ -139,11 +141,13 @@ enum ABPMutableStateError: Error {
 /// - badDataUser: Data for user is invalid.
 /// - failedDecodingUser: Data decoding failed.
 /// - failedEncodingUser: Data encoding failed.
+/// - failedUpdateData: Internal data update failed.
 public
 enum ABPUserModelError: Error {
     case badDataUser
     case failedDecodingUser
     case failedEncodingUser
+    case failedUpdateData
 }
 
 /// Error cases for the web blocker.
@@ -154,13 +158,15 @@ enum ABPWebViewBlockerError: Error {
 }
 
 /// Error cases for the rule store.
-/// - invalidData: Bad data.
+/// - invalidData: Bad/missing data.
+/// - invalidName: Bad/missing name.
 /// - missingRules: Rules not found.
 /// - missingRuleList: Rule list not found.
 /// - ruleListErrors(errorDictionary: NamedErrors): Errors named after lists in the store.
 public
 enum ABPWKRuleStoreError: Error {
     case invalidData
+    case invalidName
     case missingRules
     case missingRuleList
     case ruleListErrors(errorDictionary: NamedErrors)

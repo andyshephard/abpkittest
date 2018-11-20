@@ -59,7 +59,7 @@ class ContentBlockerUtility {
             return dflt
         } else {
             if let customList =
-                try? FilterList(fromPersistentStorage: true, identifier: cstm) {
+                try? FilterList(persistenceID: cstm) {
                 if relay.defaultFilterListEnabled.value == true &&
                    customList?.downloaded == true {
                     return cstm
@@ -108,7 +108,7 @@ class ContentBlockerUtility {
             guard let name = activeFilterListName() else {
                 throw ABPFilterListError.missingName
             }
-            return try getBundledFilterListFileURL(name: name)
+            return try getBundledFilterListFileURL(modelName: name)
         }
         throw ABPFilterListError.notFound
     }
@@ -116,9 +116,9 @@ class ContentBlockerUtility {
     /// Retrieve a reference (file URL) to a blocklist file in a bundle.
     /// - parameter name: The given name for a filter list.
     /// - parameter bundle: Defaults to config bundle.
-    func getBundledFilterListFileURL(name: FilterListName,
+    func getBundledFilterListFileURL(modelName: FilterListName,
                                      bundle: Bundle = Config().bundle()) throws -> FilterListFileURL {
-        if let model = try? FilterList(fromPersistentStorage: true, identifier: name),
+        if let model = try? FilterList(persistenceID: modelName),
            let filename = model?.fileName {
             if let url = bundle.url(forResource: filename,
                                     withExtension: "") {
@@ -128,6 +128,17 @@ class ContentBlockerUtility {
             }
         }
         throw ABPFilterListError.notFound
+    }
+
+    /// Get bundled rules by filename only.
+    func getBundledFilterListFileURL(filename: String,
+                                     bundle: Bundle = Config().bundle()) throws -> FilterListFileURL {
+        if let url = bundle.url(forResource: filename,
+                                withExtension: "") {
+            return url
+        } else {
+            throw ABPFilterListError.notFound
+        }
     }
 
     func filenameFromURL(_ url: BlockListFileURL) -> BlockListFilename {

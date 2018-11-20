@@ -32,7 +32,7 @@
                                 <inset key="contentEdgeInsets" minX="8" minY="0.0" maxX="8" maxY="0.0"/>
                                 <state key="normal" title="Reload"/>
                                 <connections>
-                                    <action selector="reloadWasPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Pds-Kd-2Tt"/>
+                                    <action selector="reloadPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="XVL-9E-s8R"/>
                                 </connections>
                             </button>
                             <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Unit Testing is Active" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Msw-Cc-Qex">
@@ -42,32 +42,46 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <wkWebView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UX8-rR-XY8">
-                                <rect key="frame" x="0.0" y="82" width="375" height="696"/>
+                                <rect key="frame" x="0.0" y="82" width="375" height="658"/>
                                 <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <wkWebViewConfiguration key="configuration" allowsAirPlayForMediaPlayback="NO">
                                     <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" none="YES"/>
                                     <wkPreferences key="preferences"/>
                                 </wkWebViewConfiguration>
                             </wkWebView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="52R-5a-oAf" userLabel="AA Button">
+                                <rect key="frame" x="0.0" y="740" width="375" height="38"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="38" id="ZTd-rr-YgJ"/>
+                                </constraints>
+                                <state key="normal" title="AA"/>
+                                <connections>
+                                    <action selector="aaPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="djp-yM-fqD"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="OWk-2w-3vT" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="8" id="Bbs-GL-4Nb"/>
                             <constraint firstItem="UX8-rR-XY8" firstAttribute="top" secondItem="OWk-2w-3vT" secondAttribute="bottom" id="DLD-rC-fmf"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="UX8-rR-XY8" secondAttribute="bottom" id="MZb-Nt-JEJ"/>
+                            <constraint firstItem="UX8-rR-XY8" firstAttribute="bottom" secondItem="52R-5a-oAf" secondAttribute="top" id="EnZ-hm-wRV"/>
+                            <constraint firstItem="52R-5a-oAf" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="I0c-qc-Ghi"/>
                             <constraint firstItem="UX8-rR-XY8" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="TdQ-QL-od0"/>
                             <constraint firstItem="HUh-7h-FuL" firstAttribute="centerY" secondItem="OWk-2w-3vT" secondAttribute="centerY" id="aBX-zd-dyh"/>
                             <constraint firstItem="HUh-7h-FuL" firstAttribute="height" secondItem="OWk-2w-3vT" secondAttribute="height" id="bXK-42-8aH"/>
+                            <constraint firstItem="52R-5a-oAf" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="m0C-NG-AaO"/>
                             <constraint firstItem="HUh-7h-FuL" firstAttribute="leading" secondItem="OWk-2w-3vT" secondAttribute="trailing" id="o5o-ar-Huk"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="HUh-7h-FuL" secondAttribute="trailing" id="pGh-Bo-FC8"/>
                             <constraint firstItem="OWk-2w-3vT" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="r9F-vQ-7ZT"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="UX8-rR-XY8" secondAttribute="trailing" id="tC9-xc-1l5"/>
                             <constraint firstItem="Msw-Cc-Qex" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="uHq-sS-goL"/>
+                            <constraint firstItem="52R-5a-oAf" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="xoR-hS-MDN"/>
                             <constraint firstItem="Msw-Cc-Qex" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="yag-13-75W"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="aaButton" destination="52R-5a-oAf" id="OBJ-aS-gdC"/>
                         <outlet property="reloadButton" destination="HUh-7h-FuL" id="sc5-Ft-Xbz"/>
                         <outlet property="unitTestingLabel" destination="Msw-Cc-Qex" id="g3p-1S-Ea7"/>
                         <outlet property="urlField" destination="OWk-2w-3vT" id="ddS-Tt-GD8"/>

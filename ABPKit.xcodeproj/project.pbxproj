@@ -65,6 +65,12 @@
 		65810877217FDCB2001D6FFE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 65810875217FDCB2001D6FFE /* Main.storyboard */; };
 		65810879217FDCB3001D6FFE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 65810878217FDCB3001D6FFE /* Assets.xcassets */; };
 		6581087C217FDCB3001D6FFE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6581087A217FDCB3001D6FFE /* LaunchScreen.storyboard */; };
+		6582E75521A5D3360075016B /* BlockListModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65486F39219F8BA200565AC8 /* BlockListModelTests.swift */; };
+		65A2653121A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */; };
+		65A2653221A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */; };
+		65B6EB8721A7802900B2F600 /* UserStateHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B6EB8621A7802900B2F600 /* UserStateHelper.swift */; };
+		65B6EB8821A7802900B2F600 /* UserStateHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B6EB8621A7802900B2F600 /* UserStateHelper.swift */; };
+		65B6EB8A21A7C49C00B2F600 /* UserHistoryCachingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B6EB8921A7C49C00B2F600 /* UserHistoryCachingTests.swift */; };
 		65B94AD721928AB70084F480 /* PersistFilterListModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B94AD621928AB70084F480 /* PersistFilterListModelsTests.swift */; };
 		65B94AE3219298080084F480 /* ABPKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65D4C75B2188C64C00B1E16F /* ABPKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		65C11C94219BC73500E3D09C /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65527DEB219BABDE00B9D80F /* User.swift */; };
@@ -327,7 +333,10 @@
 		65810888217FDCB3001D6FFE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6581088D217FDCB3001D6FFE /* HostAppUITests-iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "HostAppUITests-iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		65810893217FDCB3001D6FFE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockListSourceUtility.swift; sourceTree = "<group>"; };
 		65B0DCA021828794002AF562 /* HostApp-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "HostApp-iOS.entitlements"; sourceTree = "<group>"; };
+		65B6EB8621A7802900B2F600 /* UserStateHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStateHelper.swift; sourceTree = "<group>"; };
+		65B6EB8921A7C49C00B2F600 /* UserHistoryCachingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserHistoryCachingTests.swift; sourceTree = "<group>"; };
 		65B94AD621928AB70084F480 /* PersistFilterListModelsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PersistFilterListModelsTests.swift; sourceTree = "<group>"; };
 		65C11C97219BD78300E3D09C /* RandomStateUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomStateUtility.swift; sourceTree = "<group>"; };
 		65C11C9E219BDDFC00E3D09C /* PersistUserModelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PersistUserModelTests.swift; sourceTree = "<group>"; };
@@ -575,6 +584,7 @@
 				65756160217FBA6100D8A4F2 /* Persistor.swift */,
 				65FB45CA219157590006274B /* Persistor+LocalStorage.swift */,
 				65756161217FBA6100D8A4F2 /* Persistor+ModelHelper.swift */,
+				65B6EB8621A7802900B2F600 /* UserStateHelper.swift */,
 			);
 			path = MutableState;
 			sourceTree = "<group>";
@@ -667,12 +677,13 @@
 			path = UI;
 			sourceTree = "<group>";
 		};
-		65C11C9D219BDDFC00E3D09C /* iOS+macOS */ = {
+		65B1693321A395E300F1C63B /* ABPKitTests-iOS+macOS */ = {
 			isa = PBXGroup;
 			children = (
+				65486F39219F8BA200565AC8 /* BlockListModelTests.swift */,
 				65C11C9E219BDDFC00E3D09C /* PersistUserModelTests.swift */,
 			);
-			path = "iOS+macOS";
+			path = "ABPKitTests-iOS+macOS";
 			sourceTree = "<group>";
 		};
 		65CC335F217FBB5100FF0CEF /* Resources */ = {
@@ -690,6 +701,7 @@
 		65CC3366217FBB5100FF0CEF /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */,
 				65CC3367217FBB5100FF0CEF /* CaseIterable.swift */,
 				65CC3369217FBB5100FF0CEF /* FilterListTestModeler.swift */,
 				65C11C97219BD78300E3D09C /* RandomStateUtility.swift */,
@@ -701,7 +713,6 @@
 		65D476D321895C2000D4F5DA /* ABPKitTests-common */ = {
 			isa = PBXGroup;
 			children = (
-				65C11C9D219BDDFC00E3D09C /* iOS+macOS */,
 				65CC335F217FBB5100FF0CEF /* Resources */,
 				65CC3366217FBB5100FF0CEF /* Utility */,
 			);
@@ -743,10 +754,10 @@
 		65D4C7672188C64C00B1E16F /* ABPKitTests-macOS */ = {
 			isa = PBXGroup;
 			children = (
-				65486F39219F8BA200565AC8 /* BlockListModelTests.swift */,
 				655DB00A219142AA00A33E66 /* ContentBlockerTests.swift */,
 				65D4C76A2188C64C00B1E16F /* Info.plist */,
 				65B94AD621928AB70084F480 /* PersistFilterListModelsTests.swift */,
+				65B6EB8921A7C49C00B2F600 /* UserHistoryCachingTests.swift */,
 				655DB00B219142AB00A33E66 /* WebKitContentBlockingTests.swift */,
 			);
 			path = "ABPKitTests-macOS";
@@ -773,8 +784,8 @@
 		65F3729F219E79E8005ED1B6 /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
-				65F372A0219E79FC005ED1B6 /* MutableStateProtocols.swift */,
 				B02F10C7A305FF261C997C1D /* BlockListProtocols.swift */,
+				65F372A0219E79FC005ED1B6 /* MutableStateProtocols.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -794,6 +805,7 @@
 				65FF7B1B216EC60400470103 /* README.md */,
 				65FF7B02216EB8B200470103 /* ABPKit */,
 				65D476D321895C2000D4F5DA /* ABPKitTests-common */,
+				65B1693321A395E300F1C63B /* ABPKitTests-iOS+macOS */,
 				65FF7B0D216EB8B300470103 /* ABPKitTests-iOS */,
 				65D4C7672188C64C00B1E16F /* ABPKitTests-macOS */,
 				65810870217FDCB2001D6FFE /* HostApp-iOS */,
@@ -1423,6 +1435,7 @@
 				655DB0222191447200A33E66 /* Platform.swift in Sources */,
 				65D4C7782188C68500B1E16F /* Errors.swift in Sources */,
 				65D4C77B2188C68500B1E16F /* ContentBlockerUtility+FileManager.swift in Sources */,
+				65B6EB8821A7802900B2F600 /* UserStateHelper.swift in Sources */,
 				65C11C94219BC73500E3D09C /* User.swift in Sources */,
 				65D4C77E2188C68500B1E16F /* DownloadEvent.swift in Sources */,
 				65D4C7822188C68500B1E16F /* FilterList+UserDefaults.swift in Sources */,
@@ -1450,6 +1463,8 @@
 				65B94AD721928AB70084F480 /* PersistFilterListModelsTests.swift in Sources */,
 				65C11CA0219BDDFC00E3D09C /* PersistUserModelTests.swift in Sources */,
 				65D476DE21895C7400D4F5DA /* TestingFileUtility.swift in Sources */,
+				65B6EB8A21A7C49C00B2F600 /* UserHistoryCachingTests.swift in Sources */,
+				65A2653221A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */,
 				65D476DD21895C7400D4F5DA /* FilterListTestModeler.swift in Sources */,
 				65D476DC21895C7400D4F5DA /* CaseIterable.swift in Sources */,
 				65486F3A219F8BA200565AC8 /* BlockListModelTests.swift in Sources */,
@@ -1484,6 +1499,7 @@
 				655DB0252191447200A33E66 /* Platform.swift in Sources */,
 				65756159217FBA5500D8A4F2 /* BlocklistDownloader+Persistence.swift in Sources */,
 				6575617E217FBA6100D8A4F2 /* ContentBlockerUtility+Whitelist.swift in Sources */,
+				65B6EB8721A7802900B2F600 /* UserStateHelper.swift in Sources */,
 				6575617D217FBA6100D8A4F2 /* ContentBlockerUtility+FileManager.swift in Sources */,
 				65ECBEBA21963EEB00551F26 /* String+ProtocolText.swift in Sources */,
 				6575617F217FBA6100D8A4F2 /* ContentBlockerUtility.swift in Sources */,
@@ -1510,8 +1526,10 @@
 				65486F42219FC20900565AC8 /* FilterListTests.swift in Sources */,
 				65C11C98219BD78300E3D09C /* RandomStateUtility.swift in Sources */,
 				65CC3370217FBB5100FF0CEF /* TestingFileUtility.swift in Sources */,
+				6582E75521A5D3360075016B /* BlockListModelTests.swift in Sources */,
 				65CC337B217FBB5F00FF0CEF /* RuleCountTests.swift in Sources */,
 				65CC337A217FBB5F00FF0CEF /* PersistentStateTests.swift in Sources */,
+				65A2653121A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */,
 				65CC337C217FBB5F00FF0CEF /* ContentBlockerUtilityTests.swift in Sources */,
 				65CC336F217FBB5100FF0CEF /* CaseIterable.swift in Sources */,
 				65CC337E217FBB5F00FF0CEF /* ParsingTests.swift in Sources */,

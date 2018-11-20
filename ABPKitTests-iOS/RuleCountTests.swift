@@ -33,7 +33,7 @@ class RuleCountTests: XCTestCase {
         let expect = expectation(description: #function)
         let pstr = try Persistor()
         try testLists.forEach { key, _ in
-            var list = FilterList()
+            var list = try FilterList()
             list.name = UUID().uuidString
             list.fileName = key + "." + Constants.rulesExtension
             try pstr.saveFilterListModel(list)

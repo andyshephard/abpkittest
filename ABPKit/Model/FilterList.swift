@@ -43,6 +43,7 @@ struct FilterList: Persistable {
     public var downloaded: Bool?
     public var expires: TimeInterval?
     public var fileName: String?
+    /// Date of download.
     public var lastUpdate: Date?
     /// Legacy property.
     public var lastUpdateFailed: Bool?
@@ -54,22 +55,15 @@ struct FilterList: Persistable {
     public var userTriggered: Bool?
     public var version: String?
 
-    public
-    init() {
-        // Intentionally empty.
-    }
-
-    init(withDefaultValues: Bool) throws {
+    init() throws {
         name = UUID().uuidString
     }
 
-    init?(fromPersistentStorage: Bool,
-          identifier: String?) throws {
-        guard let idr = identifier else { return nil }
+    init?(persistenceID: String) throws {
         let models: () throws -> ([FilterList]) = {
             try Persistor()
                 .loadFilterListModels()
-                .filter { $0.name == idr }
+                .filter { $0.name == persistenceID }
         }
         switch try models() {
         case let arr where arr.count == 1:

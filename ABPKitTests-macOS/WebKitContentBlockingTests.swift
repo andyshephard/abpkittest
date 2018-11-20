@@ -24,15 +24,18 @@ import SafariServices
 import WebKit
 import XCTest
 
+// swiftlint:disable type_body_length
 @available(OSX 10.13, *)
 class WebKitContentBlockingTests: XCTestCase {
     let maxRules = 50000
     let testRulesCount = 45899
+    let testRulesCountUserFakeExceptions = 7
+    let testRulesCountUserTestEasylist = 45899
     let timeout: TimeInterval = 20
     var bag: DisposeBag!
     var cfg: Config!
-    var tfutil: TestingFileUtility!
     var pstr: Persistor!
+    var tfutil: TestingFileUtility!
     var wkcb: WebKitContentBlocker!
 
     override
@@ -46,21 +49,15 @@ class WebKitContentBlockingTests: XCTestCase {
         let clearModels = {
             do { try self.pstr.clearFilterListModels() } catch let err { XCTFail("Error clearing models: \(err)") }
         }
-        let start = Date()
         let unlock = BehaviorRelay<Bool>(value: false)
         wkcb.clearedRulesAll()
             .subscribe(onNext: { errDict in
-                if errDict.count > 0 {
-                    XCTFail("Error clearing store rules: \(errDict)")
-                }
+                if errDict.count > 0 { XCTFail("Error clearing store rules: \(errDict)") }
                 clearModels()
             }, onError: { err in
                 XCTFail("🚨 Error during clear: \(err)")
             }, onCompleted: {
                 unlock.accept(true)
-            }, onDisposed: {
-                let end = fabs(start.timeIntervalSinceNow)
-                ABPKit.log("⏱️ \(end)")
             }).disposed(by: self.bag)
         let waitDone = try? unlock.asObservable()
             .skip(1)
@@ -70,6 +67,27 @@ class WebKitContentBlockingTests: XCTestCase {
                   "Failed to clear rules.")
     }
 
+    func testClearRulesForUser() throws {
+        let expect = expectation(description: #function)
+        var user = try User()
+        user.blockList = try BlockList(withAcceptableAds: true,
+                                       source: BundledTestingBlockList.fakeExceptions)
+        guard let lst = user.blockList else { XCTFail("Bad BL"); return }
+        addNewRules(arg: user, name: lst.name) {
+            self.wkcb.clearedRules(user: user)
+                .subscribe(onNext: { errs in
+                    if errs.count > 0 { XCTFail("Errors: \(errs)") }
+                }, onError: { err in
+                    XCTFail("Error: \(err)")
+                }, onCompleted: {
+                    expect.fulfill()
+                }).disposed(by: self.bag)
+        }
+        wait(for: [expect],
+             timeout: timeout)
+    }
+
+    /// Config test.
     func testAppGroupMac() throws {
         let name = try cfg.defaultsSuiteName()
         let dflts = UserDefaults(suiteName: name)
@@ -77,6 +95,7 @@ class WebKitContentBlockingTests: XCTestCase {
                   "Missing user defaults.")
     }
 
+    /// Config test.
     func testContainerURL() {
         let url = try? cfg.containerURL()
         XCTAssert(url != nil,
@@ -87,9 +106,9 @@ class WebKitContentBlockingTests: XCTestCase {
     /// Specific error ABPFilterListError.notFound is expected. This was updated
     /// after errors were being reported for attempting to delete bundled
     /// resources. It wasn't an error condition before Xcode 10.1, apparently.
-    func testListWithoutRules() {
+    func testListWithoutRules() throws {
         let expect = expectation(description: #function)
-        var list = FilterList()
+        var list = try FilterList()
         list.name = "test"
         // List has no filename.
         try? pstr.logRulesFiles()
@@ -116,7 +135,7 @@ class WebKitContentBlockingTests: XCTestCase {
                 XCTAssert(ids?.count == 0,
                           "Failed to get IDs.")
                 let end = fabs(start.timeIntervalSinceNow)
-                ABPKit.log("⏱️ \(end)")
+                ABPKit.log("get ids ⏱️ \(end)")
                 expect.fulfill()
             }
         wait(for: [expect],
@@ -130,7 +149,7 @@ class WebKitContentBlockingTests: XCTestCase {
         let expect = expectation(description: #function)
         do {
             try pstr.clearRulesFiles()
-            let list = try mdlr.makeLocalBlockList(bundledRules: false)
+            let list = try mdlr.makeLocalFilterList(bundledRules: false)
             try pstr.saveFilterListModel(list)
             wkcb.addedWKStoreRules(addList: list)
                 .flatMap { _ -> Observable<NamedErrors> in
@@ -153,62 +172,188 @@ class WebKitContentBlockingTests: XCTestCase {
              timeout: timeout)
     }
 
-    /// Test compiling rules with the default callback.
+    /// Test compiling rules with the default callback of compileRules.
     func testLocalBlocklistAddToWKStore2() {
         let expect = expectation(description: #function)
         let mdlr = FilterListTestModeler()
         do {
             try pstr.clearRulesFiles()
-            let list = try mdlr.makeLocalBlockList(bundledRules: false)
+            let list = try mdlr.makeLocalFilterList(bundledRules: false)
             guard let listName = list.name else {
                 XCTFail("Missing name."); return
             }
             try pstr.saveFilterListModel(list)
             try pstr.logRulesFiles()
-            let start = Date()
-            wkcb.concatenatedRules(model: list)
-                .subscribe(onNext: { result in
-                    let end1 = fabs(start.timeIntervalSinceNow)
-                    ABPKit.log("⏱️1 \(end1)")
-                    XCTAssert(self.testRulesCount == result.1,
-                              "Rule count is wrong.")
-                    self.compileRules(storeName: listName,
-                                      rules: result.0,
-                                      completion: { _, err in
-                        guard err == nil else {
-                            XCTFail("Failed compile with error: \(err!)")
-                            expect.fulfill()
-                            return
-                        }
-                        let end2 = fabs(start.timeIntervalSinceNow)
-                        ABPKit.log("⏱️2 \(end2)")
-                        expect.fulfill()
-                    })
-                }, onError: { err in
-                    XCTFail("🚨 Error during processing rules: \(err)")
-                }).disposed(by: bag)
-        } catch let err {
-            XCTFail("🚨 Error during add: \(err)")
-        }
+            addNewRules(arg: list, name: listName) { expect.fulfill() }
+        } catch let err { XCTFail("🚨 Error during add: \(err)") }
+        wait(for: [expect],
+             timeout: timeout)
+    }
+
+    /// Add rules to WK store for user.
+    func testAddToWKStoreForUser() {
+        let expect = expectation(description: #function)
+        do {
+            try pstr.clearRulesFiles()
+            var user = try User()
+            user.blockList = try BlockList(withAcceptableAds: true,
+                                           source: BundledTestingBlockList.fakeExceptions)
+            try pstr.logRulesFiles()
+            addNewRules(arg: user, name: user.blockList!.name) { expect.fulfill() }
+        } catch let err { XCTFail("🚨 Error during add: \(err)") }
+        wait(for: [expect],
+             timeout: timeout)
+    }
+
+    func testGetStoredRules() throws {
+        let expect = expectation(description: #function)
+        do {
+            try pstr.clearRulesFiles()
+            var user1 = try User()
+            let blst1 = try BlockList(withAcceptableAds: true,
+                                      source: BundledTestingBlockList.fakeExceptions)
+            user1.blockList = blst1
+            var user2 = try User()
+            let blst2 = try BlockList(withAcceptableAds: false,
+                                      source: BundledTestingBlockList.testingEasylist)
+            user2.blockList = blst2
+            try pstr.logRulesFiles()
+            guard let lst1 = user1.blockList else { XCTFail("Bad BL"); return }
+            guard let lst2 = user2.blockList else { XCTFail("Bad BL"); return }
+            addNewRules(arg: user1, name: lst1.name) {
+                self.addNewRules(arg: user2, name: lst2.name) {
+                    self.wkcb.rulesStore.getAvailableContentRuleListIdentifiers { ids in
+                        XCTAssert(ids?.count == 2,
+                                  "Bad add.")
+                        self.ruleList(name: lst1.name)
+                            .flatMap { list -> Observable<WKContentRuleList> in
+                                XCTAssert(list.identifier == lst1.name,
+                                          "Bad name 1.")
+                                return self.ruleList(name: lst2.name)
+                            }
+                            .subscribe(onNext: { list in
+                                XCTAssert(list.identifier == lst2.name,
+                                          "Bad name 2.")
+                            }, onError: { err in
+                                XCTFail("Error: \(err)")
+                            }, onCompleted: {
+                                expect.fulfill()
+                            }).disposed(by: self.bag)
+                    }
+                }
+            }
+        } catch let err { XCTFail("🚨 Error during add: \(err)") }
         wait(for: [expect],
              timeout: timeout)
     }
 
     private
-    func compileRules(storeName: String,
-                      rules: String,
-                      completion: @escaping (WKContentRuleList?, Error?) -> Void) {
-        wkcb?.rulesStore
-            .compileContentRuleList(forIdentifier: storeName,
-                                    encodedContentRuleList: rules) { list, err in
-                completion(list, err)
+    enum ConcatType: String {
+        case user
+        case filterList
+    }
+
+    private
+    func concat<T>(_ type: ConcatType, arg: T) -> Observable<(String, Int)> {
+        switch type {
+        case .user:
+            if let user = arg as? User {
+                return wkcb.concatenatedRules(user: user,
+                                              customBundle: Bundle(for: WebKitContentBlockingTests.self))
             }
+        case .filterList:
+            if let list = arg as? FilterList {
+                return wkcb.concatenatedRules(model: list)
+            }
+        }
+        return Observable.empty()
+    }
+
+    private
+    func concatCount<T>(_ type: ConcatType, arg: T) -> Int {
+        switch type {
+        case .user:
+            let user = arg as? User
+            if let usr = user, let lst = usr.blockList {
+                switch lst.source {
+                case BundledTestingBlockList.fakeExceptions:
+                    return testRulesCountUserFakeExceptions
+                case BundledTestingBlockList.testingEasylist:
+                    return testRulesCountUserTestEasylist
+                default:
+                    break
+                }
+            }
+        case .filterList:
+            return testRulesCount
+        }
+        return -1
+    }
+
+    private
+    func addNewRules<T>(arg: T, name: String, completion: @escaping () -> Void) {
+        var type: ConcatType!
+        switch T.self {
+        case let typ where typ == User.self:
+            type = .user
+        case let typ where typ == FilterList.self:
+            type = .filterList
+        default:
+            XCTFail("Unknown type.")
+        }
+        let start = Date()
+        concat(type, arg: arg)
+            .flatMap { rules, cnt -> Observable<(WKContentRuleList?, Error?)> in
+                let end1 = fabs(start.timeIntervalSinceNow)
+                ABPKit.log("cat rules ⏱️1 \(end1)")
+                let expectCnt = self.concatCount(type, arg: arg)
+                XCTAssert(expectCnt == cnt,
+                          "Bad rules count: Expected \(expectCnt) but got \(cnt)).")
+                return self.rulesCompiled(name: name, rules: rules)
+            }
+            .subscribe(onNext: { _ in
+                let end2 = fabs(start.timeIntervalSinceNow)
+                ABPKit.log("add rules ⏱️2 \(end2)")
+                completion()
+            }, onError: { err in
+                XCTFail("🚨 Error during processing rules: \(err)")
+            }).disposed(by: bag)
+    }
+
+    private
+    func rulesCompiled(name: String, rules: String) -> Observable<(WKContentRuleList?, Error?)> {
+        guard let store = wkcb?.rulesStore else { XCTFail("Bad store."); return Observable.empty() }
+        return Observable.create { observer in
+            store
+                .compileContentRuleList(forIdentifier: name,
+                                        encodedContentRuleList: rules) { list, err in
+                    if err != nil { XCTFail("Error: \(String(describing: err))") }
+                    observer.onNext((list, err))
+                    observer.onCompleted()
+                }
+            return Disposables.create()
+        }
+    }
+
+    private
+    func ruleList(name: String) -> Observable<WKContentRuleList> {
+        guard let store = wkcb?.rulesStore else { XCTFail("Bad store."); return Observable.empty() }
+        return Observable.create { observer in
+            store
+                .lookUpContentRuleList(forIdentifier: name) { list, err in
+                    if err != nil { XCTFail("Error: \(String(describing: err))") }
+                    if list != nil { observer.onNext(list!) }
+                    observer.onCompleted()
+                }
+            return Disposables.create()
+        }
     }
 
     private
     func logRules() {
-        wkcb?.rulesStore.getAvailableContentRuleListIdentifiers({ (ids: [String]?) in
-            ABPKit.log("📙 \(String(describing: ids))")
-        })
+        wkcb?.rulesStore
+            .getAvailableContentRuleListIdentifiers { (ids: [String]?) in
+                ABPKit.log("📙 \(String(describing: ids))")
+            }
     }
 }

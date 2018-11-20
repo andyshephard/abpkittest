@@ -45,7 +45,7 @@ class BlockListDownloadTests: XCTestCase {
             XCTFail("Failed to clear models with error: \(err)")
             return
         }
-        guard let list = try? mdlr.makeLocalBlockList() else {
+        guard let list = try? mdlr.makeLocalFilterList() else {
             XCTFail("Failed to make test list.")
             return
         }
@@ -135,7 +135,7 @@ class BlockListDownloadTests: XCTestCase {
         do {
             let rulesURL = try testList.rulesURL(bundle: Bundle(for: BlockListDownloadTests.self))
             if let url = rulesURL {
-                return self.hlpr.validatedRules(for: url)
+                return self.hlpr.validatedRules()(url)
             } else {
                 XCTFail("Bad rules URL.")
             }

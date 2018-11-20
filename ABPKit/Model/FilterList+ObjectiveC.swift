@@ -20,7 +20,7 @@ extension FilterList {
     /// Returns URL for rules without parsing them.
     func getRulesURL(for name: FilterListName) throws -> FilterListFileURL? {
         let util = try ContentBlockerUtility()
-        if let url = try? util.getBundledFilterListFileURL(name: name) {
+        if let url = try? util.getBundledFilterListFileURL(modelName: name) {
             return url
         }
         return nil

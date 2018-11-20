@@ -15,11 +15,13 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// For models that can be stored.
 protocol Persistable: Codable {
     var name: String? { get }
 
-    init(withDefaultValues: Bool) throws
-    init?(fromPersistentStorage: Bool,
-          identifier: String?) throws
+    /// Init with default values.
+    init() throws
+    /// Init from persistent storage.
+    init?(persistenceID: String) throws
     func save() throws
 }

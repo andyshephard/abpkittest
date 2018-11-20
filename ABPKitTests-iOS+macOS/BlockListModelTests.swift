@@ -20,6 +20,12 @@
 import XCTest
 
 class BlockListModelTests: XCTestCase {
+    override
+    func setUp() {
+        super.setUp()
+        try? Persistor().clearRulesFiles()
+    }
+
     func testMakeBlockListWithSources() throws {
         var blst: BlockList!
         blst = try BlockList(withAcceptableAds: false,
@@ -40,6 +46,24 @@ class BlockListModelTests: XCTestCase {
                   "Bad source.")
     }
 
+    func testBundledRules() throws {
+        var blst: BlockList!
+        blst = try BlockList(withAcceptableAds: false,
+                             source: BundledBlockList.easylist)
+        var user = try User()
+        user.blockList = blst
+        let url = try RulesHelper().rulesForUser()(user)
+        XCTAssert(url != nil, "Bad rules")
+    }
+
+    func testBundledRulesToFile() throws {
+        let blst = try FilterListTestModeler().makeLocalBlockList()
+        try Persistor().logRulesFiles()
+        let url = try RulesHelper().rulesForFilename()(blst.filename)
+        XCTAssert(url != nil, "Bad rules")
+    }
+
+    private
     func encDecBlocklist(_ source: BlockList) throws -> BlockList {
         return try PropertyListDecoder()
             .decode(BlockList.self,

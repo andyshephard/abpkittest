@@ -16,6 +16,7 @@
  */
 
 extension Persistor {
+    /// Show files in the container.
     public
     func logRulesFiles() throws {
         try clearRulesFiles(onlyLog: true)
@@ -61,11 +62,12 @@ extension Persistor {
                 if fileURL
                     .lastPathComponent
                     .contains(Substring(storeSuffix)) {
-                    paths.append(fileURL.path)
-                }
+                        paths.append(fileURL.path)
+                    }
         }
-        paths.forEach {
+        paths.sorted().forEach {
             ABPKit.log("🔵 \($0)")
         }
+       ABPKit.log("")
     }
 }

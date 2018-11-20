@@ -17,17 +17,18 @@
 
 import RxSwift
 
-@available(iOSApplicationExtension 11.0, OSXApplicationExtension 10.13, *)
+/// FilterList implementations will eventually be removed.
+
+@available(iOS 11.0, macOS 10.13, *)
 extension WebKitContentBlocker {
+    /// FilterList implementation:
     /// Embedding a subscription inside this Observable has yielded the fastest performance for
     /// concatenating rules.
     /// Other methods tried:
     /// 1. flatMap + string append - ~4x slower
     /// 2. reduce - ~10x slower
+    /// Returns blocklist string + rules count.
     func concatenatedRules(model: FilterList) -> Observable<(String, Int)> {
-        let sep = ","
-        let arrStart = "["
-        let arrEnd = "]"
         var rulesURL: URL?
         do {
             if bundle != nil {
@@ -43,28 +44,56 @@ extension WebKitContentBlocker {
         }
         let encoder = JSONEncoder()
         var first = true
-        var all = arrStart
-        let rhlpr = RulesHelper()
+        var all = Constants.blocklistArrayStart
         var cnt = 0
         return Observable.create { observer in
-            rhlpr.validatedRules(for: url)
+            RulesHelper()
+                .validatedRules()(url)
                 .subscribe(onNext: { rule in
-                    guard let data = try? encoder.encode(rule),
-                          let rule = String(data: data,
-                                            encoding: .utf8)
-                    else {
-                        observer.onError(ABPFilterListError.invalidData)
-                        return
-                    }
+                    let rstr = self.ruleString(rule: rule, encoder: encoder)
+                    if rstr == nil { observer.onError(ABPFilterListError.invalidData) }
                     cnt += 1
-                    if first {
-                        all += rule; first = false
-                    } else {
-                        all += sep + rule
-                    }
+                    if !first {
+                        all += Constants.blocklistRuleSeparator + rstr!
+                    } else { all += rstr!; first = false }
                 },
                 onCompleted: {
-                    observer.onNext((all + arrEnd, cnt))
+                    observer.onNext((all + Constants.blocklistArrayEnd, cnt))
+                    observer.onCompleted()
+                }).disposed(by: self.bag)
+            return Disposables.create()
+        }
+    }
+
+    /// Embedding a subscription inside this Observable has yielded the fastest performance for
+    /// concatenating rules.
+    /// Other methods tried:
+    /// 1. flatMap + string append - ~4x slower
+    /// 2. reduce - ~10x slower
+    /// Returns blocklist string + rules count.
+    func concatenatedRules(user: User,
+                           customBundle: Bundle? = nil) -> Observable<(String, Int)> {
+        let rhlp = RulesHelper()
+        rhlp.useBundle = customBundle
+        guard let url = try? rhlp.rulesForUser()(user) else {
+            return Observable.error(ABPWKRuleStoreError.missingRules)
+        }
+        let encoder = JSONEncoder()
+        var first = true
+        var all = Constants.blocklistArrayStart
+        var cnt = 0
+        return Observable.create { observer in
+            RulesHelper()
+                .validatedRules()(url)
+                .subscribe(onNext: { rule in
+                    let rstr = self.ruleString(rule: rule, encoder: encoder)
+                    if rstr == nil { observer.onError(ABPFilterListError.invalidData) }
+                    cnt += 1
+                    if !first {
+                        all += Constants.blocklistRuleSeparator + rstr!
+                    } else { all += rstr!; first = false }
+                }, onCompleted: {
+                    observer.onNext((all + Constants.blocklistArrayEnd, cnt))
                     observer.onCompleted()
                 }).disposed(by: self.bag)
             return Disposables.create()
@@ -72,11 +101,13 @@ extension WebKitContentBlocker {
     }
 
     /// Clear all compiled rule lists.
+    /// Only for testing while FilterList usage is being transitioned to User + BlockList.
     public
     func clearedRulesAll() -> Observable<NamedErrors> {
         return clearedRules(clearAll: true)
     }
 
+    /// FilterList implementation:
     /// Clear an individual rule list associated with a filter list model.
     func clearedRules(model: FilterList? = nil,
                       clearAll: Bool = false) -> Observable<NamedErrors> {
@@ -109,5 +140,40 @@ extension WebKitContentBlocker {
                 }
             return Disposables.create()
         }
+    }
+
+    /// Clear rules in rule store for a user.
+    func clearedRules(user: User,
+                      clearAll: Bool = false) -> Observable<NamedErrors> {
+        guard let hist = user.blockListHistory else {
+            return Observable.error(ABPWKRuleStoreError.invalidData)
+        }
+        return ruleIdentifiers()
+            .flatMap { ids -> Observable<NamedErrors> in
+                return Observable.create { observer in
+                    guard let uwIDs = ids else {
+                        observer.onError(ABPWKRuleStoreError.invalidData); return Disposables.create()
+                    }
+                    var errors = NamedErrors()
+                    uwIDs.forEach { identifier in
+                        if !(hist.contains { $0.name == identifier }) || clearAll {
+                            self.rulesStore
+                                .removeContentRuleList(forIdentifier: identifier) { err in
+                                    errors[identifier] = err
+                                }
+                        }
+                    }
+                    observer.onNext(errors)
+                    observer.onCompleted()
+                    return Disposables.create()
+                }
+            }
+    }
+
+    private
+    func ruleString(rule: BlockingRule, encoder: JSONEncoder) -> String? {
+        guard let data = try? encoder.encode(rule),
+              let rule = String(data: data, encoding: .utf8) else { return nil }
+        return rule
     }
 }

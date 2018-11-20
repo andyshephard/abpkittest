@@ -15,13 +15,21 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// A source of rules.
 public
 protocol BlockListSourceable: Codable,
                               AcceptableAdsEnableable {
     // Intentionally empty.
 }
 
+/// Supports acceptable ads.
 public
 protocol AcceptableAdsEnableable {
     func hasAcceptableAds() -> Bool
+}
+
+/// Rules may be downloaded.
+public
+protocol RulesDownloadable {
+    // Intentionally empty.
 }

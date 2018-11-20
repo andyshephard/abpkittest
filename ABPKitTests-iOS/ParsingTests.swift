@@ -59,7 +59,7 @@ class ParsingTests: XCTestCase {
         }
         var cnt = 0
         RulesHelper()
-            .validatedRules(for: url)
+            .validatedRules()(url)
             .subscribe(onNext: { rule in
                 cnt += [rule].count
             }, onCompleted: {
