@@ -53,6 +53,8 @@ enum ABPDeviceTokenSaveError: Error {
 /// - badFilename: Bad filename for filter list rules.
 /// - badFilterListModel: Bad model object.
 /// - badFilterListModelName: Bad name for model object.
+/// - badSourceDownload: Bad source download data.
+/// - badSourceURL: URL is invalid.
 /// - failedCopy: Failure during copy operation.
 /// - failedFilterListModelSave: Failed to save model object.
 /// - failedMove: Failure during file move operation.
@@ -69,6 +71,8 @@ enum ABPDownloadTaskError: Error {
     case badFilename
     case badFilterListModel
     case badFilterListModelName
+    case badSourceDownload
+    case badSourceURL
     case failedCopy
     case failedFilterListModelSave
     case failedMove

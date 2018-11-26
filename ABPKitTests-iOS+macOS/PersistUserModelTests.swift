@@ -126,7 +126,6 @@ class PersistUserModelTests: XCTestCase {
                     var newBL = try BlockList(withAcceptableAds: boolRnd,
                                               source: src)
                     newBL.dateDownload = Date()
-                    newBL.filename = UUID().uuidString
                     self.names.append(newBL.name)
                     copy.downloads?.append(newBL)
                     dls.append(newBL)

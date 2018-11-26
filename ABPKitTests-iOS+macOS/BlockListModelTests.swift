@@ -59,7 +59,7 @@ class BlockListModelTests: XCTestCase {
     func testBundledRulesToFile() throws {
         let blst = try FilterListTestModeler().makeLocalBlockList()
         try Persistor().logRulesFiles()
-        let url = try RulesHelper().rulesForFilename()(blst.filename)
+        let url = try RulesHelper().rulesForFilename()(blst.name.addingFileExtension(Constants.rulesExtension))
         XCTAssert(url != nil, "Bad rules")
     }
 

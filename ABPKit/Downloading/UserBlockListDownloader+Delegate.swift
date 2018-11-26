@@ -15,10 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import RxSwift
-
-// Implements URLSessionDownloadDelegate functions for the BlockListDownloader.
-extension BlockListDownloader {
+extension UserBlockListDownloader {
     /// A URL session task is transferring data.
     public
     func urlSession(_ session: URLSession,
@@ -33,57 +30,43 @@ extension BlockListDownloader {
         }
     }
 
-    /// A download task for a filter list has finished downloading. Update the user's filter list
-    /// metadata and move the downloaded file. Future optimization can include retrying the
-    /// post-download operations if an error is encountered.
+    /// A download task has finished downloading. Update the user's block list
+    /// metadata and move the downloaded file.
     public
     func urlSession(_ session: URLSession,
                     downloadTask: URLSessionDownloadTask,
                     didFinishDownloadingTo location: URL) {
         let taskID = downloadTask.taskIdentifier
-        guard let name = try? filterListName(for: taskID) else {
-            reportError(taskID: taskID, error: .badFilterListModelName); return
-        }
-        guard let result = try? filterList(withName: name),
-              var list = result
-        else {
-            reportError(taskID: taskID, error: .badFilterListModel); return
-        }
         let response = downloadTask.response as? HTTPURLResponse
         if !validURLResponse(response) {
             reportError(taskID: taskID, error: .invalidResponse); return
         }
-        guard let containerURL = try? cfg.containerURL() else {
+        guard let containerURL = try? Config().containerURL() else {
             reportError(taskID: taskID, error: .badContainerURL); return
         }
-        guard let fileName = list.fileName else {
+        var fname: String!
+        if let index = indexForTaskID()(taskID) {
+            fname = downloads[index].blockList?.name.addingFileExtension(Constants.rulesExtension)
+        } else {
             reportError(taskID: taskID, error: .badFilename); return
+            fname = UUID().uuidString.addingFileExtension(Constants.rulesExtension)
         }
-        let destination =
-            containerURL
-                .appendingPathComponent(fileName,
-                                        isDirectory: false)
+        let dst = containerURL
+            .appendingPathComponent(fname,
+                                    isDirectory: false)
         do {
             try moveOrReplaceItem(source: location,
-                                  destination: destination)
-        } catch let error {
-            let fileError = error as? ABPDownloadTaskError
+                                  destination: dst)
+        } catch let err {
+            let fileError = err as? ABPDownloadTaskError
             if fileError != nil {
                 reportError(taskID: taskID, error: fileError!)
             }
         }
-        list = downloadedModelState(list: list)
-        downloadedVersion += 1
         if var newEvent = lastDownloadEvent(taskID: taskID) {
             newEvent.didFinishDownloading = true
-            downloadEvents[taskID]?.onNext(newEvent) // new event
+            downloadEvents[taskID]?.onNext(newEvent)
         }
-        AppExtensionRelay.sharedInstance().downloadedVersion.accept(downloadedVersion)
-        // swiftlint:disable unused_optional_binding
-        guard let _ = try? Persistor().saveFilterListModel(list) else {
-            reportError(taskID: taskID, error: .failedFilterListModelSave); return
-        }
-        // swiftlint:enable unused_optional_binding
     }
 
     /// A URL session task has finished transferring data.
@@ -94,42 +77,19 @@ extension BlockListDownloader {
                     task: URLSessionTask,
                     didCompleteWithError error: Error?) {
         let taskID = task.taskIdentifier
-        guard let name = try? filterListName(for: taskID) else {
-            reportError(taskID: taskID, error: .badFilterListModelName); return
-        }
-        guard let result = try? filterList(withName: name),
-              var list = result
-        else {
-            reportError(taskID: taskID, error: .badFilterListModel); return
-        }
-        list.lastUpdateFailed = true
-        list.updating = false
-        list.taskIdentifier = nil
-        // swiftlint:disable unused_optional_binding
-        guard let _ = try? Persistor().saveFilterListModel(list) else {
-            reportError(taskID: taskID, error: .failedFilterListModelSave); return
-        }
-        // swiftlint:enable unused_optional_bindin
-        downloadTasksByID[taskID] = nil
         if var newEvent = lastDownloadEvent(taskID: taskID) {
             if error != nil {
                 newEvent.error = error
             }
-            newEvent.errorWritten = true
             downloadEvents[taskID]?.onNext(newEvent)
             downloadEvents[taskID]?.onCompleted()
         }
     }
 
-    /// Set state of list that is downloaded.
-    private
-    func downloadedModelState(list: FilterList) -> FilterList {
-        var mutable = list
-        mutable.lastUpdate = Date()
-        mutable.downloaded = true
-        mutable.lastUpdateFailed = false
-        mutable.updating = false
-        return mutable
+    func indexForTaskID() -> (Int) -> Int? {
+        return { tid in
+            self.downloads.enumerated().filter { $1.task?.taskIdentifier == tid }.first?.0
+        }
     }
 
     /// Generate a new event and report an error.
@@ -138,7 +98,6 @@ extension BlockListDownloader {
                      error: ABPDownloadTaskError) {
         if var newEvent = lastDownloadEvent(taskID: taskID) {
             newEvent.error = error
-            newEvent.errorWritten = true
             downloadEvents[taskID]?.onNext(newEvent) // new event
         }
     }

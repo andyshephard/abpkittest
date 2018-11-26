@@ -19,19 +19,19 @@
 /// FilterList represents the legacy data model that is linked to this newer model.
 /// FilterList will likely be reconfigured/renamed in the future.
 /// Currently, this struct is not separately Persistable, because it is stored in User.
+/// Saved rules are named after the BlockList's name.
 public
 struct BlockList: Codable {
     /// Identifier.
     public let name: String
+    /// Only settable at creation.
     public let source: BlockListSourceable
-    public var dateDownload: Date?
-    public var filename: String?
+    var dateDownload: Date?
 
     enum CodingKeys: CodingKey {
         case name
         case source
         case dateDownload
-        case filename
     }
 
     public
@@ -42,6 +42,7 @@ struct BlockList: Codable {
         }
         name = UUID().uuidString
         self.source = source
+        dateDownload = nil
     }
 }
 
@@ -52,7 +53,6 @@ extension BlockList {
         let vals = try decoder.container(keyedBy: CodingKeys.self)
         name = try vals.decode(String.self, forKey: .name)
         dateDownload = try vals.decode(Date?.self, forKey: .dateDownload)
-        filename = try vals.decode(String?.self, forKey: .filename)
         let src = try vals.decode(String.self, forKey: .source)
         switch src.components(separatedBy: Constants.srcSep) {
         case let cmp1 where cmp1.first == Constants.srcBundled:
@@ -95,7 +95,6 @@ extension BlockList {
         var cntr = encoder.container(keyedBy: CodingKeys.self)
         try cntr.encode(name, forKey: .name)
         try cntr.encode(dateDownload, forKey: .dateDownload)
-        try cntr.encode(filename, forKey: .filename)
         let enc: (Bool, Bool, Bool) throws -> Void = {
             try cntr.encode(self.src2str($0, $1, $2), forKey: .source)
         }

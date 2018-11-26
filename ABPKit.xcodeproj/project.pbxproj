@@ -7,8 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		65055C0D21ADB231005FCB7F /* UserDownloadEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65055C0C21ADB231005FCB7F /* UserDownloadEvent.swift */; };
+		65055C0E21ADB231005FCB7F /* UserDownloadEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65055C0C21ADB231005FCB7F /* UserDownloadEvent.swift */; };
+		65055C1721AE35EB005FCB7F /* RxBlocking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65FB45C3219154B10006274B /* RxBlocking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		65055C1821AE35FE005FCB7F /* RxBlocking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65055C0F21AE34BB005FCB7F /* RxBlocking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		650EAB9621914EF90002BA2C /* RulesHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655DB0132191432900A33E66 /* RulesHelper.swift */; };
 		650EAB9721914EFA0002BA2C /* RulesHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655DB0132191432900A33E66 /* RulesHelper.swift */; };
+		6511B87F21AD929B00A1E70E /* String+Path.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6511B87E21AD929B00A1E70E /* String+Path.swift */; };
+		6511B88021AD929B00A1E70E /* String+Path.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6511B87E21AD929B00A1E70E /* String+Path.swift */; };
+		651D45CA21AC7F8A00C00FAC /* BlockListDownloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CC3376217FBB5F00FF0CEF /* BlockListDownloadTests.swift */; };
+		651D45CC21AC85A900C00FAC /* UserBlockListDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651D45CB21AC85A900C00FAC /* UserBlockListDownloader.swift */; };
+		651D45CD21AC85A900C00FAC /* UserBlockListDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651D45CB21AC85A900C00FAC /* UserBlockListDownloader.swift */; };
+		651D45D821ACA2C100C00FAC /* UserBlockListDownloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651D45D721ACA2C100C00FAC /* UserBlockListDownloadTests.swift */; };
+		651D45D921ACA2C100C00FAC /* UserBlockListDownloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651D45D721ACA2C100C00FAC /* UserBlockListDownloadTests.swift */; };
+		651D45DB21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651D45DA21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift */; };
+		651D45DC21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651D45DA21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift */; };
 		65486F3A219F8BA200565AC8 /* BlockListModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65486F39219F8BA200565AC8 /* BlockListModelTests.swift */; };
 		65486F3C219FB57500565AC8 /* BlockList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65486F3B219FB57500565AC8 /* BlockList.swift */; };
 		65486F3D219FB57500565AC8 /* BlockList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65486F3B219FB57500565AC8 /* BlockList.swift */; };
@@ -18,9 +31,7 @@
 		655145542189228500C8E7C2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655145532189228500C8E7C2 /* AppDelegate.swift */; };
 		655145582189228600C8E7C2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 655145572189228600C8E7C2 /* Assets.xcassets */; };
 		6551455B2189228600C8E7C2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 655145592189228600C8E7C2 /* Main.storyboard */; };
-		655145812189250F00C8E7C2 /* RxCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65D4C7942188D52400B1E16F /* RxCocoa.framework */; };
 		655145822189250F00C8E7C2 /* RxCocoa.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65D4C7942188D52400B1E16F /* RxCocoa.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		655145842189251200C8E7C2 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65D4C7932188D52400B1E16F /* RxSwift.framework */; };
 		655145852189251200C8E7C2 /* RxSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65D4C7932188D52400B1E16F /* RxSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		65527DEC219BABDE00B9D80F /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65527DEB219BABDE00B9D80F /* User.swift */; };
 		655DB00C219142AB00A33E66 /* ContentBlockerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655DB00A219142AA00A33E66 /* ContentBlockerTests.swift */; };
@@ -68,6 +79,8 @@
 		6582E75521A5D3360075016B /* BlockListModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65486F39219F8BA200565AC8 /* BlockListModelTests.swift */; };
 		65A2653121A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */; };
 		65A2653221A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */; };
+		65B0440621ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B0440521ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift */; };
+		65B0440721ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B0440521ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift */; };
 		65B6EB8721A7802900B2F600 /* UserStateHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B6EB8621A7802900B2F600 /* UserStateHelper.swift */; };
 		65B6EB8821A7802900B2F600 /* UserStateHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B6EB8621A7802900B2F600 /* UserStateHelper.swift */; };
 		65B6EB8A21A7C49C00B2F600 /* UserHistoryCachingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B6EB8921A7C49C00B2F600 /* UserHistoryCachingTests.swift */; };
@@ -100,9 +113,6 @@
 		65D4770D21896E9400D4F5DA /* blockerList.json in Resources */ = {isa = PBXBuildFile; fileRef = 65D4770C21896E9400D4F5DA /* blockerList.json */; };
 		65D4770F21896E9400D4F5DA /* ContentBlockerRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D4770E21896E9400D4F5DA /* ContentBlockerRequestHandler.swift */; };
 		65D4771421896E9400D4F5DA /* HostCBExt-macOS.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 65D4770721896E9400D4F5DA /* HostCBExt-macOS.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		65D4771921896EE300D4F5DA /* ABPKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65D4C75B2188C64C00B1E16F /* ABPKit.framework */; };
-		65D4771A21896EEF00D4F5DA /* RxCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65D4C7942188D52400B1E16F /* RxCocoa.framework */; };
-		65D4771B21896EF200D4F5DA /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65D4C7932188D52400B1E16F /* RxSwift.framework */; };
 		65D4C7722188C68500B1E16F /* ABPKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 65FF7B03216EB8B200470103 /* ABPKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		65D4C7732188C68500B1E16F /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6575614C217FBA4B00D8A4F2 /* Configuration.swift */; };
 		65D4C7742188C68500B1E16F /* SafariContentBlocker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65756150217FBA5500D8A4F2 /* SafariContentBlocker.swift */; };
@@ -137,13 +147,10 @@
 		65ECBEBA21963EEB00551F26 /* String+ProtocolText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ECBEB921963EEB00551F26 /* String+ProtocolText.swift */; };
 		65ECBEBD2196403600551F26 /* WebViewVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655145552189228500C8E7C2 /* WebViewVC.swift */; };
 		65ECBEBE2196403D00551F26 /* String+ProtocolText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ECBEB921963EEB00551F26 /* String+ProtocolText.swift */; };
-		65ECBEC721964C5A00551F26 /* ABPKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B00216EB8B200470103 /* ABPKit.framework */; };
 		65ECBEC821964C5A00551F26 /* ABPKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B00216EB8B200470103 /* ABPKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		65ECBECC21964DE100551F26 /* RxCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B26216EC85B00470103 /* RxCocoa.framework */; };
 		65ECBECD21964DE300551F26 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B25216EC85B00470103 /* RxSwift.framework */; };
-		65ECBECE21964E0100551F26 /* RxCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B26216EC85B00470103 /* RxCocoa.framework */; };
 		65ECBECF21964E0100551F26 /* RxCocoa.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B26216EC85B00470103 /* RxCocoa.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		65ECBED021964E0300551F26 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B25216EC85B00470103 /* RxSwift.framework */; };
 		65ECBED121964E0300551F26 /* RxSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65FF7B25216EC85B00470103 /* RxSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		65ECBEE5219676EA00551F26 /* WebViewVC+Navigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ECBEE4219676EA00551F26 /* WebViewVC+Navigation.swift */; };
 		65F372A1219E79FC005ED1B6 /* MutableStateProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F372A0219E79FC005ED1B6 /* MutableStateProtocols.swift */; };
@@ -153,8 +160,6 @@
 		65FB45C0219154540006274B /* WebKitContentBlocker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65FB45BD219154540006274B /* WebKitContentBlocker.swift */; };
 		65FB45C1219154540006274B /* WebKitContentBlocker+StoreHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65FB45BE219154540006274B /* WebKitContentBlocker+StoreHelper.swift */; };
 		65FB45C2219154540006274B /* WebKitContentBlocker+StoreHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65FB45BE219154540006274B /* WebKitContentBlocker+StoreHelper.swift */; };
-		65FB45C5219154D80006274B /* RxBlocking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65FB45C3219154B10006274B /* RxBlocking.framework */; };
-		65FB45C6219154D80006274B /* RxBlocking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 65FB45C3219154B10006274B /* RxBlocking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		65FB45C8219155840006274B /* test-easylist-42perc.json in Resources */ = {isa = PBXBuildFile; fileRef = 65FB45C7219155840006274B /* test-easylist-42perc.json */; };
 		65FB45C9219155840006274B /* test-easylist-42perc.json in Resources */ = {isa = PBXBuildFile; fileRef = 65FB45C7219155840006274B /* test-easylist-42perc.json */; };
 		65FB45CB219157590006274B /* Persistor+LocalStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65FB45CA219157590006274B /* Persistor+LocalStorage.swift */; };
@@ -209,10 +214,10 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				65055C1721AE35EB005FCB7F /* RxBlocking.framework in Embed Frameworks */,
 				65B94AE3219298080084F480 /* ABPKit.framework in Embed Frameworks */,
 				655145852189251200C8E7C2 /* RxSwift.framework in Embed Frameworks */,
 				655145822189250F00C8E7C2 /* RxCocoa.framework in Embed Frameworks */,
-				65FB45C6219154D80006274B /* RxBlocking.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -223,6 +228,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				65055C1821AE35FE005FCB7F /* RxBlocking.framework in Embed Frameworks */,
 				65ECBECF21964E0100551F26 /* RxCocoa.framework in Embed Frameworks */,
 				65ECBEC821964C5A00551F26 /* ABPKit.framework in Embed Frameworks */,
 				65ECBED121964E0300551F26 /* RxSwift.framework in Embed Frameworks */,
@@ -244,6 +250,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		65055C0C21ADB231005FCB7F /* UserDownloadEvent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserDownloadEvent.swift; sourceTree = "<group>"; };
+		65055C0F21AE34BB005FCB7F /* RxBlocking.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxBlocking.framework; path = Carthage/Build/iOS/RxBlocking.framework; sourceTree = "<group>"; };
+		6511B87E21AD929B00A1E70E /* String+Path.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Path.swift"; sourceTree = "<group>"; };
+		651D45CB21AC85A900C00FAC /* UserBlockListDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserBlockListDownloader.swift; sourceTree = "<group>"; };
+		651D45D721ACA2C100C00FAC /* UserBlockListDownloadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserBlockListDownloadTests.swift; sourceTree = "<group>"; };
+		651D45DA21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserBlockListDownloader+Delegate.swift"; sourceTree = "<group>"; };
 		65486F39219F8BA200565AC8 /* BlockListModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockListModelTests.swift; sourceTree = "<group>"; };
 		65486F3B219FB57500565AC8 /* BlockList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockList.swift; sourceTree = "<group>"; };
 		654A14312198AE9500CB9F11 /* BlockListSources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockListSources.swift; sourceTree = "<group>"; };
@@ -298,6 +310,7 @@
 		6581087B217FDCB3001D6FFE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6581087D217FDCB3001D6FFE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockListSourceUtility.swift; sourceTree = "<group>"; };
+		65B0440521ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserBlockListDownloader+Persistence.swift"; sourceTree = "<group>"; };
 		65B0DCA021828794002AF562 /* HostApp-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "HostApp-iOS.entitlements"; sourceTree = "<group>"; };
 		65B6EB8621A7802900B2F600 /* UserStateHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStateHelper.swift; sourceTree = "<group>"; };
 		65B6EB8921A7C49C00B2F600 /* UserHistoryCachingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserHistoryCachingTests.swift; sourceTree = "<group>"; };
@@ -352,9 +365,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				655145842189251200C8E7C2 /* RxSwift.framework in Frameworks */,
-				655145812189250F00C8E7C2 /* RxCocoa.framework in Frameworks */,
-				65FB45C5219154D80006274B /* RxBlocking.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -362,9 +372,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				65ECBECE21964E0100551F26 /* RxCocoa.framework in Frameworks */,
-				65ECBEC721964C5A00551F26 /* ABPKit.framework in Frameworks */,
-				65ECBED021964E0300551F26 /* RxSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,9 +379,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				65D4771921896EE300D4F5DA /* ABPKit.framework in Frameworks */,
-				65D4771A21896EEF00D4F5DA /* RxCocoa.framework in Frameworks */,
-				65D4771B21896EF200D4F5DA /* RxSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -476,6 +480,9 @@
 				65756152217FBA5500D8A4F2 /* BlockListDownloader.swift */,
 				65756154217FBA5500D8A4F2 /* BlockListDownloader+Delegate.swift */,
 				65756153217FBA5500D8A4F2 /* BlocklistDownloader+Persistence.swift */,
+				651D45CB21AC85A900C00FAC /* UserBlockListDownloader.swift */,
+				651D45DA21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift */,
+				65B0440521ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift */,
 			);
 			path = Downloading;
 			sourceTree = "<group>";
@@ -534,6 +541,7 @@
 				6575616A217FBA6100D8A4F2 /* FilterListDownloadData.swift */,
 				6575616F217FBA6100D8A4F2 /* FilterListUpdate.swift */,
 				65527DEB219BABDE00B9D80F /* User.swift */,
+				65055C0C21ADB231005FCB7F /* UserDownloadEvent.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -584,8 +592,10 @@
 		65B1693321A395E300F1C63B /* ABPKitTests-iOS+macOS */ = {
 			isa = PBXGroup;
 			children = (
+				65CC3376217FBB5F00FF0CEF /* BlockListDownloadTests.swift */,
 				65486F39219F8BA200565AC8 /* BlockListModelTests.swift */,
 				65C11C9E219BDDFC00E3D09C /* PersistUserModelTests.swift */,
+				651D45D721ACA2C100C00FAC /* UserBlockListDownloadTests.swift */,
 			);
 			path = "ABPKitTests-iOS+macOS";
 			sourceTree = "<group>";
@@ -680,6 +690,7 @@
 		65ECBEB821963ED700551F26 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				6511B87E21AD929B00A1E70E /* String+Path.swift */,
 				65ECBEB921963EEB00551F26 /* String+ProtocolText.swift */,
 			);
 			path = Extensions;
@@ -756,7 +767,6 @@
 		65FF7B0D216EB8B300470103 /* ABPKitTests-iOS */ = {
 			isa = PBXGroup;
 			children = (
-				65CC3376217FBB5F00FF0CEF /* BlockListDownloadTests.swift */,
 				65CC3375217FBB5F00FF0CEF /* ContentBlockerUtilityTests.swift */,
 				65CC3372217FBB5F00FF0CEF /* FilterListTests.swift */,
 				65FF7B10216EB8B300470103 /* Info.plist */,
@@ -770,6 +780,7 @@
 		65FF7B24216EC85B00470103 /* Frameworks-iOS */ = {
 			isa = PBXGroup;
 			children = (
+				65055C0F21AE34BB005FCB7F /* RxBlocking.framework */,
 				65FF7B26216EC85B00470103 /* RxCocoa.framework */,
 				65FF7B25216EC85B00470103 /* RxSwift.framework */,
 			);
@@ -1160,6 +1171,7 @@
 				65D4C77F2188C68500B1E16F /* FilterList.swift in Sources */,
 				65670FD021951E96003B8F53 /* ABPWebViewBlocker.swift in Sources */,
 				65D4C7862188C68500B1E16F /* Persistor+ModelHelper.swift in Sources */,
+				651D45DC21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift in Sources */,
 				655DB0202191447200A33E66 /* ABPAliases.swift in Sources */,
 				65D4C78E2188C68500B1E16F /* ActiveVersions.swift in Sources */,
 				65D4C7802188C68500B1E16F /* FilterList+ObjectiveC.swift in Sources */,
@@ -1171,6 +1183,7 @@
 				65D4C7762188C68500B1E16F /* BlockListDownloader+Delegate.swift in Sources */,
 				654A14332198B01500CB9F11 /* BlockListSources.swift in Sources */,
 				65D4C7812188C68500B1E16F /* FilterList+RuleCount.swift in Sources */,
+				65055C0E21ADB231005FCB7F /* UserDownloadEvent.swift in Sources */,
 				65D4C7772188C68500B1E16F /* BlocklistDownloader+Persistence.swift in Sources */,
 				65FB45CC219157590006274B /* Persistor+LocalStorage.swift in Sources */,
 				65D4C7732188C68500B1E16F /* Configuration.swift in Sources */,
@@ -1178,9 +1191,11 @@
 				65FB45C0219154540006274B /* WebKitContentBlocker.swift in Sources */,
 				655DB0222191447200A33E66 /* Platform.swift in Sources */,
 				65D4C7782188C68500B1E16F /* Errors.swift in Sources */,
+				6511B88021AD929B00A1E70E /* String+Path.swift in Sources */,
 				65D4C77B2188C68500B1E16F /* ContentBlockerUtility+FileManager.swift in Sources */,
 				65B6EB8821A7802900B2F600 /* UserStateHelper.swift in Sources */,
 				65C11C94219BC73500E3D09C /* User.swift in Sources */,
+				651D45CD21AC85A900C00FAC /* UserBlockListDownloader.swift in Sources */,
 				65D4C77E2188C68500B1E16F /* DownloadEvent.swift in Sources */,
 				65D4C7822188C68500B1E16F /* FilterList+UserDefaults.swift in Sources */,
 				65D4C77D2188C68500B1E16F /* ABPMutableState.swift in Sources */,
@@ -1188,6 +1203,7 @@
 				650EAB9621914EF90002BA2C /* RulesHelper.swift in Sources */,
 				65D4C7892188C68500B1E16F /* V2FilterListParser.swift in Sources */,
 				65D4C78D2188C68500B1E16F /* ABPDebug.swift in Sources */,
+				65B0440721ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift in Sources */,
 				65D4C7752188C68500B1E16F /* BlockListDownloader.swift in Sources */,
 				65FB45C2219154540006274B /* WebKitContentBlocker+StoreHelper.swift in Sources */,
 				65D4C7882188C68500B1E16F /* V1FilterListParser.swift in Sources */,
@@ -1207,9 +1223,11 @@
 				65B94AD721928AB70084F480 /* PersistFilterListModelsTests.swift in Sources */,
 				65C11CA0219BDDFC00E3D09C /* PersistUserModelTests.swift in Sources */,
 				65D476DE21895C7400D4F5DA /* TestingFileUtility.swift in Sources */,
+				651D45CA21AC7F8A00C00FAC /* BlockListDownloadTests.swift in Sources */,
 				65B6EB8A21A7C49C00B2F600 /* UserHistoryCachingTests.swift in Sources */,
 				65A2653221A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */,
 				65D476DD21895C7400D4F5DA /* FilterListTestModeler.swift in Sources */,
+				651D45D921ACA2C100C00FAC /* UserBlockListDownloadTests.swift in Sources */,
 				65D476DC21895C7400D4F5DA /* CaseIterable.swift in Sources */,
 				65486F3A219F8BA200565AC8 /* BlockListModelTests.swift in Sources */,
 				65C11C99219BD78300E3D09C /* RandomStateUtility.swift in Sources */,
@@ -1224,6 +1242,7 @@
 				65756185217FBA6100D8A4F2 /* FilterList.swift in Sources */,
 				655DB0232191447200A33E66 /* ABPAliases.swift in Sources */,
 				65670FCF21951E96003B8F53 /* ABPWebViewBlocker.swift in Sources */,
+				651D45DB21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift in Sources */,
 				65756157217FBA5500D8A4F2 /* SafariContentBlocker.swift in Sources */,
 				6575617B217FBA6100D8A4F2 /* Persistor+ModelHelper.swift in Sources */,
 				6575614D217FBA4B00D8A4F2 /* Configuration.swift in Sources */,
@@ -1235,6 +1254,7 @@
 				654A14322198AE9500CB9F11 /* BlockListSources.swift in Sources */,
 				6575615A217FBA5500D8A4F2 /* BlockListDownloader+Delegate.swift in Sources */,
 				65527DEC219BABDE00B9D80F /* User.swift in Sources */,
+				65055C0D21ADB231005FCB7F /* UserDownloadEvent.swift in Sources */,
 				6575617A217FBA6100D8A4F2 /* Persistor.swift in Sources */,
 				65FB45CB219157590006274B /* Persistor+LocalStorage.swift in Sources */,
 				65756187217FBA6100D8A4F2 /* FilterListUpdate.swift in Sources */,
@@ -1242,9 +1262,11 @@
 				65FB45BF219154540006274B /* WebKitContentBlocker.swift in Sources */,
 				655DB0252191447200A33E66 /* Platform.swift in Sources */,
 				65756159217FBA5500D8A4F2 /* BlocklistDownloader+Persistence.swift in Sources */,
+				6511B87F21AD929B00A1E70E /* String+Path.swift in Sources */,
 				6575617E217FBA6100D8A4F2 /* ContentBlockerUtility+Whitelist.swift in Sources */,
 				65B6EB8721A7802900B2F600 /* UserStateHelper.swift in Sources */,
 				6575617D217FBA6100D8A4F2 /* ContentBlockerUtility+FileManager.swift in Sources */,
+				651D45CC21AC85A900C00FAC /* UserBlockListDownloader.swift in Sources */,
 				65ECBEBA21963EEB00551F26 /* String+ProtocolText.swift in Sources */,
 				6575617F217FBA6100D8A4F2 /* ContentBlockerUtility.swift in Sources */,
 				6575618D217FBA6100D8A4F2 /* URLComponents+Encoding.swift in Sources */,
@@ -1252,6 +1274,7 @@
 				650EAB9721914EFA0002BA2C /* RulesHelper.swift in Sources */,
 				6575615B217FBA5500D8A4F2 /* Errors.swift in Sources */,
 				65756183217FBA6100D8A4F2 /* DownloadEvent.swift in Sources */,
+				65B0440621ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift in Sources */,
 				6575618C217FBA6100D8A4F2 /* ActiveVersions.swift in Sources */,
 				65FB45C1219154540006274B /* WebKitContentBlocker+StoreHelper.swift in Sources */,
 				65756181217FBA6100D8A4F2 /* ABPMutableState.swift in Sources */,
@@ -1268,6 +1291,7 @@
 			files = (
 				65CC3371217FBB5100FF0CEF /* FilterListTestModeler.swift in Sources */,
 				65486F42219FC20900565AC8 /* FilterListTests.swift in Sources */,
+				651D45D821ACA2C100C00FAC /* UserBlockListDownloadTests.swift in Sources */,
 				65C11C98219BD78300E3D09C /* RandomStateUtility.swift in Sources */,
 				65CC3370217FBB5100FF0CEF /* TestingFileUtility.swift in Sources */,
 				6582E75521A5D3360075016B /* BlockListModelTests.swift in Sources */,

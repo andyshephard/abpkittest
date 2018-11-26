@@ -71,8 +71,8 @@ class BlockListDownloader: NSObject,
     func blockListDownload(for filterList: FilterList,
                            runInBackground: Bool = true) -> Observable<URLSessionDownloadTask> {
         guard let urlString = filterList.source,
-            let url = URL(string: urlString),
-            var components = URLComponents(string: url.absoluteString)
+              let url = URL(string: urlString),
+              var components = URLComponents(string: url.absoluteString)
         else {
             return Observable.error(ABPDownloadTaskError.failedToMakeDownloadTask)
         }
@@ -128,7 +128,6 @@ class BlockListDownloader: NSObject,
     /// Get last event from behavior subject matching the task ID.
     /// - parameter taskID: A background task identifier.
     /// - returns: The download event value if it exists, otherwise nil.
-    internal
     func lastDownloadEvent(taskID: Int) -> DownloadEvent? {
         if let subject = downloadEvents[taskID] {
             if let lastEvent = try? subject.value() {
@@ -139,7 +138,6 @@ class BlockListDownloader: NSObject,
     }
 
     /// Return true if the status code is valid.
-    internal
     func validURLResponse(_ response: HTTPURLResponse?) -> Bool {
         if isTest { return true }
         if let uwResponse = response {

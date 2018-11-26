@@ -41,19 +41,14 @@ class BlockListDownloadTests: XCTestCase {
         if let uwrp = try? Persistor() { pstr = uwrp } else { XCTFail("Persistor failed init.") }
         do {
             try pstr.clearFilterListModels()
-        } catch let err {
-            XCTFail("Failed to clear models with error: \(err)")
-            return
-        }
+        } catch let err { XCTFail("Failed to clear models with error: \(err)"); return }
         guard let list = try? mdlr.makeLocalFilterList() else {
-            XCTFail("Failed to make test list.")
-            return
+            XCTFail("Failed to make test list."); return
         }
         testList = list
         // swiftlint:disable unused_optional_binding
         guard let _ = try? pstr.saveFilterListModel(testList) else {
-            XCTFail("Failed to save test list.")
-            return
+            XCTFail("Failed to save test list."); return
         }
         // swiftlint:enable unused_optional_binding
     }
@@ -69,6 +64,7 @@ class BlockListDownloadTests: XCTestCase {
         runDownloadDelegation()
     }
 
+    /// Use the delegate to handle a download running in the foreground.
     func runDownloadDelegation(remoteSource: Bool = false) {
         let expect = expectation(description: #function)
         var cnt = 0
@@ -114,8 +110,7 @@ class BlockListDownloadTests: XCTestCase {
         // swiftlint:enable unused_optional_binding
         self.setupEvents(taskID: taskID)
         guard let subj = self.dler.downloadEvents[taskID] else {
-            XCTFail("Bad publish subject.")
-            return Observable.empty()
+            XCTFail("Bad publish subject."); return Observable.empty()
         }
         return subj.asObservable()
     }
@@ -139,10 +134,7 @@ class BlockListDownloadTests: XCTestCase {
             } else {
                 XCTFail("Bad rules URL.")
             }
-        } catch let err {
-            XCTFail("Failed with error: \(err)")
-            return Observable.empty()
-        }
+        } catch let err { XCTFail("Failed with error: \(err)"); return Observable.empty() }
         return Observable.empty()
     }
 

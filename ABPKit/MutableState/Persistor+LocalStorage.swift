@@ -29,41 +29,60 @@ extension Persistor {
     }
 
     private
-    func clearRulesFiles(onlyLog: Bool = false) throws {
-        let storeSuffix = "store"
-        let mgr = FileManager.default
-        let url = try Config().containerURL()
-        guard let enmrtr =
-            mgr.enumerator(at: url,
-                           includingPropertiesForKeys: [.isDirectoryKey,
-                                                        .nameKey],
-                           options: [.skipsHiddenFiles,
-                                     .skipsPackageDescendants],
-                           errorHandler: { _, err -> Bool in
-                ABPKit.log("Error during enumeration: \(err)")
-                return true
-            })
-            else { return }
-        var paths = [String]()
-        while let fileURL = enmrtr.nextObject() as? URL {
-            if fileURL
+    func fileEnumerator(root: URL) -> FileManager.DirectoryEnumerator? {
+        return
+            FileManager.default
+                .enumerator(at: root,
+                            includingPropertiesForKeys: [.isDirectoryKey,
+                                                         .nameKey],
+                            options: [.skipsHiddenFiles,
+                                      .skipsPackageDescendants],
+                            errorHandler: { _, err -> Bool in
+                    ABPKit.log("Error during enumeration: \(err)")
+                    return true
+                })
+    }
+
+    private
+    func jsonFile() -> (URL) -> Bool {
+        return {
+            $0
                 .lastPathComponent
                 .split(separator: ".")
-                .contains(Substring(Constants.rulesExtension)) {
-                    if !onlyLog {
-                        do {
-                            try mgr.removeItem(at: fileURL)
-                            ABPKit.log("🗑️ \(fileURL.path)")
-                        } catch let err { throw err }
-                    } else {
-                        paths.append(fileURL.path)
-                    }
+                .contains(Substring(Constants.rulesExtension))
+            }
+    }
+
+    private
+    func storeFile() -> (URL) -> Bool {
+        let storeSuffix = "store"
+        return {
+            $0
+                .lastPathComponent
+                .contains(Substring(storeSuffix))
+            }
+    }
+
+    private
+    func clearRulesFiles(onlyLog: Bool = false) throws {
+        let mgr = FileManager.default
+        let url = try Config().containerURL()
+        let enmrtr = fileEnumerator(root: url)
+        var paths = [String]()
+        while let fileURL = enmrtr?.nextObject() as? URL {
+            if jsonFile()(fileURL) {
+                if !onlyLog {
+                    do {
+                        try mgr.removeItem(at: fileURL)
+                        ABPKit.log("🗑️ \(fileURL.path)")
+                    } catch let err { throw err }
+                } else {
+                    paths.append(fileURL.path)
                 }
-                if fileURL
-                    .lastPathComponent
-                    .contains(Substring(storeSuffix)) {
-                        paths.append(fileURL.path)
-                    }
+            }
+            if storeFile()(fileURL) {
+                paths.append(fileURL.path)
+            }
         }
         paths.sorted().forEach {
             ABPKit.log("🔵 \($0)")

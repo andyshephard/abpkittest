@@ -34,17 +34,15 @@ class FilterListTestModeler: NSObject {
 
     /// Make with rules stored in container.
     func makeLocalBlockList() throws -> BlockList {
-        let sep = "."
-        let fname = UUID().uuidString + sep + Constants.rulesExtension
-        var list = try BlockList(withAcceptableAds: false, source: BundledTestingBlockList.testingEasylist)
+        let list = try BlockList(withAcceptableAds: false, source: BundledTestingBlockList.testingEasylist)
         let fromBundle: () throws -> URL = {
             let url = self.bundle.url(forResource: self.testBundleFilename, withExtension: "")
             if url != nil { return url! } else { throw ABPFilterListError.missingRules }
         }
         let containerURL = try cfg.containerURL()
+        let fname = list.name.addingFileExtension(Constants.rulesExtension)
         let dst = containerURL.appendingPathComponent(fname, isDirectory: false)
         try BlockListDownloader().copyItem(source: fromBundle(), destination: dst)
-        list.filename = fname
         return list
     }
 
