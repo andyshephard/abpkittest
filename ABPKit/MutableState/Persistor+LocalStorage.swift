@@ -28,19 +28,33 @@ extension Persistor {
         try clearRulesFiles(onlyLog: false)
     }
 
-    private
-    func fileEnumerator(root: URL) -> FileManager.DirectoryEnumerator? {
-        return
-            FileManager.default
-                .enumerator(at: root,
-                            includingPropertiesForKeys: [.isDirectoryKey,
-                                                         .nameKey],
-                            options: [.skipsHiddenFiles,
-                                      .skipsPackageDescendants],
-                            errorHandler: { _, err -> Bool in
-                    ABPKit.log("Error during enumeration: \(err)")
-                    return true
-                })
+    public
+    func jsonFiles() -> (FileManager.DirectoryEnumerator) -> [URL] {
+        return {
+            var urls = [URL]()
+            while let fileURL = $0.nextObject() as? URL {
+                if self.jsonFile()(fileURL) { urls.append(fileURL) }
+            }
+            return urls
+        }
+    }
+
+    public
+    func fileEnumeratorForRoot() -> (URL) throws -> FileManager.DirectoryEnumerator {
+        return {
+            let errHandler: (URL, Error) -> Bool = { _, err in
+                ABPKit.log("Error during enumeration: \(err)")
+                return true
+            }
+            if let enmr = FileManager.default
+                .enumerator(
+                    at: $0,
+                    includingPropertiesForKeys: [.isDirectoryKey, .nameKey],
+                    options: [.skipsHiddenFiles, .skipsPackageDescendants],
+                    errorHandler: errHandler) {
+                return enmr
+            } else { throw ABPMutableStateError.badEnumerator }
+        }
     }
 
     private
@@ -67,9 +81,9 @@ extension Persistor {
     func clearRulesFiles(onlyLog: Bool = false) throws {
         let mgr = FileManager.default
         let url = try Config().containerURL()
-        let enmrtr = fileEnumerator(root: url)
+        let enmr = try fileEnumeratorForRoot()(url)
         var paths = [String]()
-        while let fileURL = enmrtr?.nextObject() as? URL {
+        while let fileURL = enmr.nextObject() as? URL {
             if jsonFile()(fileURL) {
                 if !onlyLog {
                     do {

@@ -35,7 +35,7 @@ class WebViewVC: NSViewController,
     var abp: ABPWebViewBlocker!
     var location: String?
     private let userHist: (ABPWebViewBlocker) -> [String] = {
-        $0.user.blockListHistory?.reduce([]) { $0 + [$1.name] } ?? ["missing"]
+        $0.user.getHistory()?.reduce([]) { $0 + [$1.name] } ?? ["missing"]
     }
 
     override

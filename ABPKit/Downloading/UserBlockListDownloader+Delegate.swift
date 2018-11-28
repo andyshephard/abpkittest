@@ -26,7 +26,7 @@ extension UserBlockListDownloader {
         let taskID = downloadTask.taskIdentifier
         if var newEvent = lastDownloadEvent(taskID: taskID) {
             newEvent.totalBytesWritten = totalBytesWritten
-            downloadEvents[taskID]?.onNext(newEvent) // make a new event
+            downloadEvents[taskID]?.onNext(newEvent)
         }
     }
 
@@ -37,16 +37,16 @@ extension UserBlockListDownloader {
                     downloadTask: URLSessionDownloadTask,
                     didFinishDownloadingTo location: URL) {
         let taskID = downloadTask.taskIdentifier
-        let response = downloadTask.response as? HTTPURLResponse
-        if !validURLResponse(response) {
+        if !validURLResponse(downloadTask.response as? HTTPURLResponse) {
             reportError(taskID: taskID, error: .invalidResponse); return
         }
         guard let containerURL = try? Config().containerURL() else {
             reportError(taskID: taskID, error: .badContainerURL); return
         }
         var fname: String!
-        if let index = indexForTaskID()(taskID) {
-            fname = downloads[index].blockList?.name.addingFileExtension(Constants.rulesExtension)
+        let index = indexForTaskID()(taskID)
+        if index != nil {
+            fname = srcDownloads[index!].blockList?.name.addingFileExtension(Constants.rulesExtension)
         } else {
             reportError(taskID: taskID, error: .badFilename); return
             fname = UUID().uuidString.addingFileExtension(Constants.rulesExtension)
@@ -59,9 +59,17 @@ extension UserBlockListDownloader {
                                   destination: dst)
         } catch let err {
             let fileError = err as? ABPDownloadTaskError
-            if fileError != nil {
-                reportError(taskID: taskID, error: fileError!)
-            }
+            if fileError != nil { reportError(taskID: taskID, error: fileError!) }
+        }
+        if index != nil {
+            do {
+                if let srcBL = srcDownloads[index!].blockList {
+                    let newBL = try BlockList(withAcceptableAds: srcBL.source.hasAcceptableAds(), source: srcBL.source, name: srcBL.name)
+                    do {
+                        try self.user.addDownloaded(newBL)
+                    } catch { self.reportError(taskID: taskID, error: ABPDownloadTaskError.failedToUpdateUserDownloads) }
+                }
+            } catch { reportError(taskID: taskID, error: ABPDownloadTaskError.failedToUpdateUserDownloads) }
         }
         if var newEvent = lastDownloadEvent(taskID: taskID) {
             newEvent.didFinishDownloading = true
@@ -78,9 +86,7 @@ extension UserBlockListDownloader {
                     didCompleteWithError error: Error?) {
         let taskID = task.taskIdentifier
         if var newEvent = lastDownloadEvent(taskID: taskID) {
-            if error != nil {
-                newEvent.error = error
-            }
+            if error != nil { newEvent.error = error }
             downloadEvents[taskID]?.onNext(newEvent)
             downloadEvents[taskID]?.onCompleted()
         }
@@ -88,7 +94,7 @@ extension UserBlockListDownloader {
 
     func indexForTaskID() -> (Int) -> Int? {
         return { tid in
-            self.downloads.enumerated().filter { $1.task?.taskIdentifier == tid }.first?.0
+            self.srcDownloads.enumerated().filter { $1.task?.taskIdentifier == tid }.first?.0
         }
     }
 
@@ -98,7 +104,7 @@ extension UserBlockListDownloader {
                      error: ABPDownloadTaskError) {
         if var newEvent = lastDownloadEvent(taskID: taskID) {
             newEvent.error = error
-            downloadEvents[taskID]?.onNext(newEvent) // new event
+            downloadEvents[taskID]?.onNext(newEvent)
         }
     }
 }

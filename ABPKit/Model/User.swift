@@ -23,7 +23,7 @@ struct User: Persistable {
     /// Active block list.
     var blockList: BlockList?
     /// To be synced with rule lists in WKContentRuleListStore.
-    public var blockListHistory: [BlockList]?
+    var blockListHistory: [BlockList]?
     /// To be synced with local storage.
     var downloads: [BlockList]?
     var whitelistedDomains: [WhitelistedHostname]?
@@ -62,46 +62,12 @@ extension User {
     }
 }
 
-extension User {
-    public mutating
-    func setBlockList(_ blockList: BlockList) {
-        self.blockList = blockList
-    }
-
-    /// Adds the blocklist to history while pruning.
-    /// Does not automatically get called.
-    /// Should be called when changing the user's rule list.
-    /// Performs a save.
-    public mutating
-    func updateHistory() throws {
-        guard let blst = blockList else { throw ABPUserModelError.failedUpdateData }
-        if blockListHistory == nil { blockListHistory = [] }
-        if (blockListHistory!.contains { $0.name == blst.name }) {
-            blockListHistory = prunedHistory()(blockListHistory!)
-        } else {
-            // swiftlint:disable operator_usage_whitespace
-            blockListHistory =  prunedHistory()(prunedHistory()(blockListHistory!) + [blst])
-            // swiftlint:enable operator_usage_whitespace
-        }
-        try save()
-    }
-
-    func prunedHistory() -> ([BlockList]) -> [BlockList] {
-        return { hist in
-            guard hist.count > 0 else { return [] }
-            var copy = hist
-            if copy.count > Constants.userHistoryBlockListMax {
-                copy.removeFirst(hist.count - Constants.userHistoryBlockListMax)
-            }
-            return copy
-        }
-    }
-}
+// MARK: - Getters -
 
 extension User {
     public
-    func save() throws {
-        return try Persistor().saveModel(self, state: .user)
+    func getHistory() -> [BlockList]? {
+        return blockListHistory
     }
 
     public
@@ -116,5 +82,72 @@ extension User {
     public
     func acceptableAdsInUse() -> Bool {
         return blockList?.source.hasAcceptableAds() ?? false
+    }
+}
+
+// MARK: - Mutators -
+
+extension User {
+    public mutating
+    func setBlockList(_ blockList: BlockList) {
+        self.blockList = blockList
+    }
+
+    public mutating
+    func addDownloaded(_ blockList: BlockList) throws {
+        if downloads == nil { downloads = [] }
+        var copy = blockList
+        copy.dateDownload = Date()
+        downloads!.append(copy)
+        try save()
+    }
+
+    /// Adds the current blocklist to history while pruning.
+    /// Does not automatically get called.
+    /// Should be called when changing the user's rule list.
+    /// Performs a save.
+    public mutating
+    func updateHistory() throws {
+        guard let blst = blockList else { throw ABPUserModelError.failedUpdateData }
+        if blockListHistory == nil { blockListHistory = [] }
+        if (blockListHistory!.contains { $0.name == blst.name }) {
+            blockListHistory = prunedHistory()(blockListHistory!)
+        } else {
+            blockListHistory = prunedHistory()(prunedHistory()(blockListHistory!) + [blst])
+        }
+        try save()
+    }
+
+    /// Does not include current block list.
+    public mutating
+    func updateDownloads() throws {
+        if downloads == nil { downloads = [] }
+        downloads = prunedHistory()(downloads!)
+        try save()
+    }
+}
+
+// MARK: - Savers -
+
+extension User {
+    public
+    func save() throws {
+        return try Persistor().saveModel(self, state: .user)
+    }
+}
+
+// MARK: - Utility -
+
+extension User {
+    private
+    func prunedHistory() -> ([BlockList]) -> [BlockList] {
+        return { arr in
+            guard arr.count > 0 else { return [] }
+            var copy = arr
+            if copy.count > Constants.userBlockListMax {
+                copy.removeFirst(arr.count - Constants.userBlockListMax)
+            }
+            return copy
+        }
     }
 }

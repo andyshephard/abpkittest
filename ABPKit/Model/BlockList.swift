@@ -21,12 +21,14 @@
 /// Currently, this struct is not separately Persistable, because it is stored in User.
 /// Saved rules are named after the BlockList's name.
 public
-struct BlockList: Codable {
+struct BlockList: Codable,
+                  Hashable {
     /// Identifier.
     public let name: String
     /// Only settable at creation.
     public let source: BlockListSourceable
     var dateDownload: Date?
+    public var hashValue: Int { return name.hashValue }
 
     enum CodingKeys: CodingKey {
         case name
@@ -36,11 +38,12 @@ struct BlockList: Codable {
 
     public
     init(withAcceptableAds: Bool,
-         source: BlockListSourceable) throws {
+         source: BlockListSourceable,
+         name: String? = nil) throws {
         guard withAcceptableAds == source.hasAcceptableAds() else {
             throw ABPFilterListError.aaStateMismatch
         }
-        name = UUID().uuidString
+        self.name = name ?? UUID().uuidString
         self.source = source
         dateDownload = nil
     }
@@ -142,5 +145,11 @@ extension BlockList {
             aae = !isAA ? Constants.srcEasylist : Constants.srcEasylistPlusExceptions
         }
         return sep(type)(aae)
+    }
+}
+
+extension BlockList {
+    public static func == (lhs: BlockList, rhs: BlockList) -> Bool {
+        return lhs.name == rhs.name
     }
 }

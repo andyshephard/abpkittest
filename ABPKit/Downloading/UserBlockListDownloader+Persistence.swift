@@ -45,4 +45,23 @@ extension UserBlockListDownloader {
             throw ABPDownloadTaskError.failedRemoval
         }
     }
+
+    /// Remove downloads no longer in user's downloads.
+    public
+    func syncDownloads() -> (User) throws -> User {
+        return {
+            let pstr = try Persistor()
+            var copy = $0
+            try copy.updateDownloads() // downloads nil check
+            let notInCopy = pstr.jsonFiles()(try pstr.fileEnumeratorForRoot()(Config().containerURL()))
+                .filter { url in
+                    !copy.downloads!.contains { $0.name.addingFileExtension(Constants.rulesExtension) == url.lastPathComponent }
+                }
+            let mgr = FileManager.default
+            try notInCopy.forEach {
+                try mgr.removeItem(at: $0)
+            }
+            return copy
+        }
+    }
 }

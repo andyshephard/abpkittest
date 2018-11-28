@@ -71,7 +71,7 @@ struct Constants {
     public static let extensionSafariNameMacOS = "HostCBExt-macOS"
     public static let abpkitDir = "ABPKit.framework"
     public static let abpkitResourcesDir = "Resources"
-    public static let userHistoryBlockListMax = 5
+    public static let userBlockListMax = 5
 }
 
 /// ABPKit configuration class for accessing globally relevant functions.

@@ -15,6 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import RxSwift
+
 public typealias AppGroupName = String
 public typealias AppGroupContainerURL = URL
 public typealias BlockListData = Data
@@ -35,5 +37,6 @@ public typealias FilterListV2Sources = [[String: String]]
 public typealias LegacyFilterLists = [String: [String: Any]]
 public typealias NamedErrors = [String: Error]
 public typealias RulesStoreFileURL = URL
+public typealias TaskDownloadEvent = [Int: BehaviorSubject<UserDownloadEvent>]
 public typealias WhitelistedHostname = String
 public typealias WhitelistedWebsites = [String]

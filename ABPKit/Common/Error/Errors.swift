@@ -61,6 +61,7 @@ enum ABPDeviceTokenSaveError: Error {
 /// - failedRemoval: Failure during file remove operation.
 /// - failedToMakeBackgroundSession: Failed during background session creation.
 /// - failedToMakeDownloadTask: Download task could not be created for the download.
+/// - failedToUpdateUserDownloads: Downloads could not be updated.
 /// - invalidResponse: Web server response was invalid.
 /// - tooManyRequests: HTTP connection failed due to temporary state.
 public
@@ -79,6 +80,7 @@ enum ABPDownloadTaskError: Error {
     case failedRemoval
     case failedToMakeBackgroundSession
     case failedToMakeDownloadTask
+    case failedToUpdateUserDownloads
     case invalidResponse
     case tooManyRequests
 }
@@ -122,6 +124,7 @@ enum ABPFilterListError: Error {
 
 /// Error cases related to mutable state.
 /// - ambiguousModels: Model objects are not unique or are missing.
+/// - badEnumerator: Failed to obtain enumerator.
 /// - badState: Encountered invalid state.
 /// - failedClear: Clearing models failed.
 /// - invalidData: Indicates error with data.
@@ -132,6 +135,7 @@ enum ABPFilterListError: Error {
 public
 enum ABPMutableStateError: Error {
     case ambiguousModels
+    case badEnumerator
     case badState
     case failedClear
     case invalidData
@@ -143,12 +147,14 @@ enum ABPMutableStateError: Error {
 
 /// Error cases for the user model.
 /// - badDataUser: Data for user is invalid.
+/// - badDownloads: Download data is invalid.
 /// - failedDecodingUser: Data decoding failed.
 /// - failedEncodingUser: Data encoding failed.
 /// - failedUpdateData: Internal data update failed.
 public
 enum ABPUserModelError: Error {
     case badDataUser
+    case badDownloads
     case failedDecodingUser
     case failedEncodingUser
     case failedUpdateData

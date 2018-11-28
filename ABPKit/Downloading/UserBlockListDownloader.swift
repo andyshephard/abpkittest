@@ -28,9 +28,9 @@ class UserBlockListDownloader: NSObject,
                                URLSessionDownloadDelegate {
     var user: User!
     /// Active downloads for use by delegate - state is not persisted.
-    var downloads = [SourceDownload]()
+    var srcDownloads = [SourceDownload]()
     /// Download events keyed by task ID.
-    var downloadEvents = [DownloadTaskID: BehaviorSubject<UserDownloadEvent>]()
+    var downloadEvents = TaskDownloadEvent()
     /// For download tasks.
     var downloadSession: URLSession!
 
@@ -75,14 +75,14 @@ extension UserBlockListDownloader {
 
 extension UserBlockListDownloader {
     func downloadForUser(_ user: User) throws {
-        downloads = try blockListDownloads()(user)
+        srcDownloads = try blockListDownloads()(user)
     }
 
     /// Cancel all existing downloads.
     /// Create tasks for downloading user's block list and start them.
     func blockListDownloads() -> (User) throws -> [SourceDownload] {
         return { user in
-            _ = self.downloadsCancelled()(self.downloads)
+            _ = self.downloadsCancelled()(self.srcDownloads)
             do {
                 return try self.sourceDownloads()(user.blockList?.source as? BlockListSourceable & RulesDownloadable)
                     .map { $0.task?.resume(); return $0 }
