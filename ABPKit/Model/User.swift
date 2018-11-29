@@ -18,7 +18,8 @@
 /// User has one BlockList active at a time.
 /// It may be a copy from the download collection.
 public
-struct User: Persistable {
+struct User: Persistable,
+             Equatable {
     let name: String?
     /// Active block list.
     var blockList: BlockList?
@@ -94,12 +95,12 @@ extension User {
     }
 
     public mutating
-    func addDownloaded(_ blockList: BlockList) throws {
+    func addDownloaded(_ blockList: BlockList, withSave: Bool = false) throws {
         if downloads == nil { downloads = [] }
         var copy = blockList
         copy.dateDownload = Date()
         downloads!.append(copy)
-        try save()
+        if withSave { try save() }
     }
 
     /// Adds the current blocklist to history while pruning.

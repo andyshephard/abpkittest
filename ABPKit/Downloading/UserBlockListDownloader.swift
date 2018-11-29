@@ -24,13 +24,17 @@ struct SourceDownload {
     var url: URL?
 }
 
+/// Handles all downloads for a user.
+/// Does not automatically persist user states - persistence requires manual
+/// invocation.
 class UserBlockListDownloader: NSObject,
                                URLSessionDownloadDelegate {
+    /// Current user state.
     var user: User!
     /// Active downloads for use by delegate - state is not persisted.
     var srcDownloads = [SourceDownload]()
     /// Download events keyed by task ID.
-    var downloadEvents = TaskDownloadEvent()
+    var downloadEvents = TaskDownloadEvents()
     /// For download tasks.
     var downloadSession: URLSession!
 
@@ -48,7 +52,6 @@ extension UserBlockListDownloader {
                           delegateQueue: .main)
     }
 
-    // @todo fix rpt
     /// Return true if the status code is valid.
     func validURLResponse(_ response: HTTPURLResponse?) -> Bool {
         if let uwResponse = response {
@@ -74,12 +77,24 @@ extension UserBlockListDownloader {
 }
 
 extension UserBlockListDownloader {
-    func downloadForUser(_ user: User) throws {
-        srcDownloads = try blockListDownloads()(user)
+    /// More than one event can have didFinishDownloading == true.
+    func userAfterDownloads() -> (Observable<UserDownloadEvent>) -> Observable<User> {
+        return {
+            $0
+                .takeLast(1)
+                .filter { $0.didFinishDownloading == true }
+                .flatMap { _ -> Observable<User> in
+                    return Observable.just(self.user)
+                }
+        }
+    }
+
+    func downloadedUserBlockLists() throws -> [BlockList] {
+        return try sourcesToBlockLists()(blockListDownloads()(user))
     }
 
     /// Cancel all existing downloads.
-    /// Create tasks for downloading user's block list and start them.
+    /// Start tasks after creating tasks for downloading sources in user's block list.
     func blockListDownloads() -> (User) throws -> [SourceDownload] {
         return { user in
             _ = self.downloadsCancelled()(self.srcDownloads)
@@ -87,6 +102,39 @@ extension UserBlockListDownloader {
                 return try self.sourceDownloads()(user.blockList?.source as? BlockListSourceable & RulesDownloadable)
                     .map { $0.task?.resume(); return $0 }
             } catch let err { throw err }
+        }
+    }
+
+    /// Performs downloading and assigns events.
+    /// Return an observable of all concatenated user dl events.
+    func userSourceDownloads() -> Observable<UserDownloadEvent> {
+        do {
+            // Downloader has state dependency on source DLs:
+            srcDownloads = try blockListDownloads()(user)
+            // Downloader has state dependency on download events:
+            downloadEvents = makeDownloadEvents()(srcDownloads)
+            return Observable.concat(downloadEvents.map { $1 })
+        } catch { return Observable.error(ABPUserModelError.badDownloads) }
+    }
+
+    /// Seed events.
+    func makeDownloadEvents() -> ([SourceDownload]) -> (TaskDownloadEvents) {
+        return {
+            Dictionary(uniqueKeysWithValues: $0
+                .map { $0.task?.taskIdentifier }
+                .compactMap {
+                    ($0!, BehaviorSubject<UserDownloadEvent>(value: UserDownloadEvent()))
+                })
+        }
+    }
+
+    /// Transform sources to block lists - for setting user block list caches.
+    func sourcesToBlockLists() -> ([SourceDownload]) -> [BlockList] {
+        return {
+            $0.reduce([]) {
+                if let list = $1.blockList { return $0 + [list] }
+                return $0
+            }
         }
     }
 

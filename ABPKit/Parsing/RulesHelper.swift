@@ -38,6 +38,7 @@ class RulesHelper {
         }
     }
 
+    /// Get rules based on a filename. Used to pre-load downloaded rules.
     public
     func rulesForFilename() -> (String?) throws -> URL? {
         return {

@@ -25,6 +25,7 @@ extension UserBlockListDownloader {
                     totalBytesExpectedToWrite: Int64) {
         let taskID = downloadTask.taskIdentifier
         if var newEvent = lastDownloadEvent(taskID: taskID) {
+            newEvent.didFinishDownloading = false
             newEvent.totalBytesWritten = totalBytesWritten
             downloadEvents[taskID]?.onNext(newEvent)
         }
@@ -64,16 +65,11 @@ extension UserBlockListDownloader {
         if index != nil {
             do {
                 if let srcBL = srcDownloads[index!].blockList {
-                    let newBL = try BlockList(withAcceptableAds: srcBL.source.hasAcceptableAds(), source: srcBL.source, name: srcBL.name)
-                    do {
-                        try self.user.addDownloaded(newBL)
-                    } catch { self.reportError(taskID: taskID, error: ABPDownloadTaskError.failedToUpdateUserDownloads) }
+                    let newBL = try BlockList(withAcceptableAds: srcBL.source.hasAcceptableAds(),
+                                              source: srcBL.source, name: srcBL.name)
+                    try self.user.addDownloaded(newBL)
                 }
             } catch { reportError(taskID: taskID, error: ABPDownloadTaskError.failedToUpdateUserDownloads) }
-        }
-        if var newEvent = lastDownloadEvent(taskID: taskID) {
-            newEvent.didFinishDownloading = true
-            downloadEvents[taskID]?.onNext(newEvent)
         }
     }
 
@@ -86,6 +82,7 @@ extension UserBlockListDownloader {
                     didCompleteWithError error: Error?) {
         let taskID = task.taskIdentifier
         if var newEvent = lastDownloadEvent(taskID: taskID) {
+            newEvent.didFinishDownloading = true
             if error != nil { newEvent.error = error }
             downloadEvents[taskID]?.onNext(newEvent)
             downloadEvents[taskID]?.onCompleted()
@@ -105,6 +102,7 @@ extension UserBlockListDownloader {
         if var newEvent = lastDownloadEvent(taskID: taskID) {
             newEvent.error = error
             downloadEvents[taskID]?.onNext(newEvent)
+            downloadEvents[taskID]?.onError(error)
         }
     }
 }

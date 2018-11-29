@@ -50,6 +50,19 @@ struct BlockList: Codable,
 }
 
 extension BlockList {
+    public
+    func isExpired() -> Bool {
+        if dateDownload != nil {
+            return dateDownload!
+                .addingTimeInterval(Constants.defaultFilterListExpiration)
+                .timeIntervalSinceReferenceDate
+            < Date.timeIntervalSinceReferenceDate
+        }
+        return true
+    }
+}
+
+extension BlockList {
     // swiftlint:disable cyclomatic_complexity
     public
     init(from decoder: Decoder) throws {
