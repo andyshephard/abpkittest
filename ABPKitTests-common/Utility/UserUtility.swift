@@ -15,26 +15,16 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// Represents the changing state of a download.
-public
-struct UserDownloadEvent {
-    public var didFinishDownloading: Bool?
-    public var totalBytesWritten: Int64?
-    public var error: Error?
+@testable import ABPKit
 
-    public
-    init(didFinishDownloading: Bool?,
-         totalBytesWritten: Int64?,
-         error: Error?) {
-        self.didFinishDownloading = didFinishDownloading
-        self.totalBytesWritten = totalBytesWritten
-        self.error = error
-    }
+import XCTest
 
-    public
-    init() {
-        self.init(didFinishDownloading: nil,
-                  totalBytesWritten: nil,
-                  error: nil)
+class UserUtility {
+    let lastUser: (Bool) -> User? = {
+        do {
+            let user = try User(fromPersistentStorage: $0)
+            if user != nil { return user! }
+        } catch let err { XCTFail("Error: \(err)") }
+        return nil
     }
 }

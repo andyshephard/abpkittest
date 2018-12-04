@@ -89,6 +89,19 @@ extension UserBlockListDownloader {
         }
     }
 
+    /// Update user's block list with most recently downloaded block list.
+    func userBlockListUpdated() -> (User) throws -> User {
+        return { user in
+            let match = user.downloads?
+                .sorted { $0.dateDownload?.compare($1.dateDownload ?? .distantPast) == .orderedDescending }
+                .filter { $0.source.hasAcceptableAds() == user.blockList?.source.hasAcceptableAds() }.first
+            if let list = match {
+                return user.updatedBlockList(blockList: list)(user)
+            }
+            throw ABPUserModelError.badDownloads
+        }
+    }
+
     func downloadedUserBlockLists() throws -> [BlockList] {
         return try sourcesToBlockLists()(blockListDownloads()(user))
     }

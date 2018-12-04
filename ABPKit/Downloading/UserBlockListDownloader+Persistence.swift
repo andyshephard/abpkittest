@@ -47,6 +47,7 @@ extension UserBlockListDownloader {
     }
 
     /// Remove downloads no longer in user's downloads.
+    /// Updates persistent state.
     public
     func syncDownloads() -> (User) throws -> User {
         return {

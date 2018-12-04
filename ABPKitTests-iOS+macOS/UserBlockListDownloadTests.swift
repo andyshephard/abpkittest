@@ -34,19 +34,18 @@ class UserBlockListDownloadTests: XCTestCase {
         super.setUp()
         bag = DisposeBag()
         do {
-            try user = User()
-            let blst = try BlockList(withAcceptableAds: true,
-                                     source: testSource.easylistPlusExceptions)
-            user.blockList = blst
-            try user.save()
-            // User state passed in:
-            dler = UserBlockListDownloader(user: user)
+            user = try User(
+                fromPersistentStorage: false,
+                withBlockList: BlockList(
+                    withAcceptableAds: true,
+                    source: testSource.easylistPlusExceptions))
+            dler = try UserBlockListDownloader(user: user.saved())
         } catch let err { XCTFail("Error: \(err)") }
     }
 
     func testRemoteBlockListCases() throws {
         let lists = try testSource.allCases
-            .map { try blockListForSource()($0) }
+            .map { try DownloadUtility().blockListForSource()($0) }
         XCTAssert(lists.filter { $0.source.hasAcceptableAds() }.count == 1,
                   "Bad count.")
     }
@@ -65,9 +64,11 @@ class UserBlockListDownloadTests: XCTestCase {
     func testExpired() throws {
         var list = try BlockList(withAcceptableAds: true, source: testSource.easylistPlusExceptions)
         list.dateDownload = Date().addingTimeInterval(-Constants.defaultFilterListExpiration - 1)
-        XCTAssert(list.isExpired() == true, "Bad expiration.")
+        XCTAssert(list.isExpired() == true,
+                  "Bad expiration.")
         list.dateDownload = Date().addingTimeInterval(-Constants.defaultFilterListExpiration + 1)
-        XCTAssert(list.isExpired() == false, "Bad expiration.")
+        XCTAssert(list.isExpired() == false,
+                  "Bad expiration.")
     }
 
     func testMockFailure() {
@@ -142,7 +143,7 @@ class UserBlockListDownloadTests: XCTestCase {
     /// Performs multiple downloads to fill up the user downloads and local
     /// storage for download sync testing.
     ///
-    /// Network conditions may require a longer timeout.
+    /// Network conditions may require longer timeout.
     ///
     /// Completion of downloadSubscription may occasionally happen after outer
     /// completion but the results should be the same. An extra take is required
@@ -151,52 +152,28 @@ class UserBlockListDownloadTests: XCTestCase {
         let expect = expectation(description: #function)
         let iterMax = Int((Double(Constants.userBlockListMax) / Double(testSource.allCases.count)).rounded(.up)) + 1
         let pstr = try Persistor()
+        let lastUser = UserUtility().lastUser
         Observable<Int>
             .interval(timeout, scheduler: MainScheduler.asyncInstance)
             .startWith(-1)
             .take(iterMax)
             .subscribe(onNext: { _ in
-                self.downloadSubscription().disposed(by: self.bag)
+                DownloadUtility().downloadForUser(lastUser).disposed(by: self.bag)
             }, onCompleted: {
-                if let user = try? User(fromPersistentStorage: true), user != nil {
-                    let synced = try? self.dler.syncDownloads()(user!)
-                    if synced != nil {
-                        try? synced!.save()
-                        log("👩‍🎤2 downloads #\(String(describing: synced!.downloads?.count)) - \(String(describing: synced!.downloads))")
-                        let user = try? User(fromPersistentStorage: true)
-                        XCTAssert(user??.downloads?.count == Constants.userBlockListMax,
-                                  "Bad count downloads.")
-                        do {
-                            let fcnt = try pstr.jsonFiles()(pstr.fileEnumeratorForRoot()(Config().containerURL())).count
-                            XCTAssert(fcnt == user??.downloads?.count,
-                                      "Bad count files.")
-                        } catch let err { XCTFail("Error: \(err)") }
-                    }
+                if let user = lastUser(true) {
+                    do {
+                        let synced = try self.dler.syncDownloads()(user).saved()
+                        log("👩‍🎤multicomplete downloads #\(String(describing: synced.downloads?.count)) - \(String(describing: synced.downloads))")
+                        let user = lastUser(true)
+                        XCTAssert(user?.downloads?.count == Constants.userBlockListMax,
+                                  "Bad count downloads: Expected \(Constants.userBlockListMax), got \(String(describing: user?.downloads?.count)).")
+                        let fcnt = try pstr.jsonFiles()(pstr.fileEnumeratorForRoot()(Config().containerURL())).count
+                        XCTAssert(fcnt == user?.downloads?.count,
+                                  "Bad count files.")
+                    } catch let err { XCTFail("Error: \(err)") }
                 }
                 expect.fulfill()
             }).disposed(by: bag)
         wait(for: [expect], timeout: timeout * Double(iterMax))
-    }
-
-    private
-    func downloadSubscription() -> Disposable {
-        return dler.userAfterDownloads()(dler.userSourceDownloads())
-            .subscribe(onNext: { user in
-                do {
-                    try user.save()
-                } catch let err { XCTFail("Error: \(err)") }
-            }, onError: { err in
-                XCTFail("Error: \(err)")
-            }, onCompleted: {
-                let user = try? User(fromPersistentStorage: true)
-                log("👩‍🎤1 downloads #\(String(describing: user??.downloads?.count)) - \(String(describing: user??.downloads))")
-            })
-    }
-
-    private
-    func blockListForSource() -> (BlockListSourceable & RulesDownloadable) throws -> BlockList {
-        return {
-            return try BlockList(withAcceptableAds: $0.hasAcceptableAds(), source: $0)
-        }
     }
 }

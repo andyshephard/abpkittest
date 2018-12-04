@@ -15,7 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ABPKit
+@testable import ABPKit
 
 class RandomStateUtility {
     let random = { maxInt in return Int(arc4random_uniform(maxInt + 1)) }

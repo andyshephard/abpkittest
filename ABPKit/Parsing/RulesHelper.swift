@@ -19,7 +19,7 @@ import RxSwift
 
 class RulesHelper {
     var bag: DisposeBag!
-    /// Overrride default bundle, if set.
+    /// Override default bundle eg use test bundle, if set.
     var useBundle: Bundle?
 
     init() {
@@ -27,19 +27,15 @@ class RulesHelper {
     }
 
     /// Get rules in the context of a user.
-    public
     func rulesForUser() -> (User) throws -> URL? {
         return { user in
-            guard let blst = user.blockList,
-                  let name = user.name else { return nil }
-            return try self.rulesURL(identifier: name,
-                                     source: blst.source,
+            guard let blst = user.blockList else { return nil }
+            return try self.rulesURL(blockList: blst,
                                      withAA: user.acceptableAdsInUse())
         }
     }
 
     /// Get rules based on a filename. Used to pre-load downloaded rules.
-    public
     func rulesForFilename() -> (String?) throws -> URL? {
         return {
             guard let name = $0 else { return nil }
@@ -54,15 +50,21 @@ class RulesHelper {
     /// need to be explicitly set when accessing rules from a bundle other than the
     /// Config's bundle.
     /// Example: rulesURL(bundle: Bundle(for: ...))
+    ///
     /// This function also handles BlockListSourceables during the transition to a
-    /// final definition of FilterList.
-    func rulesURL(identifier: String,
-                  source: BlockListSourceable? = nil,
+    /// final definition of FilterList. Usage of FilterList will likely be removed
+    /// in future versions.
+    ///
+    /// Parameter identifier is not used for user block lists.
+    func rulesURL(identifier: String? = nil,
+                  blockList: BlockList? = nil,
                   withAA: Bool = true,
                   bundle: Bundle = Config().bundle(),
                   ignoreBundle: Bool = false) throws -> URL? {
         let bndlToUse = useBundle ?? bundle
-        if let url = fromBundledSourceable(source, withAA: withAA, bundle: bndlToUse) { return url }
+        if let url = fromBundledSourceable(blockList?.source, withAA: withAA, bundle: bndlToUse) { return url }
+        if let blst = blockList, let url = try fromDownloadedBlockList(blst) { return url }
+        // Search filter list models:
         let matched = try Persistor()
             .loadFilterListModels()
             .filter { $0.name == identifier }
@@ -81,12 +83,14 @@ class RulesHelper {
             return pathURL
         }
         // Only if URL not found in the container and not a BlockListSourceable, look in the bundle:
-        if !ignoreBundle {
-           return fromBundle(name: identifier, bundle: bndlToUse)
+        if !ignoreBundle, let idr = identifier {
+           return fromBundle(name: idr, bundle: bndlToUse)
         }
         return nil
     }
 
+    /// Used for handling bundled rules:
+    /// Return URL for a sourceable with a given AA state from a bundle if the source consists of bundled rules.
     func fromBundledSourceable(_ source: BlockListSourceable?,
                                withAA: Bool,
                                bundle: Bundle) -> URL? {
@@ -128,6 +132,25 @@ class RulesHelper {
             }
             return list.rules()
         }
+    }
+
+    private
+    func fromDownloadedBlockList(_ blockList: BlockList) throws -> URL? {
+        switch blockList.source {
+        case let src where src as? RemoteBlockList != nil:
+            return try fromLocalStorage(blockList.name)
+        default:
+            return nil
+        }
+    }
+
+    private
+    func fromLocalStorage(_ name: String) throws -> URL? {
+        let url = try Config().containerURL()
+            .appendingPathComponent(name.addingFileExtension(Constants.rulesExtension))
+        if FileManager.default
+            .fileExists(atPath: url.path) { return url }
+        return nil
     }
 
     /// Match by filename.

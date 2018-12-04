@@ -47,20 +47,21 @@ class BlockListModelTests: XCTestCase {
     }
 
     func testBundledRules() throws {
-        var blst: BlockList!
-        blst = try BlockList(withAcceptableAds: false,
-                             source: BundledBlockList.easylist)
-        var user = try User()
-        user.blockList = blst
-        let url = try RulesHelper().rulesForUser()(user)
-        XCTAssert(url != nil, "Bad rules")
+        if let user = try User(
+            fromPersistentStorage: false,
+            withBlockList: BlockList(withAcceptableAds: false,
+                                     source: BundledBlockList.easylist)) {
+                try XCTAssert(RulesHelper().rulesForUser()(user) != nil,
+                              "Bad rules"); return
+            }
+        XCTFail("Bad user.")
     }
 
     func testBundledRulesToFile() throws {
-        let blst = try FilterListTestModeler().makeLocalBlockList()
-        try Persistor().logRulesFiles()
-        let url = try RulesHelper().rulesForFilename()(blst.name.addingFileExtension(Constants.rulesExtension))
-        XCTAssert(url != nil, "Bad rules")
+        try XCTAssert(RulesHelper().rulesForFilename()(
+            FilterListTestModeler().makeLocalBlockList().name
+                .addingFileExtension(Constants.rulesExtension)) != nil,
+                      "Bad rules")
     }
 
     private

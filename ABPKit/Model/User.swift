@@ -43,13 +43,22 @@ extension User {
 
     /// For use during the period where only a single user is supported.
     public
-    init?(fromPersistentStorage: Bool, persistenceID: String? = nil) throws {
+    init?(fromPersistentStorage: Bool,
+          persistenceID: String? = nil) throws {
         switch fromPersistentStorage {
         case true:
             try self.init(persistenceID: "ignore_id")
         case false:
             try self.init()
         }
+    }
+
+    /// Set the block list during init.
+    public
+    init?(fromPersistentStorage: Bool,
+          withBlockList: BlockList) throws {
+        try self.init(fromPersistentStorage: fromPersistentStorage)
+        blockList = withBlockList
     }
 
     /// Only a single user is supported here and identifier is not used.
@@ -126,6 +135,12 @@ extension User {
         downloads = prunedHistory()(downloads!)
         try save()
     }
+
+    func updatedBlockList(blockList: BlockList) -> (User) -> User {
+        return {
+            var copy = $0; copy.blockList = blockList; return copy
+        }
+    }
 }
 
 // MARK: - Savers -
@@ -134,6 +149,11 @@ extension User {
     public
     func save() throws {
         return try Persistor().saveModel(self, state: .user)
+    }
+
+    public
+    func saved() throws -> User {
+        try Persistor().saveModel(self, state: .user); return self
     }
 }
 

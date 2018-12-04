@@ -24,6 +24,7 @@ protocol ABPBlockable: class {
     var webView: WKWebView! { get }
 }
 
+/// Block ads in a WKWebView.
 @available(iOS 11.0, macOS 10.13, *)
 public
 class ABPWebViewBlocker {
@@ -54,20 +55,19 @@ class ABPWebViewBlocker {
                        completion: (URL?, Error?) -> Void) {
         let newString = urlString.addingWebProtocol()
         if let url = URL(string: newString) {
-            let request = URLRequest(url: url)
-            host.webView.load(request)
+            host.webView.load(URLRequest(url: url))
             completion(url, nil)
         } else {
             completion(nil, ABPWebViewBlockerError.badURL)
         }
     }
 
-    /// Add rules for the host's model.
-    /// Remove rules in store that are not in user history.
+    /// Add rules for the user's block list.
+    /// Remove rules in the store that are not in user history.
     public
-    func addRules(completion: @escaping ([Error]?) -> Void) {
+    func addNewRuleList(completion: @escaping ([Error]?) -> Void) {
         var errors = [Error]()
-        self.wkcb.rulesAddedWKStore(user: self.user)
+        wkcb.rulesAddedWKStore(user: self.user)
             .flatMap { _ -> Observable<WKContentRuleList> in
                 return self.rulesAddToContentController()
             }
@@ -82,7 +82,6 @@ class ABPWebViewBlocker {
                 completion(errors)
             }, onCompleted: {
                 if errors.count == 0 {
-                    log("Error count = \(errors.count)")
                     completion(nil)
                 } else {
                     completion(errors)
@@ -90,28 +89,27 @@ class ABPWebViewBlocker {
             }).disposed(by: bag)
     }
 
-    /// Add rules if an entry in user history matches the existing rule lists in the store.
-      public
-      func addExistingRuleList(completion: @escaping (Bool) -> Void) throws {
-          let uhlp = UserStateHelper(user: user)
-          guard let blst = user.blockList else { throw ABPUserModelError.badDataUser }
-          let mtch = try uhlp.historyMatch()(blst.source)
-          rulesUseWithContentController(blockList: mtch)
-              .subscribe(onNext: { lists in
-                  self.wkcb.rulesStore
-                      .getAvailableContentRuleListIdentifiers { ids in
-                          log("🏪store \(String(describing: ids?.sorted()))")
-                          // Return true if there is a unique match.
-                          completion(lists.count > 0 && ids?.filter { $0 == mtch?.name }.count == 1)
-                      }
-              }, onError: { err in
-                  // Lookup error may have occurred. Try to clear rules to recover:
-                  log("🚨 \(err)")
-                  self.clearRules {
-                      completion(false)
-                  }
-              }).disposed(by: bag)
-      }
+    /// Add rules if an entry in user history matches the existing rule lists in
+    /// the store.
+    public
+    func addExistingRuleList(completion: @escaping (Bool) -> Void) throws {
+        let uhlp = UserStateHelper(user: user)
+        guard let blst = user.blockList else { throw ABPUserModelError.badDataUser }
+        let mtch = try uhlp.historyMatch()(blst.source)
+        rulesUseWithContentController(blockList: mtch)
+            .subscribe(onNext: { lists in
+                self.wkcb.rulesStore
+                    .getAvailableContentRuleListIdentifiers { ids in
+                        // Complete with true if there is a unique match.
+                        completion(lists.count > 0 && ids?.filter { $0 == mtch?.name }.count == 1)
+                    }
+            }, onError: { _ in
+                // Lookup error may have occurred. Try to clear rules to recover:
+                self.clearRules {
+                    completion(false)
+                }
+            }).disposed(by: bag)
+    }
 
       /// Clear all rules in store.
       func clearRules(completion: @escaping () -> Void) {
@@ -123,7 +121,8 @@ class ABPWebViewBlocker {
               }).disposed(by: bag)
       }
 
-    /// Adds one rule list to the content controller if they exist for the user's current block list.
+    /// Adds one rule list to the content controller if they exist for the
+    /// user's current block list.
     private
     func rulesAddToContentController() -> Observable<WKContentRuleList> {
         guard let user = self.user, let name = user.blockList?.name else {

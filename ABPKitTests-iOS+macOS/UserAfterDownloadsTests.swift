@@ -20,11 +20,11 @@
 import RxSwift
 import XCTest
 
-class UserStateFutureTests: XCTestCase {
+/// Tests future user states.
+class UserAfterDownloadsTests: XCTestCase {
     let testSource = RemoteBlockList.self
     let timeout: TimeInterval = 10
     var bag: DisposeBag!
-    var dler: UserBlockListDownloader!
     var user: User!
 
     override
@@ -32,13 +32,13 @@ class UserStateFutureTests: XCTestCase {
         super.setUp()
         bag = DisposeBag()
         do {
-            try user = User()
-            let blst = try BlockList(withAcceptableAds: true,
-                                     source: testSource.easylistPlusExceptions)
-            user.blockList = blst
+            try Persistor().clearRulesFiles()
+            user = try User(
+                fromPersistentStorage: false,
+                withBlockList: BlockList(
+                    withAcceptableAds: true,
+                    source: testSource.easylistPlusExceptions))
             try user.save()
-            // Pass user state:
-            dler = UserBlockListDownloader(user: user)
         } catch let err { XCTFail("Error: \(err)") }
     }
 
@@ -46,36 +46,39 @@ class UserStateFutureTests: XCTestCase {
     func testUserAfterDL() throws {
         let expect = expectation(description: #function)
         let expectedDLs = testSource.allCases.count
-        guard let user = try User(fromPersistentStorage: true) else { throw ABPUserModelError.badDataUser }
         let start = user // copy
-        dler.userAfterDownloads()(dler.userSourceDownloads())
-            .subscribe(onNext: { user in
-                guard let rslt = try? User(fromPersistentStorage: true),
-                      let end = rslt
-                else { XCTFail("Bad user."); return }
-                XCTAssert(start == end,
+        let lastUser = UserUtility().lastUser
+        DownloadUtility().downloadForUser(
+            lastUser,
+            afterDownloadTest: {
+                XCTAssert(lastUser(true) == start,
                           "Bad equivalence for persisted.")
-                try? self.dler.syncDownloads()(user).save()
-                let synced = try? User(fromPersistentStorage: true)
-                XCTAssert(synced??.downloads?.count == expectedDLs,
+            },
+            afterUserSavedTest: { saved in
+                // User BL not updated after DLs:
+                XCTAssert(saved.blockList == start?.blockList,
+                          "Bad blocklist.")
+                XCTAssert(saved.downloads?.count == expectedDLs,
                           "Bad count.")
-                XCTAssert(synced??.name == start.name,
+                XCTAssert(saved.name == start?.name,
                           "Bad user.")
-            }, onError: { err in
-                XCTFail("Error: \(err)")
-            }, onCompleted: {
-                expect.fulfill()
-            }).disposed(by: bag)
+                let updated = try? UserBlockListDownloader(user: saved)
+                    .userBlockListUpdated()(saved)
+                if let dls = updated?.downloads, let blst = updated?.blockList {
+                    XCTAssert(dls.contains(blst),
+                              "List not found.")
+                } else { XCTFail("Missing lists.") }
+            },
+            withCompleted: { expect.fulfill() }
+        ).disposed(by: bag)
         wait(for: [expect], timeout: timeout)
     }
 
     func testUserAfterDLWithError() throws {
         let expect = expectation(description: #function)
         let mockError = ABPDownloadTaskError.failedMove
-        guard var user = try User(fromPersistentStorage: false) else { throw ABPUserModelError.badDataUser }
-        let blst = try BlockList(withAcceptableAds: true, source: RemoteBlockList.easylistPlusExceptions)
-        user.blockList = blst
-        dler.userAfterDownloads()(MockEventer(error: mockError).mockObservable())
+        UserBlockListDownloader(user: user)
+            .userAfterDownloads()(MockEventer(error: mockError).mockObservable())
             .subscribe(onError: { err in
                 XCTAssert(err as? ABPDownloadTaskError == mockError,
                           "Bad error.")

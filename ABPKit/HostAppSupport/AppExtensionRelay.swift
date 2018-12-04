@@ -30,6 +30,8 @@ import RxCocoa
 ///
 ///     let relay = AppExtensionRelay.sharedInstance()
 ///
+/// This implementation only exists to serve the legacy ABP iOS app and will be
+/// re-factored in a future version.
 @objc
 public class AppExtensionRelay: NSObject {
     private static var privateSharedInstance: AppExtensionRelay?

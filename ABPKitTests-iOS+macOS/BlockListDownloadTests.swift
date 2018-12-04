@@ -38,19 +38,12 @@ class BlockListDownloadTests: XCTestCase {
         bag = DisposeBag()
         dler = BlockListDownloader()
         dler.isTest = true
-        if let uwrp = try? Persistor() { pstr = uwrp } else { XCTFail("Persistor failed init.") }
         do {
+            pstr = try Persistor()
             try pstr.clearFilterListModels()
-        } catch let err { XCTFail("Failed to clear models with error: \(err)"); return }
-        guard let list = try? mdlr.makeLocalFilterList() else {
-            XCTFail("Failed to make test list."); return
-        }
-        testList = list
-        // swiftlint:disable unused_optional_binding
-        guard let _ = try? pstr.saveFilterListModel(testList) else {
-            XCTFail("Failed to save test list."); return
-        }
-        // swiftlint:enable unused_optional_binding
+            testList = try mdlr.makeLocalFilterList()
+            try pstr.saveFilterListModel(testList)
+        } catch let err { XCTFail("Error: \(err)") }
     }
 
     func testRemoteSource() throws {
@@ -65,6 +58,7 @@ class BlockListDownloadTests: XCTestCase {
     }
 
     /// Use the delegate to handle a download running in the foreground.
+    private
     func runDownloadDelegation(remoteSource: Bool = false) {
         let expect = expectation(description: #function)
         var cnt = 0
@@ -96,18 +90,16 @@ class BlockListDownloadTests: XCTestCase {
                 }
                 expect.fulfill()
             }).disposed(by: bag)
-        wait(for: [expect],
-             timeout: timeout)
+        wait(for: [expect], timeout: timeout)
     }
 
+    private
     func downloadEvents(for task: URLSessionDownloadTask) -> Observable<DownloadEvent> {
         let taskID = task.taskIdentifier
         self.testList.taskIdentifier = taskID
-        // swiftlint:disable unused_optional_binding
-        guard let _ = try? self.pstr.saveFilterListModel(self.testList) else {
-            XCTFail("Failed to save test list."); return Observable.empty()
-        }
-        // swiftlint:enable unused_optional_binding
+        do {
+            try self.pstr.saveFilterListModel(self.testList)
+        } catch let err { XCTFail("Error: \(err)"); return Observable.empty() }
         self.setupEvents(taskID: taskID)
         guard let subj = self.dler.downloadEvents[taskID] else {
             XCTFail("Bad publish subject."); return Observable.empty()
@@ -115,26 +107,20 @@ class BlockListDownloadTests: XCTestCase {
         return subj.asObservable()
     }
 
+    private
     func downloadedRules(for finalEvent: DownloadEvent,
                          remoteSource: Bool = false) -> Observable<BlockingRule> {
-        self.testList.downloaded = true
-        // swiftlint:disable unused_optional_binding
-        guard let _ = try? self.pstr.saveFilterListModel(self.testList) else {
-            XCTFail("Failed to save test list."); return Observable.empty()
-        }
-        // swiftlint:enable unused_optional_bindin
-        if !remoteSource {
-            XCTAssert(finalEvent.totalBytesWritten == self.totalBytes,
-                      "🚨 Bytes wrong.")
-        }
+        testList.downloaded = true
         do {
-            let rulesURL = try testList.rulesURL(bundle: Bundle(for: BlockListDownloadTests.self))
-            if let url = rulesURL {
-                return self.hlpr.validatedRules()(url)
-            } else {
-                XCTFail("Bad rules URL.")
+            try pstr.saveFilterListModel(testList)
+            if !remoteSource {
+                XCTAssert(finalEvent.totalBytesWritten == self.totalBytes,
+                          "🚨 Bytes wrong.")
             }
-        } catch let err { XCTFail("Failed with error: \(err)"); return Observable.empty() }
+            if let url = try testList.rulesURL(bundle: Bundle(for: BlockListDownloadTests.self)) {
+                return self.hlpr.validatedRules()(url)
+            } else { XCTFail("Bad rules URL.") }
+        } catch let err { XCTFail("Error: \(err)"); return Observable.empty() }
         return Observable.empty()
     }
 

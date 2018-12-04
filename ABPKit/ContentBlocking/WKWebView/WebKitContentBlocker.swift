@@ -23,18 +23,17 @@ public
 class WebKitContentBlocker {
     let cfg = Config()
     var bag: DisposeBag!
-    public var bundle: Bundle?
-    public var rulesStore: WKContentRuleListStore!
+    var bundle: Bundle?
+    var rulesStore: WKContentRuleListStore!
 
-    public
     init?() {
         bag = DisposeBag()
-        guard let rulesStore = try? WKContentRuleListStore(url: cfg.rulesStoreIdentifier()),
-              let uwRulesStore = rulesStore else { return nil }
-        self.rulesStore = uwRulesStore
+        guard let rulesStore = (try? WKContentRuleListStore(url: cfg.rulesStoreIdentifier()))
+            as? WKContentRuleListStore else { return nil }
+        self.rulesStore = rulesStore
     }
 
-    public
+    /// From user's block list, make a rule list and it to the store.
     func rulesAddedWKStore(user: User) -> Observable<WKContentRuleList> {
         return concatenatedRules(user: user)
             .flatMap { result -> Observable<WKContentRuleList> in
@@ -49,10 +48,9 @@ class WebKitContentBlocker {
         return ruleIdentifiers()
             .flatMap { ids -> Observable<WKContentRuleList> in
                 return Observable.create { observer in
-                    if let name = user.blockList?.name,
-                       name == list.identifier,
-                       let uwIDs = ids,
-                       !uwIDs.contains(name) { observer.onError(ABPWKRuleStoreError.invalidData) }
+                    if let blst = user.blockList,
+                       blst.name != list.identifier ||
+                       ids?.contains(blst.name) == false { observer.onError(ABPWKRuleStoreError.invalidData) }
                     ABPKit.log("📙store \(String(describing: ids))")
                     observer.onNext(list)
                     observer.onCompleted()
@@ -118,7 +116,7 @@ class WebKitContentBlocker {
         return Observable.create { observer in
             self.rulesStore
                 .removeContentRuleList(forIdentifier: identifier) { err in
-                    // Remove for indentifier complete.
+                    // Remove for identifier complete.
                     if err != nil { observer.onError(err!) }
                     observer.onNext(identifier)
                     observer.onCompleted()
@@ -130,7 +128,6 @@ class WebKitContentBlocker {
     /// Based on FilterList. Returns an observable after adding.
     /// This function is now only for reference and testing.
     /// The User model should be preferred over FilterList.
-    public
     func addedWKStoreRules(addList: FilterList) -> Observable<WKContentRuleList> {
         return concatenatedRules(model: addList)
             .flatMap { result -> Observable<WKContentRuleList> in
@@ -143,8 +140,7 @@ class WebKitContentBlocker {
                             }
                             self.rulesStore.getAvailableContentRuleListIdentifiers { (ids: [String]?) in
                                 if let name = addList.name,
-                                   let uwIDs = ids,
-                                   !uwIDs.contains(name) { observer.onError(ABPWKRuleStoreError.missingRuleList) }
+                                   ids?.contains(name) == false { observer.onError(ABPWKRuleStoreError.missingRuleList) }
                                 ABPKit.log("📙 \(String(describing: ids))")
                             }
                             if let compiled = list {

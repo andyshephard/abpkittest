@@ -15,9 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ABPKit
+@testable import ABPKit
 
 class BlockListSourceUtility {
+    /// Return sourceable for given AA state.
     func srcForAAState(_ withAA: Bool) -> (Int) throws -> BlockListSourceable? {
         return { state in
             if withAA {

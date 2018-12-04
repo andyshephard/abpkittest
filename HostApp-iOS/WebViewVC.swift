@@ -68,7 +68,7 @@ class WebViewVC: UIViewController,
                 DispatchQueue.main.async { log("👩🏻‍🎤1 \(self.userHist(self.abp))") }
                 completion()
             } else {
-                self.abp.addRules { errors in
+                self.abp.addNewRuleList { errors in
                     guard errors == nil else {
                         log("🚨 Errors: \(errors!)")
                         do {

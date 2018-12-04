@@ -15,6 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// Legacy cases will be re-factored in a future version.
 public
 struct ABPMutableState {
     /// Legacy cases are separated.

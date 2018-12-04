@@ -21,6 +21,9 @@ import Foundation
 /// is used internally to represent filter lists.
 ///
 /// Some legacy properties exist but will be removed in future versions.
+///
+/// Overall, this struct represents the legacy model and will be re-factored in
+/// a future version.
 public
 struct FilterList: Persistable {
     /// Counter for number of successful downloads.

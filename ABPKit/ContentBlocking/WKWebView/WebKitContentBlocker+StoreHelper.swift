@@ -74,7 +74,7 @@ extension WebKitContentBlocker {
     func concatenatedRules(user: User,
                            customBundle: Bundle? = nil) -> Observable<(String, Int)> {
         let rhlp = RulesHelper()
-        rhlp.useBundle = customBundle
+        rhlp.useBundle = customBundle // only uses bundle if overridden
         guard let url = try? rhlp.rulesForUser()(user) else {
             return Observable.error(ABPWKRuleStoreError.missingRules)
         }
@@ -83,8 +83,7 @@ extension WebKitContentBlocker {
         var all = Constants.blocklistArrayStart
         var cnt = 0
         return Observable.create { observer in
-            RulesHelper()
-                .validatedRules()(url)
+            rhlp.validatedRules()(url)
                 .subscribe(onNext: { rule in
                     let rstr = self.ruleString(rule: rule, encoder: encoder)
                     if rstr == nil { observer.onError(ABPFilterListError.invalidData) }
@@ -102,7 +101,6 @@ extension WebKitContentBlocker {
 
     /// Clear all compiled rule lists.
     /// Only for testing while FilterList usage is being transitioned to User + BlockList.
-    public
     func clearedRulesAll() -> Observable<NamedErrors> {
         return clearedRules(clearAll: true)
     }
