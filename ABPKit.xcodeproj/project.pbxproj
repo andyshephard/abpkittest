@@ -38,7 +38,6 @@
 		65527DEC219BABDE00B9D80F /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65527DEB219BABDE00B9D80F /* User.swift */; };
 		655DB00C219142AB00A33E66 /* ContentBlockerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655DB00A219142AA00A33E66 /* ContentBlockerTests.swift */; };
 		655DB00D219142AB00A33E66 /* WebKitContentBlockingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655DB00B219142AB00A33E66 /* WebKitContentBlockingTests.swift */; };
-		655DB00F219142CA00A33E66 /* easylist-42perc.json in Resources */ = {isa = PBXBuildFile; fileRef = 655DB00E219142C900A33E66 /* easylist-42perc.json */; };
 		655DB0202191447200A33E66 /* ABPAliases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655DB0172191445800A33E66 /* ABPAliases.swift */; };
 		655DB0222191447200A33E66 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655DB0192191445800A33E66 /* Platform.swift */; };
 		655DB0232191447200A33E66 /* ABPAliases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655DB0172191445800A33E66 /* ABPAliases.swift */; };
@@ -121,7 +120,6 @@
 		65D476DC21895C7400D4F5DA /* CaseIterable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CC3367217FBB5100FF0CEF /* CaseIterable.swift */; };
 		65D476DD21895C7400D4F5DA /* FilterListTestModeler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CC3369217FBB5100FF0CEF /* FilterListTestModeler.swift */; };
 		65D476DE21895C7400D4F5DA /* TestingFileUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CC3368217FBB5100FF0CEF /* TestingFileUtility.swift */; };
-		65D4770D21896E9400D4F5DA /* blockerList.json in Resources */ = {isa = PBXBuildFile; fileRef = 65D4770C21896E9400D4F5DA /* blockerList.json */; };
 		65D4770F21896E9400D4F5DA /* ContentBlockerRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D4770E21896E9400D4F5DA /* ContentBlockerRequestHandler.swift */; };
 		65D4771421896E9400D4F5DA /* HostCBExt-macOS.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 65D4770721896E9400D4F5DA /* HostCBExt-macOS.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		65D4C7722188C68500B1E16F /* ABPKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 65FF7B03216EB8B200470103 /* ABPKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -281,7 +279,6 @@
 		65527DEB219BABDE00B9D80F /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		655DB00A219142AA00A33E66 /* ContentBlockerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentBlockerTests.swift; sourceTree = "<group>"; };
 		655DB00B219142AB00A33E66 /* WebKitContentBlockingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebKitContentBlockingTests.swift; sourceTree = "<group>"; };
-		655DB00E219142C900A33E66 /* easylist-42perc.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "easylist-42perc.json"; sourceTree = "<group>"; };
 		655DB0132191432900A33E66 /* RulesHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RulesHelper.swift; sourceTree = "<group>"; };
 		655DB0172191445800A33E66 /* ABPAliases.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ABPAliases.swift; sourceTree = "<group>"; };
 		655DB0192191445800A33E66 /* Platform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Platform.swift; sourceTree = "<group>"; };
@@ -347,7 +344,6 @@
 		65CC3376217FBB5F00FF0CEF /* BlockListDownloadTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockListDownloadTests.swift; sourceTree = "<group>"; };
 		65CC3377217FBB5F00FF0CEF /* ParsingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ParsingTests.swift; sourceTree = "<group>"; };
 		65D4770721896E9400D4F5DA /* HostCBExt-macOS.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "HostCBExt-macOS.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
-		65D4770C21896E9400D4F5DA /* blockerList.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = blockerList.json; sourceTree = "<group>"; };
 		65D4770E21896E9400D4F5DA /* ContentBlockerRequestHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentBlockerRequestHandler.swift; sourceTree = "<group>"; };
 		65D4771021896E9400D4F5DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		65D4771121896E9400D4F5DA /* HostCBExt_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HostCBExt_macOS.entitlements; sourceTree = "<group>"; };
@@ -673,18 +669,8 @@
 				65D4771121896E9400D4F5DA /* HostCBExt_macOS.entitlements */,
 				65D4770E21896E9400D4F5DA /* ContentBlockerRequestHandler.swift */,
 				65D4771021896E9400D4F5DA /* Info.plist */,
-				65D4771C21896F3000D4F5DA /* Resources */,
 			);
 			path = "HostCBExt-macOS";
-			sourceTree = "<group>";
-		};
-		65D4771C21896F3000D4F5DA /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				65D4770C21896E9400D4F5DA /* blockerList.json */,
-				655DB00E219142C900A33E66 /* easylist-42perc.json */,
-			);
-			path = Resources;
 			sourceTree = "<group>";
 		};
 		65D4C7672188C64C00B1E16F /* ABPKitTests-macOS */ = {
@@ -1064,8 +1050,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				65D4770D21896E9400D4F5DA /* blockerList.json in Resources */,
-				655DB00F219142CA00A33E66 /* easylist-42perc.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

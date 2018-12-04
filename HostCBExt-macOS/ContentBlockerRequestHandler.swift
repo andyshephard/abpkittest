@@ -23,13 +23,10 @@ import ABPKit
 class ContentBlockerRequestHandler: NSObject,
                                     NSExtensionRequestHandling {
     func beginRequest(with context: NSExtensionContext) {
-        let rsrc = "easylist-42perc"
+        let rsrc = "easylist_content_blocker"
         guard let attachment =
-            NSItemProvider(contentsOf: Bundle.main.url(forResource: rsrc,
-                                                       withExtension: Constants.rulesExtension))
-        else {
-            return
-        }
+            NSItemProvider(contentsOf: Bundle(for: Config.self)
+                .url(forResource: rsrc, withExtension: Constants.rulesExtension)) else { return }
         let item = NSExtensionItem()
         item.attachments = [attachment]
         context.completeRequest(returningItems: [item],
