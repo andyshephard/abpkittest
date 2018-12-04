@@ -16,18 +16,25 @@
  */
 
 extension ContentBlockerUtility {
-    public func makeWhitelistRule(domain: String) -> BlockingRule {
-        var rule = BlockingRule()
-        rule.action = Action(selector: nil,
-                             type: "ignore-previous-rules")
-        rule.trigger = Trigger()
-        rule.action?.type = "ignore-previous-rules"
-        rule.trigger = Trigger(ifDomain: ["*\(domain)"],
-                               loadType: nil,
-                               resourceType: nil,
-                               unlessDomain: nil,
-                               urlFilter: ".*",
-                               urlFilterIsCaseSensitive: false)
-        return rule
+    /// Intended to match definitions in
+    /// https://gitlab.com/eyeo/adblockplus/abp2blocklist.
+    func whiteListRuleForDomain() -> (String) -> BlockingRule {
+        return {
+            let type = "ignore-previous-rules"
+            let urlFilter = ".*"
+            return BlockingRule(
+                action: Action(selector: nil, type: type),
+                trigger: Trigger(
+                    ifTopURL: [self.wrappedDomain()($0)],
+                    loadType: nil,
+                    resourceType: nil,
+                    unlessTopURL: nil,
+                    urlFilter: urlFilter,
+                    urlFilterIsCaseSensitive: false))
+        }
+    }
+
+    func wrappedDomain() -> (String) -> String {
+        return { "^[^:]+:(//)?([^/]+.)?" + $0 + "([^-_.%a-z0-9].*)?$" }
     }
 }

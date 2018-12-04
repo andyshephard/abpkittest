@@ -17,15 +17,45 @@
 
 import Foundation
 
-// Constants and functions intended for global scope.
-
-/// Constants that are global to the framework.
+/// Constants that are global to the framework. Not all are relevant in all
+/// contexts as some are only applicable to the legacy iOS app.
 public
 struct Constants {
+    public static let rulesExtension = "json"
+    /// Default interval for expiration of a block list.
+    static let defaultFilterListExpiration: TimeInterval = 86400
+    /// Internal distribution label for eyeo.
+    static let devbuildsName = "devbuilds"
+    static let abpkitDir = "ABPKit.framework"
+    static let abpkitResourcesDir = "Resources"
+    static let blocklistArrayEnd = "]"
+    static let blocklistArrayStart = "["
+    static let blocklistEncoding = String.Encoding.utf8
+    static let blocklistRuleSeparator = ","
+    static let contentRuleStoreID = "wk-content-rule-list-store"
+    static let extensionSafariNameIOS = "AdblockPlusSafariExtension"
+    static let extensionSafariNameMacOS = "HostCBExt-macOS"
+    static let groupMac = "group.org.adblockplus.abpkit-macos"
+    static let organization = "org.adblockplus"
+    static let productNameIOS = "AdblockPlusSafari"
+    static let productNameMacOS = "HostApp-macOS"
+    static let srcAcceptableAdsNotApplicable = "aa-na"
+    static let srcBundled = "bundled"
+    static let srcEasylist = "easylist"
+    static let srcEasylistPlusExceptions = "easylistPlusExceptions"
+    static let srcRemote = "remote"
+    static let srcSep = "/"
+    static let srcTestingBundled = "bundled-testing"
+    static let srcTestingEasylist = "test-easylist"
+    static let srcTestingEasylistPlusExceptions = "test-easylistPlusExceptions"
+    static let srcUserWhiteListLocallyGenerated = "user-whitelist-locally-generated"
+    static let userBlockListMax = 5
+    static let userWhiteListMax = 2
+
+    // MARK: - Legacy -
+
     /// Limit for background operations, less than the allowed limit to allow time for content blocker reloading.
     static let backgroundOperationLimit: TimeInterval = 28
-    /// Default interval for expiration of a filter list.
-    public static let defaultFilterListExpiration: TimeInterval = 86400
     /// Internal name.
     public static let customFilterListName = "customFilterList"
     /// Internal name.
@@ -34,44 +64,14 @@ struct Constants {
     public static let defaultFilterListPlusExceptionRulesName = "easylist+exceptionrules"
     /// On-disk name.
     public static let defaultFilterListFilename = "easylist_content_blocker.json"
-    /// On-disk name.
     // swiftlint:disable identifier_name
+    /// On-disk name.
     public static let defaultFilterListPlusExceptionRulesFilename = "easylist+exceptionrules_content_blocker.json"
     // swiftlint:enable identifier_name
     /// On-disk name.
     public static let emptyFilterListFilename = "empty.json"
     /// On-disk name.
     public static let customFilterListFilename = "custom.json"
-
-    public static let blocklistEncoding = String.Encoding.utf8
-    public static let blocklistArrayStart = "["
-    public static let blocklistArrayEnd = "]"
-    public static let blocklistRuleSeparator = ","
-    public static let srcBundled = "bundled"
-    public static let srcEasylist = "easylist"
-    public static let srcEasylistPlusExceptions = "easylistPlusExceptions"
-    public static let srcRemote = "remote"
-    public static let srcSep = "/"
-    public static let srcTestingBundled = "bundled-testing"
-    public static let srcTestingEasylist = "test-easylist"
-    public static let srcTestingEasylistPlusExceptions = "test-easylistPlusExceptions"
-
-    public static let contentRuleStoreID = "wk-content-rule-list-store"
-    public static let rulesExtension = "json"
-
-    public static let organization = "org.adblockplus"
-
-    /// Internal distribution label for eyeo.
-    public static let devbuildsName = "devbuilds"
-
-    public static let groupMac = "group.org.adblockplus.abpkit-macos"
-    public static let productNameIOS = "AdblockPlusSafari"
-    public static let productNameMacOS = "HostApp-macOS"
-    public static let extensionSafariNameIOS = "AdblockPlusSafariExtension"
-    public static let extensionSafariNameMacOS = "HostCBExt-macOS"
-    public static let abpkitDir = "ABPKit.framework"
-    public static let abpkitResourcesDir = "Resources"
-    public static let userBlockListMax = 5
 }
 
 /// ABPKit configuration class for accessing globally relevant functions.
@@ -80,7 +80,6 @@ class Config {
     let adblockPlusSafariActionExtension = "AdblockPlusSafariActionExtension"
     let backgroundSession = "BackgroundSession"
 
-    public
     init() {
         // Intentionally empty.
     }
@@ -105,12 +104,10 @@ class Config {
 
     /// Bundle reference for resources including:
     /// * bundled blocklists
-    public
     func bundle() -> Bundle {
         return Bundle(for: Config.self)
     }
 
-    public
     func appGroup() throws -> AppGroupName {
         if let name = bundlePrefix() {
             #if os(iOS)
@@ -124,18 +121,13 @@ class Config {
     }
 
     /// This suite name comes from the legacy app.
-    public
     func defaultsSuiteName() throws -> DefaultsSuiteName {
-        guard let name = try? appGroup() else {
-            throw ABPMutableStateError.missingDefaultsSuiteName
-        }
-        return name
+        return try appGroup()
     }
 
     /// A copy of the content blocker identifier function found in the legacy ABP implementation.
     /// - returns: A content blocker ID such as
     ///            "org.adblockplus.devbuilds.AdblockPlusSafari.AdblockPlusSafariExtension" or nil
-    public
     func contentBlockerIdentifier(platform: ABPPlatform) -> ContentBlockerIdentifier? {
         guard let name = bundlePrefix() else { return nil }
         switch platform {
@@ -146,7 +138,6 @@ class Config {
         }
     }
 
-    public
     func backgroundSessionConfigurationIdentifier() throws -> String {
         guard let prefix = bundlePrefix() else {
             throw ABPConfigurationError.invalidBundlePrefix
@@ -154,23 +145,17 @@ class Config {
         return "\(prefix).\(Constants.productNameIOS).\(backgroundSession)"
     }
 
-    public
     func containerURL() throws -> AppGroupContainerURL {
-        let mgr = FileManager.default
-        guard let grp = try? appGroup(),
-              let url = mgr.containerURL(forSecurityApplicationGroupIdentifier: grp)
-        else {
-            throw ABPConfigurationError.invalidAppGroup
-        }
-        return url
+        if let url = try FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: appGroup()) {
+                return url
+            }
+        throw ABPConfigurationError.invalidContainerURL
     }
 
-    public
     func rulesStoreIdentifier() throws -> URL {
         do {
-            let cntr = try containerURL()
-            let rsid = cntr.appendingPathComponent(Constants.contentRuleStoreID)
-            return rsid
+            return try containerURL().appendingPathComponent(Constants.contentRuleStoreID)
         } catch let err { throw err }
     }
 }

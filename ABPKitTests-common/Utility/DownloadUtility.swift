@@ -47,7 +47,7 @@ class DownloadUtility {
     }
 
     /// Make a block list model for a downloadable source.
-    func blockListForSource() -> (BlockListSourceable & RulesDownloadable) throws -> BlockList {
+    func blockListForSource() -> (BlockListSourceable & AcceptableAdsEnableable & RulesDownloadable ) throws -> BlockList {
         return {
             return try BlockList(withAcceptableAds: $0.hasAcceptableAds(), source: $0)
         }

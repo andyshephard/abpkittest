@@ -26,6 +26,12 @@ class RulesHelper {
         bag = DisposeBag()
     }
 
+    convenience
+    init(customBundle: Bundle?) {
+        self.init()
+        useBundle = customBundle
+    }
+
     /// Get rules in the context of a user.
     func rulesForUser() -> (User) throws -> URL? {
         return { user in
@@ -131,6 +137,14 @@ class RulesHelper {
                 return Observable.error(ABPFilterListError.badData)
             }
             return list.rules()
+        }
+    }
+
+    func ruleToStringWithEncoder(_ encoder: JSONEncoder) -> (BlockingRule) throws -> String {
+        return {
+            guard let data = try? encoder.encode($0), let rule = String(data: data, encoding: .utf8)
+            else { throw ABPFilterListError.failedEncodeRule }
+            return rule
         }
     }
 

@@ -85,7 +85,6 @@ extension FilterList {
     /// Config's bundle.
     /// Example:
     /// rulesURL(bundle: Bundle(for: ...))
-    public
     func rulesURL(bundle: Bundle = Config().bundle(),
                   ignoreBundle: Bool = false) throws -> URL? {
         guard let name = self.name else { throw ABPFilterListError.missingName }

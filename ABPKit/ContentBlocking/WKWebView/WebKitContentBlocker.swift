@@ -74,38 +74,48 @@ class WebKitContentBlocker {
     /// Wrapper for rules compile.
     /// Rules should match the user's block list.
     func rulesCompiled(user: User, rules: String) -> Observable<WKContentRuleList> {
-        return Observable.create { observer in
-            self.rulesStore
-                .compileContentRuleList(forIdentifier: user.blockList?.name,
-                                        encodedContentRuleList: rules) { list, err in
-                    guard err == nil else { observer.onError(err!); return }
-                    if list != nil {
-                        observer.onNext(list!)
-                        observer.onCompleted()
-                    } else {
-                       observer.onError(ABPWKRuleStoreError.invalidData)
+        return rulesCompiledForIdentifier(user.blockList?.name)(rules)
+    }
+
+    func rulesCompiledForIdentifier(_ identifier: String?) -> (String) -> Observable<WKContentRuleList> {
+        return { rules in
+            return Observable.create { observer in
+                self.rulesStore
+                    .compileContentRuleList(forIdentifier: identifier,
+                                            encodedContentRuleList: rules) { list, err in
+                        guard err == nil else { observer.onError(err!); return }
+                        if list != nil {
+                            observer.onNext(list!)
+                            observer.onCompleted()
+                        } else {
+                            observer.onError(ABPWKRuleStoreError.invalidData)
+                        }
                     }
-                }
-            return Disposables.create()
+                return Disposables.create()
+            }
         }
     }
 
     /// Correct state is rule store is less than or equal to user history.
     /// Rules are added from user history.
     func syncHistoryRemovers(user: User) -> Observable<Observable<String>> {
-        guard let hist = user.blockListHistory else {
-            return Observable.error(ABPWKRuleStoreError.invalidData)
-        }
+        var all: [String]!
+        do {
+            all = try names()(user.blockListHistory) + names()(user.whiteLists)
+        } catch let err { return Observable.error(err) }
         var obs = [Observable<String>]()
         return ruleIdentifiers()
             .flatMap { ids -> Observable<Observable<String>> in
                 return Observable.create { observer in
                     // Add remove if identifier in store is not in the user's history.
                     if ids != nil {
-                        obs = ids!.filter { idr in !hist.contains { $0.name == idr } }
+                        obs = ids!.filter { idr in !all.contains { $0 == idr } }
                             .map { return self.listRemovedFromStore(identifier: $0) }
                     }
-                    observer.onNext(Observable.concat(obs))
+                    // Empty string sent to satisfy keep operation chains continuous:
+                    if obs.count > 0 {
+                        observer.onNext(Observable.concat(obs))
+                    } else { observer.onNext(Observable.just("")) }
                     observer.onCompleted()
                     return Disposables.create()
                 }
@@ -153,5 +163,13 @@ class WebKitContentBlocker {
                     return Disposables.create()
                 }
             }
+    }
+
+    private
+    func names<U: BlockListable>() -> ([U]?) throws -> [String] {
+        return {
+            guard let models = $0 else { throw ABPUserModelError.badDataUser }
+            return models.map { $0.name }.reduce([]) { $0 + [$1] }
+        }
     }
 }

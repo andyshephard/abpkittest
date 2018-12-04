@@ -24,8 +24,9 @@
 /// Raw values are filenames in a bundle.
 public
 enum BundledBlockList: String,
+                       CaseIterable,
                        BlockListSourceable,
-                       CaseIterable {
+                       AcceptableAdsEnableable {
     public typealias RawValue = String
     case easylist = "easylist_content_blocker.json"
     case easylistPlusExceptions = "easylist+exceptionrules_content_blocker.json"
@@ -43,8 +44,9 @@ enum BundledBlockList: String,
 
 public
 enum RemoteBlockList: String,
-                      BlockListSourceable,
                       CaseIterable,
+                      BlockListSourceable,
+                      AcceptableAdsEnableable,
                       RulesDownloadable {
     public typealias RawValue = String
     case easylist = "https://easylist-downloads.adblockplus.org/easylist_content_blocker.json"
@@ -63,8 +65,9 @@ enum RemoteBlockList: String,
 
 public
 enum BundledTestingBlockList: String,
+                              CaseIterable,
                               BlockListSourceable,
-                              CaseIterable {
+                              AcceptableAdsEnableable {
     public typealias RawValue = String
     case testingEasylist = "test_easylist_content_blocker.json"
     case fakeExceptions = "v1 easylist short.json"
@@ -78,4 +81,10 @@ enum BundledTestingBlockList: String,
             return true
         }
     }
+}
+
+public
+enum UserWhiteList: String,
+                    BlockListSourceable {
+    case locallyGenerated
 }

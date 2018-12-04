@@ -33,20 +33,20 @@ enum TriggerResourceType: String,
 }
 
 struct Trigger: Codable {
-    var ifDomain: [String]?
+    var ifTopURL: [String]?
     var loadType: [String]?
     var resourceType: [TriggerResourceType]?
-    var unlessDomain: [String]?
+    var unlessTopURL: [String]?
     var urlFilter: String?
     var urlFilterIsCaseSensitive: Bool?
 
     // Keys here are intended to be comprehensive for WebKit content-blocking triggers.
     enum CodingKeys: String,
                      CodingKey {
-        case ifDomain = "if-domain"
+        case ifTopURL = "if-top-url"
         case loadType = "load-type"
         case resourceType = "resource-type"
-        case unlessDomain = "unless-domain"
+        case unlessTopURL = "unless-top-url"
         case urlFilter = "url-filter"
         case urlFilterIsCaseSensitive = "url-filter-is-case-sensitive"
     }

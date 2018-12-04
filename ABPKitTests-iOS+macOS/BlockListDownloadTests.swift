@@ -49,7 +49,7 @@ class BlockListDownloadTests: XCTestCase {
     func testRemoteSource() throws {
         testList.source = RemoteBlockList.easylist.rawValue
         testList.fileName = "easylist_content_blocker.json"
-        try self.pstr.saveFilterListModel(self.testList)
+        try pstr.saveFilterListModel(testList)
         runDownloadDelegation(remoteSource: true)
     }
 
@@ -78,8 +78,7 @@ class BlockListDownloadTests: XCTestCase {
                 $0.errorWritten == true
             }
             .flatMap { evt -> Observable<BlockingRule> in
-                return self.downloadedRules(for: evt,
-                                            remoteSource: remoteSource)
+                return self.downloadedRules(for: evt, remoteSource: remoteSource)
             }
             .subscribe(onNext: { rule in
                 cnt += [rule].count
@@ -96,11 +95,11 @@ class BlockListDownloadTests: XCTestCase {
     private
     func downloadEvents(for task: URLSessionDownloadTask) -> Observable<DownloadEvent> {
         let taskID = task.taskIdentifier
-        self.testList.taskIdentifier = taskID
+        testList.taskIdentifier = taskID
         do {
-            try self.pstr.saveFilterListModel(self.testList)
+            try pstr.saveFilterListModel(self.testList)
         } catch let err { XCTFail("Error: \(err)"); return Observable.empty() }
-        self.setupEvents(taskID: taskID)
+        setupEvents(taskID: taskID)
         guard let subj = self.dler.downloadEvents[taskID] else {
             XCTFail("Bad publish subject."); return Observable.empty()
         }
@@ -128,10 +127,11 @@ class BlockListDownloadTests: XCTestCase {
     func setupEvents(taskID: DownloadTaskID) {
         dler.downloadEvents[taskID] =
             BehaviorSubject<DownloadEvent>(
-                value: DownloadEvent(filterListName: self.testList.name,
-                                     didFinishDownloading: false,
-                                     totalBytesWritten: 0,
-                                     error: nil,
-                                     errorWritten: false))
+                value: DownloadEvent(
+                    filterListName: self.testList.name,
+                    didFinishDownloading: false,
+                    totalBytesWritten: 0,
+                    error: nil,
+                    errorWritten: false))
     }
 }

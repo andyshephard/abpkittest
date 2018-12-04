@@ -52,17 +52,16 @@ extension UserBlockListDownloader {
     func syncDownloads() -> (User) throws -> User {
         return {
             let pstr = try Persistor()
-            var copy = $0
-            try copy.updateDownloads() // downloads nil check
-            let notInCopy = pstr.jsonFiles()(try pstr.fileEnumeratorForRoot()(Config().containerURL()))
+            let saved = try $0.updateDownloads().saved() // downloads nil check
+            let notInSaved = pstr.jsonFiles()(try pstr.fileEnumeratorForRoot()(Config().containerURL()))
                 .filter { url in
-                    !copy.downloads!.contains { $0.name.addingFileExtension(Constants.rulesExtension) == url.lastPathComponent }
+                    !saved.downloads!.contains { $0.name.addingFileExtension(Constants.rulesExtension) == url.lastPathComponent }
                 }
             let mgr = FileManager.default
-            try notInCopy.forEach {
+            try notInSaved.forEach {
                 try mgr.removeItem(at: $0)
             }
-            return copy
+            return saved
         }
     }
 }

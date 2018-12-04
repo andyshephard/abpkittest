@@ -27,7 +27,9 @@ struct User: Persistable,
     var blockListHistory: [BlockList]?
     /// To be synced with local storage.
     var downloads: [BlockList]?
-    var whitelistedDomains: [WhitelistedHostname]?
+    /// To be synced with rule lists in WKContentRuleListStore.
+    var whiteLists: [WhiteList]?
+    var whitelistedDomains: [String]?
 }
 
 extension User {
@@ -38,6 +40,7 @@ extension User {
                                   source: BundledBlockList.easylistPlusExceptions)
         blockListHistory = []
         downloads = []
+        whiteLists = []
         whitelistedDomains = []
     }
 
@@ -80,7 +83,6 @@ extension User {
         return blockListHistory
     }
 
-    public
     func blockListNamed(_ name: String) -> ([BlockList]) throws -> BlockList? {
         return { lists in
             let res = lists.filter { $0.name == name }
@@ -91,7 +93,11 @@ extension User {
 
     public
     func acceptableAdsInUse() -> Bool {
-        return blockList?.source.hasAcceptableAds() ?? false
+        if let blst = blockList,
+           let sourceHasAA = try? AcceptableAdsHelper().aaExists()(blst.source) {
+            return sourceHasAA
+        }
+        return false
     }
 }
 
@@ -103,7 +109,7 @@ extension User {
         self.blockList = blockList
     }
 
-    public mutating
+    mutating
     func addDownloaded(_ blockList: BlockList, withSave: Bool = false) throws {
         if downloads == nil { downloads = [] }
         var copy = blockList
@@ -116,30 +122,38 @@ extension User {
     /// Does not automatically get called.
     /// Should be called when changing the user's rule list.
     /// Performs a save.
-    public mutating
-    func updateHistory() throws {
-        guard let blst = blockList else { throw ABPUserModelError.failedUpdateData }
-        if blockListHistory == nil { blockListHistory = [] }
-        if (blockListHistory!.contains { $0.name == blst.name }) {
-            blockListHistory = prunedHistory()(blockListHistory!)
+    func updateHistory() throws -> User {
+        let max = Constants.userBlockListMax
+        var copy = self
+        guard let blst = copy.blockList else { throw ABPUserModelError.failedUpdateData }
+        if copy.blockListHistory == nil { copy.blockListHistory = [] }
+        if (copy.blockListHistory!.contains { $0.name == blst.name }) {
+            copy.blockListHistory = prunedHistory(max)(copy.blockListHistory!)
         } else {
-            blockListHistory = prunedHistory()(prunedHistory()(blockListHistory!) + [blst])
+            copy.blockListHistory = prunedHistory(max)(prunedHistory(max)(copy.blockListHistory!) + [blst])
         }
-        try save()
+        return copy
     }
 
     /// Does not include current block list.
-    public mutating
-    func updateDownloads() throws {
-        if downloads == nil { downloads = [] }
-        downloads = prunedHistory()(downloads!)
-        try save()
+    func updateDownloads() throws -> User {
+        let max = Constants.userBlockListMax
+        var copy = self
+        if copy.downloads == nil { copy.downloads = [] }
+        copy.downloads = prunedHistory(max)(copy.downloads!)
+        return copy
+    }
+
+    func updateWhiteLists() throws -> User {
+        let max = Constants.userWhiteListMax
+        var copy = self
+        if copy.whiteLists == nil { copy.whiteLists = [] }
+        copy.whiteLists = prunedHistory(max)(copy.whiteLists!)
+        return copy
     }
 
     func updatedBlockList(blockList: BlockList) -> (User) -> User {
-        return {
-            var copy = $0; copy.blockList = blockList; return copy
-        }
+        return { var copy = $0; copy.blockList = blockList; return copy }
     }
 }
 
@@ -161,13 +175,11 @@ extension User {
 
 extension User {
     private
-    func prunedHistory() -> ([BlockList]) -> [BlockList] {
+    func prunedHistory<U: BlockListable>(_ max: Int) -> ([U]) -> [U] {
         return { arr in
             guard arr.count > 0 else { return [] }
             var copy = arr
-            if copy.count > Constants.userBlockListMax {
-                copy.removeFirst(arr.count - Constants.userBlockListMax)
-            }
+            if copy.count > max { copy.removeFirst(arr.count - max) }
             return copy
         }
     }

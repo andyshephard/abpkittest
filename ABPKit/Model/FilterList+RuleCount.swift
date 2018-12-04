@@ -36,7 +36,6 @@ extension FilterList {
     /// Count of rules in for a corresponding filter list.
     /// V2 filter lists are first attempted to be parsed before failing over to v1 parsing.
     /// - Returns: Observable of the count while defaulting to zero on parsing failures.
-    public
     func ruleCount(bundle: Bundle = Config().bundle()) -> Observable<Int> {
         guard let rules = try? self.rulesURL(bundle: bundle),
               let uwRules = rules

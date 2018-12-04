@@ -92,9 +92,14 @@ extension UserBlockListDownloader {
     /// Update user's block list with most recently downloaded block list.
     func userBlockListUpdated() -> (User) throws -> User {
         return { user in
-            let match = user.downloads?
+            let match = try user.downloads?
                 .sorted { $0.dateDownload?.compare($1.dateDownload ?? .distantPast) == .orderedDescending }
-                .filter { $0.source.hasAcceptableAds() == user.blockList?.source.hasAcceptableAds() }.first
+                .filter { // only allow AA matches if AA enableable
+                    if let blst = user.blockList, blst.source is AcceptableAdsEnableable {
+                        return try AcceptableAdsHelper().aaExists()($0.source) == AcceptableAdsHelper().aaExists()(blst.source)
+                    }
+                    return true
+                }.first
             if let list = match {
                 return user.updatedBlockList(blockList: list)(user)
             }

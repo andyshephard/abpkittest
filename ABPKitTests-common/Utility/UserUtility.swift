@@ -27,4 +27,12 @@ class UserUtility {
         } catch let err { XCTFail("Error: \(err)") }
         return nil
     }
+
+    let aaUserNewSaved: (BlockListSourceable) throws -> User? = {
+        try User(
+            fromPersistentStorage: false,
+            withBlockList: BlockList(
+                withAcceptableAds: true,
+                source: $0))?.saved()
+    }
 }

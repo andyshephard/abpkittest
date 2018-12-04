@@ -93,9 +93,8 @@ class ABPWebViewBlocker {
     /// the store.
     public
     func addExistingRuleList(completion: @escaping (Bool) -> Void) throws {
-        let uhlp = UserStateHelper(user: user)
         guard let blst = user.blockList else { throw ABPUserModelError.badDataUser }
-        let mtch = try uhlp.historyMatch()(blst.source)
+        let mtch = try UserStateHelper(user: user).historyMatch()(blst.source)
         rulesUseWithContentController(blockList: mtch)
             .subscribe(onNext: { lists in
                 self.wkcb.rulesStore
@@ -111,15 +110,15 @@ class ABPWebViewBlocker {
             }).disposed(by: bag)
     }
 
-      /// Clear all rules in store.
-      func clearRules(completion: @escaping () -> Void) {
-          wkcb.clearedRules(user: user, clearAll: true)
-              .subscribe(onNext: { _ in
-                  completion()
-              }, onError: { _ in
-                  completion()
-              }).disposed(by: bag)
-      }
+    /// Clear all rules in store.
+    func clearRules(completion: @escaping () -> Void) {
+        wkcb.clearedRules(user: user, clearAll: true)
+            .subscribe(onNext: { _ in
+                completion()
+            }, onError: { _ in
+                completion()
+            }).disposed(by: bag)
+    }
 
     /// Adds one rule list to the content controller if they exist for the
     /// user's current block list.
@@ -136,7 +135,7 @@ class ABPWebViewBlocker {
                     if err != nil { observer.onError(err!) }
                     if list != nil {
                         self.ctrl.add(list!)
-                        do { try self.user.updateHistory() } catch let err { observer.onError(err) }
+                        do { try self.user.updateHistory().save() } catch let err { observer.onError(err) }
                         observer.onNext(list!)
                         observer.onCompleted()
                     }

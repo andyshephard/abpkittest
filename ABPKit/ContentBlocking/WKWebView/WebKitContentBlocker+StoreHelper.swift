@@ -17,52 +17,27 @@
 
 import RxSwift
 
-/// FilterList implementations will eventually be removed.
+// FilterList implementations will eventually be removed.
 
 @available(iOS 11.0, macOS 10.13, *)
 extension WebKitContentBlocker {
     /// FilterList implementation:
-    /// Embedding a subscription inside this Observable has yielded the fastest performance for
-    /// concatenating rules.
-    /// Other methods tried:
-    /// 1. flatMap + string append - ~4x slower
-    /// 2. reduce - ~10x slower
-    /// Returns blocklist string + rules count.
     func concatenatedRules(model: FilterList) -> Observable<(String, Int)> {
-        var rulesURL: URL?
         do {
-            if bundle != nil {
-                rulesURL = try model.rulesURL(bundle: bundle!)
-            } else {
-                rulesURL = try model.rulesURL()
-            }
-        } catch let err {
-            return Observable.error(err)
-        }
-        guard let url = rulesURL else {
-            return Observable.error(ABPWKRuleStoreError.missingRules)
-        }
-        let encoder = JSONEncoder()
-        var first = true
-        var all = Constants.blocklistArrayStart
-        var cnt = 0
-        return Observable.create { observer in
-            RulesHelper()
-                .validatedRules()(url)
-                .subscribe(onNext: { rule in
-                    let rstr = self.ruleString(rule: rule, encoder: encoder)
-                    if rstr == nil { observer.onError(ABPFilterListError.invalidData) }
-                    cnt += 1
-                    if !first {
-                        all += Constants.blocklistRuleSeparator + rstr!
-                    } else { all += rstr!; first = false }
-                },
-                onCompleted: {
-                    observer.onNext((all + Constants.blocklistArrayEnd, cnt))
-                    observer.onCompleted()
-                }).disposed(by: self.bag)
-            return Disposables.create()
-        }
+            let rulesURL = bundle != nil ? try model.rulesURL(bundle: bundle!) : try model.rulesURL()
+            guard let url = rulesURL else { return Observable.error(ABPWKRuleStoreError.missingRules) }
+            return concatenatedRules()(RulesHelper().validatedRules()(url))
+        } catch let err { return Observable.error(err) }
+    }
+
+    func concatenatedRules(user: User,
+                           customBundle: Bundle? = nil) -> Observable<(String, Int)> {
+        let rhlp = RulesHelper(customBundle: customBundle) // only uses bundle if overridden
+        var url: URL!
+        do {
+            url = try rhlp.rulesForUser()(user)
+        } catch let err { return Observable.error(err) }
+        return concatenatedRules(customBundle: customBundle)(rhlp.validatedRules()(url))
     }
 
     /// Embedding a subscription inside this Observable has yielded the fastest performance for
@@ -71,31 +46,25 @@ extension WebKitContentBlocker {
     /// 1. flatMap + string append - ~4x slower
     /// 2. reduce - ~10x slower
     /// Returns blocklist string + rules count.
-    func concatenatedRules(user: User,
-                           customBundle: Bundle? = nil) -> Observable<(String, Int)> {
-        let rhlp = RulesHelper()
-        rhlp.useBundle = customBundle // only uses bundle if overridden
-        guard let url = try? rhlp.rulesForUser()(user) else {
-            return Observable.error(ABPWKRuleStoreError.missingRules)
-        }
-        let encoder = JSONEncoder()
-        var first = true
-        var all = Constants.blocklistArrayStart
-        var cnt = 0
-        return Observable.create { observer in
-            rhlp.validatedRules()(url)
-                .subscribe(onNext: { rule in
-                    let rstr = self.ruleString(rule: rule, encoder: encoder)
-                    if rstr == nil { observer.onError(ABPFilterListError.invalidData) }
-                    cnt += 1
-                    if !first {
-                        all += Constants.blocklistRuleSeparator + rstr!
-                    } else { all += rstr!; first = false }
-                }, onCompleted: {
-                    observer.onNext((all + Constants.blocklistArrayEnd, cnt))
-                    observer.onCompleted()
-                }).disposed(by: self.bag)
-            return Disposables.create()
+    func concatenatedRules(customBundle: Bundle? = nil) -> (Observable<BlockingRule>) -> Observable<(String, Int)> {
+        return { obsRules in
+            let rhlp = RulesHelper(customBundle: customBundle) // only uses bundle if overridden
+            let encoder = JSONEncoder()
+            var all = Constants.blocklistArrayStart
+            var cnt = 0
+            return Observable.create { observer in
+                obsRules
+                    .subscribe(onNext: { rule in
+                        do {
+                            cnt += 1
+                            try all += rhlp.ruleToStringWithEncoder(encoder)(rule) + Constants.blocklistRuleSeparator
+                        } catch let err { observer.onError(err) }
+                    }, onCompleted: {
+                        observer.onNext((all.dropLast() + Constants.blocklistArrayEnd, cnt))
+                        observer.onCompleted()
+                    }).disposed(by: self.bag)
+                return Disposables.create()
+            }
         }
     }
 
@@ -113,24 +82,16 @@ extension WebKitContentBlocker {
         if model != nil {
             name = model?.name
         } else {
-            if !clearAll {
-                return Observable.just(NamedErrors())
-            }
+            if !clearAll { return Observable.just(NamedErrors()) }
         }
         return Observable.create { observer in
             var errors = NamedErrors()
             self.rulesStore
                 .getAvailableContentRuleListIdentifiers { identifiers in
-                    guard let ids = identifiers else {
-                        observer.onError(ABPWKRuleStoreError.invalidData)
-                        return
-                    }
-                    ids.forEach { identifier in
-                        if (name != nil && identifier == name!) || clearAll {
-                            self.rulesStore
-                                .removeContentRuleList(forIdentifier: identifier) { err in
-                                    errors[identifier] = err
-                                }
+                    guard let ids = identifiers else { observer.onError(ABPWKRuleStoreError.invalidData); return }
+                    ids.forEach { idr in
+                        if (name != nil && idr == name!) || clearAll {
+                            self.rulesStore.removeContentRuleList(forIdentifier: idr) { errors[idr] = $0 }
                         }
                     }
                     observer.onNext(errors)
@@ -143,22 +104,15 @@ extension WebKitContentBlocker {
     /// Clear rules in rule store for a user.
     func clearedRules(user: User,
                       clearAll: Bool = false) -> Observable<NamedErrors> {
-        guard let hist = user.blockListHistory else {
-            return Observable.error(ABPWKRuleStoreError.invalidData)
-        }
+        guard let hist = user.blockListHistory else { return Observable.error(ABPWKRuleStoreError.invalidData) }
         return ruleIdentifiers()
-            .flatMap { ids -> Observable<NamedErrors> in
+            .flatMap { identifiers -> Observable<NamedErrors> in
+                guard let ids = identifiers else { return Observable.error(ABPWKRuleStoreError.invalidData) }
                 return Observable.create { observer in
-                    guard let uwIDs = ids else {
-                        observer.onError(ABPWKRuleStoreError.invalidData); return Disposables.create()
-                    }
                     var errors = NamedErrors()
-                    uwIDs.forEach { identifier in
-                        if !(hist.contains { $0.name == identifier }) || clearAll {
-                            self.rulesStore
-                                .removeContentRuleList(forIdentifier: identifier) { err in
-                                    errors[identifier] = err
-                                }
+                    ids.forEach { idr in
+                        if !(hist.contains { $0.name == idr }) || clearAll {
+                            self.rulesStore.removeContentRuleList(forIdentifier: idr) { errors[idr] = $0 }
                         }
                     }
                     observer.onNext(errors)
@@ -166,12 +120,5 @@ extension WebKitContentBlocker {
                     return Disposables.create()
                 }
             }
-    }
-
-    private
-    func ruleString(rule: BlockingRule, encoder: JSONEncoder) -> String? {
-        guard let data = try? encoder.encode(rule),
-              let rule = String(data: data, encoding: .utf8) else { return nil }
-        return rule
     }
 }

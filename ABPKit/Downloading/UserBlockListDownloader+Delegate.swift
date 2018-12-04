@@ -65,9 +65,10 @@ extension UserBlockListDownloader {
         if index != nil {
             do {
                 if let srcBL = srcDownloads[index!].blockList {
-                    let newBL = try BlockList(withAcceptableAds: srcBL.source.hasAcceptableAds(),
-                                              source: srcBL.source, name: srcBL.name)
-                    try self.user.addDownloaded(newBL)
+                    try self.user.addDownloaded( // only AA enableable sources succeed
+                        BlockList(
+                            withAcceptableAds: AcceptableAdsHelper().aaExists()(srcBL.source),
+                            source: srcBL.source, name: srcBL.name))
                 }
             } catch { reportError(taskID: taskID, error: ABPDownloadTaskError.failedToUpdateUserDownloads) }
         }

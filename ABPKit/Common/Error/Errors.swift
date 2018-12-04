@@ -20,10 +20,12 @@
 /// Error cases for configuration.
 /// - invalidAppGroup: App group is not valid.
 /// - invalidBundlePrefix: Bundle prefix is not valid.
+/// - invalidContainerURL: Bad container URL.
 public
 enum ABPConfigurationError: Error {
     case invalidAppGroup
     case invalidBundlePrefix
+    case invalidContainerURL
 }
 
 /// Error cases for managing content blocking.

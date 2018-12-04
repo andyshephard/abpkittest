@@ -37,12 +37,7 @@ class UserAfterRuleListsTests: XCTestCase {
         bag = DisposeBag()
         do {
             try Persistor().clearRulesFiles()
-            user = try User(
-                fromPersistentStorage: false,
-                withBlockList: BlockList(
-                    withAcceptableAds: true,
-                    source: testSource.easylistPlusExceptions))
-            try user.save()
+            user = try UserUtility().aaUserNewSaved(testSource.easylistPlusExceptions)
         } catch let err { XCTFail("Error: \(err)") }
         wkcb = WebKitContentBlocker()
         let unlock = BehaviorRelay<Bool>(value: false)

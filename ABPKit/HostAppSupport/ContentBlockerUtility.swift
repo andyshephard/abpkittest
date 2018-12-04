@@ -145,6 +145,7 @@ class ContentBlockerUtility {
         return url.lastPathComponent
     }
 
+    /// Legacy FilterList implementation.
     func mergedFilterListRules(from sourceURL: BlockListFileURL,
                                with whitelistedWebsites: WhitelistedWebsites,
                                limitRuleMaxCount: Bool = false) -> Observable<BlockListFileURL> {
@@ -152,27 +153,18 @@ class ContentBlockerUtility {
         let filename = "ww-\(filenameFromURL(sourceURL))"
         let encoder = JSONEncoder()
         let dir = self.rulesDir(blocklist: sourceURL)
-        let dest = self.makeNewBlocklistFileURL(name: filename,
-                                                at: dir)
-        guard let rulesData = try? self.blocklistData(blocklist: sourceURL) else {
-            return Observable.error(ABPFilterListError.invalidData)
-        }
-        guard let ruleList =
-            try? JSONDecoder().decode(V1FilterList.self,
-                                      from: rulesData) else {
-            return Observable.error(ABPFilterListError.failedDecoding)
-        }
-        // swiftlint:disable unused_optional_binding
-        guard let _ = try? self.startBlockListFile(blocklist: dest) else {
-            return Observable.error(ABPFilterListError.failedFileCreation)
-        }
-        // swiftlint:enable unused_optional_binding
+        let dest = self.makeNewBlocklistFileURL(name: filename, at: dir)
+        var ruleList: V1FilterList!
+        do {
+            ruleList = try JSONDecoder()
+                .decode(V1FilterList.self,
+                        from: self.blocklistData(blocklist: sourceURL))
+             try self.startBlockListFile(blocklist: dest)
+        } catch let err { return Observable.error(err) }
         var cnt = 0
         return ruleList.rules()
             .takeWhile { _ in
-                if limitRuleMaxCount {
-                    return cnt < maxRuleCount
-                }
+                if limitRuleMaxCount { return cnt < maxRuleCount }
                 return true
             }
             .flatMap { (rule: BlockingRule) -> Observable<BlockListFileURL> in
@@ -180,19 +172,15 @@ class ContentBlockerUtility {
                 guard let coded = try? encoder.encode(rule) else {
                     return Observable.error(ABPFilterListError.failedEncodeRule)
                 }
-                self.writeToEndOfFile(blocklist: dest,
-                                      with: coded)
+                self.writeToEndOfFile(blocklist: dest, with: coded)
                 self.addRuleSeparator(blocklist: dest)
                 return Observable.create { observer in
                     whitelistedWebsites.forEach {
-                        let rule = self.makeWhitelistRule(domain: $0)
-                        guard let data = try? encoder.encode(rule) else {
-                            observer.onError(ABPFilterListError.failedEncodeRule)
-                            return
-                        }
-                        self.writeToEndOfFile(blocklist: dest,
-                                              with: data)
-                        self.addRuleSeparator(blocklist: dest)
+                        do {
+                            let data = try encoder.encode(self.whiteListRuleForDomain()($0))
+                            self.writeToEndOfFile(blocklist: dest, with: data)
+                            self.addRuleSeparator(blocklist: dest)
+                        } catch let err { observer.onError(err); return }
                     }
                     self.endBlockListFile(blocklist: dest)
                     observer.onNext(dest)

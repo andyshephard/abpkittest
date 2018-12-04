@@ -46,9 +46,9 @@ class UserHistoryCachingTests: XCTestCase {
         guard let user = try User(fromPersistentStorage: true) else { throw ABPUserModelError.badDataUser }
         var copy = user
         copy.setBlockList(blst)
-        try copy.updateHistory()
-        log("👩‍🎤hist cnt \(copy.blockListHistory?.count as Int?)")
-        wkcb.concatenatedRules(user: copy, customBundle: Bundle(for: UserHistoryCachingTests.self))
+        let saved = try copy.updateHistory().saved()
+        log("👩‍🎤hist cnt \(saved.blockListHistory?.count as Int?)")
+        wkcb.concatenatedRules(user: saved, customBundle: Bundle(for: UserHistoryCachingTests.self))
             .flatMap { rules, _ -> Observable<WKContentRuleList> in
                 return wkcb.rulesCompiled(user: copy, rules: rules)
             }

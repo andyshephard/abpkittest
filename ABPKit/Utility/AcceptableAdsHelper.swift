@@ -15,31 +15,15 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-protocol BlockListable: Codable,
-                        Hashable {
-    var name: String { get }
-    var source: BlockListSourceable { get }
-}
-
-/// A source of rules.
-public
-protocol BlockListSourceable: Codable {
-    // Intentionally empty.
-}
-
-/// Supports acceptable ads.
-public
-protocol AcceptableAdsEnableable {
-    func hasAcceptableAds() -> Bool
-}
-
-/// Rules may be downloaded.
-public
-protocol RulesDownloadable {
-    // Intentionally empty.
-}
-
-public
-protocol UserWhiteListable {
-    var dateModified: Date? { get }
+class AcceptableAdsHelper {
+    // swiftlint:disable force_cast
+    func aaExists() -> (BlockListSourceable) throws -> Bool {
+        return { src in
+            if src is AcceptableAdsEnableable {
+                return (src as! AcceptableAdsEnableable).hasAcceptableAds()
+            }
+            throw ABPFilterListError.aaStateMismatch
+        }
+    }
+    // swiftlint:enable force_cast
 }

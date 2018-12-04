@@ -24,6 +24,10 @@
 		651D45D921ACA2C100C00FAC /* UserBlockListDownloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651D45D721ACA2C100C00FAC /* UserBlockListDownloadTests.swift */; };
 		651D45DB21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651D45DA21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift */; };
 		651D45DC21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651D45DA21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift */; };
+		651EC17421B75BA800F9FE2C /* SourceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651EC17321B75BA800F9FE2C /* SourceHelper.swift */; };
+		651EC17521B75BA800F9FE2C /* SourceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651EC17321B75BA800F9FE2C /* SourceHelper.swift */; };
+		651EC17721B763E500F9FE2C /* AcceptableAdsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651EC17621B763E500F9FE2C /* AcceptableAdsHelper.swift */; };
+		651EC17821B7654D00F9FE2C /* AcceptableAdsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651EC17621B763E500F9FE2C /* AcceptableAdsHelper.swift */; };
 		65486F3A219F8BA200565AC8 /* BlockListModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65486F39219F8BA200565AC8 /* BlockListModelTests.swift */; };
 		65486F3C219FB57500565AC8 /* BlockList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65486F3B219FB57500565AC8 /* BlockList.swift */; };
 		65486F3D219FB57500565AC8 /* BlockList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65486F3B219FB57500565AC8 /* BlockList.swift */; };
@@ -89,6 +93,10 @@
 		6583A81521B37410003E206F /* DownloadUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6583A81321B37410003E206F /* DownloadUtility.swift */; };
 		65A2653121A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */; };
 		65A2653221A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */; };
+		65A7406121B75625004A41EC /* UserAfterWhiteListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A7406021B75625004A41EC /* UserAfterWhiteListTests.swift */; };
+		65A7406221B75625004A41EC /* UserAfterWhiteListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A7406021B75625004A41EC /* UserAfterWhiteListTests.swift */; };
+		65A7406421B7583F004A41EC /* WhiteList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A7406321B7583F004A41EC /* WhiteList.swift */; };
+		65A7406521B7583F004A41EC /* WhiteList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A7406321B7583F004A41EC /* WhiteList.swift */; };
 		65B0440621ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B0440521ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift */; };
 		65B0440721ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B0440521ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift */; };
 		65B6EB8721A7802900B2F600 /* UserStateHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B6EB8621A7802900B2F600 /* UserStateHelper.swift */; };
@@ -266,6 +274,8 @@
 		651D45CB21AC85A900C00FAC /* UserBlockListDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserBlockListDownloader.swift; sourceTree = "<group>"; };
 		651D45D721ACA2C100C00FAC /* UserBlockListDownloadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserBlockListDownloadTests.swift; sourceTree = "<group>"; };
 		651D45DA21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserBlockListDownloader+Delegate.swift"; sourceTree = "<group>"; };
+		651EC17321B75BA800F9FE2C /* SourceHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceHelper.swift; sourceTree = "<group>"; };
+		651EC17621B763E500F9FE2C /* AcceptableAdsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcceptableAdsHelper.swift; sourceTree = "<group>"; };
 		65486F39219F8BA200565AC8 /* BlockListModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockListModelTests.swift; sourceTree = "<group>"; };
 		65486F3B219FB57500565AC8 /* BlockList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockList.swift; sourceTree = "<group>"; };
 		654A14312198AE9500CB9F11 /* BlockListSources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockListSources.swift; sourceTree = "<group>"; };
@@ -323,6 +333,8 @@
 		6583A81021B373B6003E206F /* UserAfterRuleListsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAfterRuleListsTests.swift; sourceTree = "<group>"; };
 		6583A81321B37410003E206F /* DownloadUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadUtility.swift; sourceTree = "<group>"; };
 		65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockListSourceUtility.swift; sourceTree = "<group>"; };
+		65A7406021B75625004A41EC /* UserAfterWhiteListTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserAfterWhiteListTests.swift; sourceTree = "<group>"; };
+		65A7406321B7583F004A41EC /* WhiteList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhiteList.swift; sourceTree = "<group>"; };
 		65B0440521ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserBlockListDownloader+Persistence.swift"; sourceTree = "<group>"; };
 		65B0DCA021828794002AF562 /* HostApp-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "HostApp-iOS.entitlements"; sourceTree = "<group>"; };
 		65B6EB8621A7802900B2F600 /* UserStateHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStateHelper.swift; sourceTree = "<group>"; };
@@ -555,6 +567,7 @@
 				6575616F217FBA6100D8A4F2 /* FilterListUpdate.swift */,
 				65527DEB219BABDE00B9D80F /* User.swift */,
 				65055C0C21ADB231005FCB7F /* UserDownloadEvent.swift */,
+				65A7406321B7583F004A41EC /* WhiteList.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -573,7 +586,9 @@
 			isa = PBXGroup;
 			children = (
 				65756175217FBA6100D8A4F2 /* ABPDebug.swift */,
+				651EC17621B763E500F9FE2C /* AcceptableAdsHelper.swift */,
 				65756176217FBA6100D8A4F2 /* ActiveVersions.swift */,
+				651EC17321B75BA800F9FE2C /* SourceHelper.swift */,
 				65756177217FBA6100D8A4F2 /* URLComponents+Encoding.swift */,
 			);
 			path = Utility;
@@ -610,6 +625,7 @@
 				65C11C9E219BDDFC00E3D09C /* PersistUserModelTests.swift */,
 				6560843D21B08C1500E0EA9D /* UserAfterDownloadsTests.swift */,
 				6583A81021B373B6003E206F /* UserAfterRuleListsTests.swift */,
+				65A7406021B75625004A41EC /* UserAfterWhiteListTests.swift */,
 				651D45D721ACA2C100C00FAC /* UserBlockListDownloadTests.swift */,
 			);
 			path = "ABPKitTests-iOS+macOS";
@@ -1189,11 +1205,14 @@
 				65D4C7762188C68500B1E16F /* BlockListDownloader+Delegate.swift in Sources */,
 				654A14332198B01500CB9F11 /* BlockListSources.swift in Sources */,
 				65D4C7812188C68500B1E16F /* FilterList+RuleCount.swift in Sources */,
+				651EC17821B7654D00F9FE2C /* AcceptableAdsHelper.swift in Sources */,
 				65055C0E21ADB231005FCB7F /* UserDownloadEvent.swift in Sources */,
+				65A7406521B7583F004A41EC /* WhiteList.swift in Sources */,
 				65D4C7772188C68500B1E16F /* BlocklistDownloader+Persistence.swift in Sources */,
 				65FB45CC219157590006274B /* Persistor+LocalStorage.swift in Sources */,
 				65D4C7732188C68500B1E16F /* Configuration.swift in Sources */,
 				65D4C77C2188C68500B1E16F /* ContentBlockerUtility+Whitelist.swift in Sources */,
+				651EC17521B75BA800F9FE2C /* SourceHelper.swift in Sources */,
 				65FB45C0219154540006274B /* WebKitContentBlocker.swift in Sources */,
 				655DB0222191447200A33E66 /* Platform.swift in Sources */,
 				65D4C7782188C68500B1E16F /* Errors.swift in Sources */,
@@ -1232,6 +1251,7 @@
 				6583A81221B373B6003E206F /* UserAfterRuleListsTests.swift in Sources */,
 				651D45CA21AC7F8A00C00FAC /* BlockListDownloadTests.swift in Sources */,
 				65B6EB8A21A7C49C00B2F600 /* UserHistoryCachingTests.swift in Sources */,
+				65A7406221B75625004A41EC /* UserAfterWhiteListTests.swift in Sources */,
 				65A2653221A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */,
 				65D476DD21895C7400D4F5DA /* FilterListTestModeler.swift in Sources */,
 				651D45D921ACA2C100C00FAC /* UserBlockListDownloadTests.swift in Sources */,
@@ -1265,11 +1285,14 @@
 				654A14322198AE9500CB9F11 /* BlockListSources.swift in Sources */,
 				6575615A217FBA5500D8A4F2 /* BlockListDownloader+Delegate.swift in Sources */,
 				65527DEC219BABDE00B9D80F /* User.swift in Sources */,
+				651EC17721B763E500F9FE2C /* AcceptableAdsHelper.swift in Sources */,
 				65055C0D21ADB231005FCB7F /* UserDownloadEvent.swift in Sources */,
+				65A7406421B7583F004A41EC /* WhiteList.swift in Sources */,
 				6575617A217FBA6100D8A4F2 /* Persistor.swift in Sources */,
 				65FB45CB219157590006274B /* Persistor+LocalStorage.swift in Sources */,
 				65756187217FBA6100D8A4F2 /* FilterListUpdate.swift in Sources */,
 				65756178217FBA6100D8A4F2 /* V1FilterListParser.swift in Sources */,
+				651EC17421B75BA800F9FE2C /* SourceHelper.swift in Sources */,
 				65FB45BF219154540006274B /* WebKitContentBlocker.swift in Sources */,
 				655DB0252191447200A33E66 /* Platform.swift in Sources */,
 				65756159217FBA5500D8A4F2 /* BlocklistDownloader+Persistence.swift in Sources */,
@@ -1300,6 +1323,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				65A7406121B75625004A41EC /* UserAfterWhiteListTests.swift in Sources */,
 				65CC3371217FBB5100FF0CEF /* FilterListTestModeler.swift in Sources */,
 				65486F42219FC20900565AC8 /* FilterListTests.swift in Sources */,
 				651D45D821ACA2C100C00FAC /* UserBlockListDownloadTests.swift in Sources */,

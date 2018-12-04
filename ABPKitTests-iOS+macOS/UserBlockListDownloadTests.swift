@@ -34,20 +34,17 @@ class UserBlockListDownloadTests: XCTestCase {
         super.setUp()
         bag = DisposeBag()
         do {
-            user = try User(
-                fromPersistentStorage: false,
-                withBlockList: BlockList(
-                    withAcceptableAds: true,
-                    source: testSource.easylistPlusExceptions))
-            dler = try UserBlockListDownloader(user: user.saved())
+            user = try UserUtility().aaUserNewSaved(testSource.easylistPlusExceptions)
+            dler = UserBlockListDownloader(user: user)
         } catch let err { XCTFail("Error: \(err)") }
     }
 
     func testRemoteBlockListCases() throws {
         let lists = try testSource.allCases
             .map { try DownloadUtility().blockListForSource()($0) }
-        XCTAssert(lists.filter { $0.source.hasAcceptableAds() }.count == 1,
-                  "Bad count.")
+        try XCTAssert(lists
+            .filter { try AcceptableAdsHelper().aaExists()($0.source) }.count == 1,
+                      "Bad count.")
     }
 
     func testHashable() throws {
