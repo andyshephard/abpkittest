@@ -40,7 +40,7 @@ class RuleCountTests: XCTestCase {
             list.ruleCount(bundle: Bundle(for: RuleCountTests.self))
                 .subscribe(onNext: { cnt in
                     XCTAssert(cnt == self.testLists[key],
-                              "Rule count of \(cnt) doesn't match \(String(describing: self.testLists[key])) for \(key)")
+                              "Rule count of \(cnt) doesn't match \(self.testLists[key] as Int?) for \(key)")
                 }).disposed(by: bag)
         }
         expect.fulfill()

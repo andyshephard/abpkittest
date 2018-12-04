@@ -70,7 +70,7 @@ class BlockListDownloadTests: XCTestCase {
             }
             .flatMap { evt -> Observable<DownloadEvent> in
                 XCTAssert(evt.error == nil,
-                          "🚨 Error during event handling: \(String(describing: evt.error?.localizedDescription)))")
+                          "🚨 Error during event handling: \(evt.error as Error?)")
                 return Observable.just(evt)
             }
             .filter {

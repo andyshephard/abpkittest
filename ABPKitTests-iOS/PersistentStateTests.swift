@@ -52,8 +52,8 @@ class PersistentStateTests: XCTestCase {
     func observeAction<U>() -> (U) -> Void {
         // swiftlint:disable force_cast
         let failMsg: (U, U) -> String = { currState, val in
-            return ABPMutableStateError.invalidData.localizedDescription +
-            " - current state \(String(describing: currState)) ≠ \(val)"
+            return "Invalid data" +
+            " - current state \(currState as U?) ≠ \(val)"
         }
         return { [weak self] val in
             if val as? Bool != nil {
@@ -73,7 +73,7 @@ class PersistentStateTests: XCTestCase {
                 XCTAssert((val as! [String]).elementsEqual(self!.currentArrayStringState!),
                           failMsg(self?.currentArrayStringState as! U, val))
             } else { XCTFail("❌ Bad state - val \(val), type \(type(of: U.self))") }
-            NSLog("🔑\(String(describing: self?.currentKey)) = \(val)")
+            log("🔑\(self?.currentKey as String?) = \(val)")
             self?.obsCnt? += 1
         }
         // swiftlint:enable force_cast
@@ -141,7 +141,7 @@ class PersistentStateTests: XCTestCase {
             }
             .flatMap { count -> Observable<(Int, ABPMutableState.StateName)> in
                 guard let state = self.stateUtil.randomState(for: U.self) else {
-                    XCTFail(ABPMutableStateError.invalidData.localizedDescription)
+                    XCTFail("Bad data.")
                     return Observable.error(ABPMutableStateError.invalidData)
                 }
                 self.updateCurrentState(val: state)
@@ -156,7 +156,7 @@ class PersistentStateTests: XCTestCase {
                 }
                 iterCnt += 1
                 return Observable.create { observer in
-                    NSLog("local iteration for \(key): \(iterCnt), set state with \(state) ⬅️")
+                    log("local iteration for \(key): \(iterCnt), set state with \(state) ⬅️")
                     observer.onNext((count, key))
                     observer.onCompleted() // essential
                     return Disposables.create()
@@ -205,7 +205,7 @@ class PersistentStateTests: XCTestCase {
             .subscribeOn(scheduler)
             .subscribe(onNext: { iter, key in
                 guard let obsCnt = self.obsCnt else { return }
-                NSLog("⏱iteration \(iter), obsCnt \(obsCnt), key \(key) ✔️")
+                log("⏱iteration \(iter), obsCnt \(obsCnt), key \(key) ✔️")
                 switch key {
                 case .acceptableAdsEnabled:
                     let state1 = self.defaults?.bool(forKey: key.rawValue)

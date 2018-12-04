@@ -109,7 +109,7 @@ class UserBlockListDownloadTests: XCTestCase {
             val.asObservable()
                 .subscribe(onNext: {
                     XCTAssert($0.error == nil,
-                              "DL error: \(String(describing: $0.error))")
+                              "DL error: \($0.error as Error?)")
                     dlEvents[key] = $0
                 },
                 onCompleted: {
@@ -163,10 +163,10 @@ class UserBlockListDownloadTests: XCTestCase {
                 if let user = lastUser(true) {
                     do {
                         let synced = try self.dler.syncDownloads()(user).saved()
-                        log("👩‍🎤multicomplete downloads #\(String(describing: synced.downloads?.count)) - \(String(describing: synced.downloads))")
+                        log("👩‍🎤multicomplete downloads #\(synced.downloads?.count as Int?) - \(synced.downloads as [BlockList]?)")
                         let user = lastUser(true)
                         XCTAssert(user?.downloads?.count == Constants.userBlockListMax,
-                                  "Bad count downloads: Expected \(Constants.userBlockListMax), got \(String(describing: user?.downloads?.count)).")
+                                  "Bad count downloads: Expected \(Constants.userBlockListMax), got \(user?.downloads?.count as Int?).")
                         let fcnt = try pstr.jsonFiles()(pstr.fileEnumeratorForRoot()(Config().containerURL())).count
                         XCTAssert(fcnt == user?.downloads?.count,
                                   "Bad count files.")

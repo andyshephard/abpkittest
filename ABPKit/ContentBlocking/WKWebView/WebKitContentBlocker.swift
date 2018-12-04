@@ -51,7 +51,7 @@ class WebKitContentBlocker {
                     if let blst = user.blockList,
                        blst.name != list.identifier ||
                        ids?.contains(blst.name) == false { observer.onError(ABPWKRuleStoreError.invalidData) }
-                    ABPKit.log("📙store \(String(describing: ids))")
+                    ABPKit.log("📙store \(ids as [String]?)")
                     observer.onNext(list)
                     observer.onCompleted()
                     return Disposables.create()
@@ -141,7 +141,7 @@ class WebKitContentBlocker {
                             self.rulesStore.getAvailableContentRuleListIdentifiers { (ids: [String]?) in
                                 if let name = addList.name,
                                    ids?.contains(name) == false { observer.onError(ABPWKRuleStoreError.missingRuleList) }
-                                ABPKit.log("📙 \(String(describing: ids))")
+                                ABPKit.log("📙 \(ids as [String]?)")
                             }
                             if let compiled = list {
                                 observer.onNext(compiled)

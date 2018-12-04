@@ -47,7 +47,7 @@ class UserHistoryCachingTests: XCTestCase {
         var copy = user
         copy.setBlockList(blst)
         try copy.updateHistory()
-        log("👩‍🎤hist cnt \(String(describing: copy.blockListHistory?.count))")
+        log("👩‍🎤hist cnt \(copy.blockListHistory?.count as Int?)")
         wkcb.concatenatedRules(user: copy, customBundle: Bundle(for: UserHistoryCachingTests.self))
             .flatMap { rules, _ -> Observable<WKContentRuleList> in
                 return wkcb.rulesCompiled(user: copy, rules: rules)
@@ -57,8 +57,8 @@ class UserHistoryCachingTests: XCTestCase {
             }
             .flatMap { ids -> Observable<Observable<String>> in
                 let hist = copy.blockListHistory?.reduce([]) { $0 + [$1.name] }.sorted()
-                log("1. hist - #\(String(describing: hist?.count)) - \(String(describing: hist))")
-                log("1. store - #\(String(describing: ids?.count)) - \(String(describing: ids?.sorted()))")
+                log("1. hist - #\(hist?.count as Int?) - \(hist as [String]?)")
+                log("1. store - #\(ids?.count as Int?) - \(ids?.sorted() as [String]?)")
                 return wkcb.syncHistoryRemovers(user: copy)
             }
             .flatMap { remove -> Observable<String> in
@@ -68,8 +68,8 @@ class UserHistoryCachingTests: XCTestCase {
             }
             .subscribe(onNext: { ids in
                 let hist = copy.blockListHistory?.reduce([]) { $0 + [$1.name] }.sorted()
-                log("2. hist - #\(String(describing: hist?.count)) - \(String(describing: hist))")
-                log("2. store - #\(String(describing: ids?.count)) - \(String(describing: ids?.sorted()))")
+                log("2. hist - #\(hist?.count as Int?) - \(hist as [String]?)")
+                log("2. store - #\(ids?.count as Int?) - \(ids?.sorted() as [String]?)")
             }, onError: { err in
                 XCTFail("Error: \(err)")
             }, onCompleted: {

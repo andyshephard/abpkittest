@@ -327,7 +327,7 @@ class WebKitContentBlockingTests: XCTestCase {
             store
                 .compileContentRuleList(forIdentifier: name,
                                         encodedContentRuleList: rules) { list, err in
-                    if err != nil { XCTFail("Error: \(String(describing: err))") }
+                    if err != nil { XCTFail("Error: \(err as Error?)") }
                     observer.onNext((list, err))
                     observer.onCompleted()
                 }
@@ -341,7 +341,7 @@ class WebKitContentBlockingTests: XCTestCase {
         return Observable.create { observer in
             store
                 .lookUpContentRuleList(forIdentifier: name) { list, err in
-                    if err != nil { XCTFail("Error: \(String(describing: err))") }
+                    if err != nil { XCTFail("Error: \(err as Error?)") }
                     if list != nil { observer.onNext(list!) }
                     observer.onCompleted()
                 }
@@ -353,7 +353,7 @@ class WebKitContentBlockingTests: XCTestCase {
     func logRules() {
         wkcb?.rulesStore
             .getAvailableContentRuleListIdentifiers { (ids: [String]?) in
-                ABPKit.log("📙 \(String(describing: ids))")
+                ABPKit.log("📙 \(ids as [String]?)")
             }
     }
 }

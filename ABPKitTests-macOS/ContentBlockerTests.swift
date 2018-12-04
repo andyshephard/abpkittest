@@ -32,9 +32,9 @@ class ContentBlockerTests: XCTestCase {
         SFContentBlockerManager
             .reloadContentBlocker(withIdentifier: cbid) { err in
                 if err != nil {
-                    XCTFail("Failed with error: \(String(describing: err))")
+                    XCTFail("Failed with error: \(err as Error?)")
                 } else {
-                    NSLog("✅ reload succeeded")
+                    log("✅ reload succeeded")
                 }
                 expect.fulfill()
             }

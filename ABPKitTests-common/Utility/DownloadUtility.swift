@@ -28,7 +28,7 @@ class DownloadUtility {
                          afterUserSavedTest: ((User) -> Void)? = nil,
                          withCompleted: (() -> Void)? = nil) -> Disposable {
         guard let start = lastUser(true) else {
-            XCTFail(ABPUserModelError.badDataUser.localizedDescription); return Disposables.create()
+            XCTFail("Bad user."); return Disposables.create()
         }
         let dler = UserBlockListDownloader(user: start)
         return dler.userAfterDownloads()(dler.userSourceDownloads())
@@ -41,7 +41,7 @@ class DownloadUtility {
             }, onError: { err in
                 XCTFail("Error: \(err)")
             }, onCompleted: {
-                log("👩‍🎤started with DLs #\(String(describing: start.downloads?.count)) - \(String(describing: start.downloads))")
+                log("👩‍🎤started with DLs #\(start.downloads?.count as Int?) - \(start.downloads as [BlockList]?)")
                 withCompleted?()
             })
     }
