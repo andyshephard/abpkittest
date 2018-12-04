@@ -75,6 +75,7 @@
 		6575618B217FBA6100D8A4F2 /* ABPDebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65756175217FBA6100D8A4F2 /* ABPDebug.swift */; };
 		6575618C217FBA6100D8A4F2 /* ActiveVersions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65756176217FBA6100D8A4F2 /* ActiveVersions.swift */; };
 		6575618D217FBA6100D8A4F2 /* URLComponents+Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65756177217FBA6100D8A4F2 /* URLComponents+Encoding.swift */; };
+		6578D50621B6047200F27B68 /* ABPKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65D4C75B2188C64C00B1E16F /* ABPKit.framework */; };
 		65810872217FDCB2001D6FFE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65810871217FDCB2001D6FFE /* AppDelegate.swift */; };
 		65810874217FDCB2001D6FFE /* WebViewVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65810873217FDCB2001D6FFE /* WebViewVC.swift */; };
 		65810877217FDCB2001D6FFE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 65810875217FDCB2001D6FFE /* Main.storyboard */; };
@@ -385,6 +386,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6578D50621B6047200F27B68 /* ABPKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
