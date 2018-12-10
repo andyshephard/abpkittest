@@ -57,6 +57,7 @@ class UserAfterRuleListsTests: XCTestCase {
                   "Failed to clear rules.")
     }
 
+    /// Integration test:
     /// Test adding rule lists generated from downloads.
     func testUserAfterRL() {
         let expect = expectation(description: #function)

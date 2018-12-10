@@ -17,7 +17,7 @@
 
 /// For models that can be stored.
 protocol Persistable: Codable {
-    var name: String? { get }
+    var name: String { get }
 
     /// Init with default values.
     init() throws

@@ -30,7 +30,7 @@ struct FilterList: Persistable {
     public var downloadCount: Int?
 
     /// Name used to identify a list uniquely.
-    public var name: FilterListName?
+    public var name: FilterListName
 
     /// The last version value extracted from the filter list or default value of "0".
     public var lastVersion: FilterListLastVersion = "0"
@@ -87,9 +87,8 @@ extension FilterList {
     /// rulesURL(bundle: Bundle(for: ...))
     func rulesURL(bundle: Bundle = Config().bundle(),
                   ignoreBundle: Bool = false) throws -> URL? {
-        guard let name = self.name else { throw ABPFilterListError.missingName }
         return try RulesHelper()
-            .rulesURL(identifier: name,
+            .rulesURL(identifier: self.name,
                       bundle: bundle,
                       ignoreBundle: ignoreBundle)
     }

@@ -83,8 +83,7 @@ class WebKitContentBlockingTests: XCTestCase {
                     expect.fulfill()
                 }).disposed(by: self.bag)
         }
-        wait(for: [expect],
-             timeout: timeout)
+        wait(for: [expect], timeout: timeout)
     }
 
     /// Config test.
@@ -123,8 +122,7 @@ class WebKitContentBlockingTests: XCTestCase {
             }, onCompleted: {
                 XCTFail("Unexpected completion.")
             }).disposed(by: bag)
-        wait(for: [expect],
-             timeout: timeout / 4)
+        wait(for: [expect], timeout: timeout / 4)
     }
 
     func testRuleListIDs() {
@@ -138,8 +136,7 @@ class WebKitContentBlockingTests: XCTestCase {
                 ABPKit.log("get ids ⏱️ \(end)")
                 expect.fulfill()
             }
-        wait(for: [expect],
-             timeout: timeout / 4)
+        wait(for: [expect], timeout: timeout / 4)
     }
 
     /// Rules handling through ABPKit with a final clear.
@@ -168,8 +165,7 @@ class WebKitContentBlockingTests: XCTestCase {
                     expect.fulfill()
                 }).disposed(by: bag)
         } catch let err { XCTFail("Error: \(err)") }
-        wait(for: [expect],
-             timeout: timeout)
+        wait(for: [expect], timeout: timeout)
     }
 
     /// Test compiling rules with the default callback of compileRules.
@@ -179,15 +175,11 @@ class WebKitContentBlockingTests: XCTestCase {
         do {
             try pstr.clearRulesFiles()
             let list = try mdlr.makeLocalFilterList(bundledRules: false)
-            guard let listName = list.name else {
-                XCTFail("Missing name."); return
-            }
             try pstr.saveFilterListModel(list)
             try pstr.logRulesFiles()
-            addNewRules(arg: list, name: listName) { expect.fulfill() }
+            addNewRules(arg: list, name: list.name) { expect.fulfill() }
         } catch let err { XCTFail("🚨 Error during add: \(err)") }
-        wait(for: [expect],
-             timeout: timeout)
+        wait(for: [expect], timeout: timeout)
     }
 
     /// Add rules to WK store for user.
@@ -201,8 +193,7 @@ class WebKitContentBlockingTests: XCTestCase {
             try pstr.logRulesFiles()
             addNewRules(arg: user, name: user.blockList!.name) { expect.fulfill() }
         } catch let err { XCTFail("🚨 Error during add: \(err)") }
-        wait(for: [expect],
-             timeout: timeout)
+        wait(for: [expect], timeout: timeout)
     }
 
     func testGetStoredRules() throws {
@@ -243,8 +234,7 @@ class WebKitContentBlockingTests: XCTestCase {
                 }
             }
         } catch let err { XCTFail("🚨 Error during add: \(err)") }
-        wait(for: [expect],
-             timeout: timeout)
+        wait(for: [expect], timeout: timeout)
     }
 
     private

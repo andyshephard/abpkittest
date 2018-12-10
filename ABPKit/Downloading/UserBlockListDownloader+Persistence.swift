@@ -21,45 +21,42 @@ extension UserBlockListDownloader {
     /// will return without an error.
     func moveOrReplaceItem(source: URL,
                            destination: URL?) throws {
-        guard let dest = destination else {
-            throw ABPDownloadTaskError.badDestinationURL
-        }
+        guard let dest = destination else { throw ABPDownloadTaskError.badDestinationURL }
         let mgr = FileManager.default
-        let destPath = dest.path
-        let exists = mgr.fileExists(atPath: destPath)
         var removeError: Error?
-        if exists {
+        if mgr.fileExists(atPath: dest.path) {
             do {
-                try mgr.removeItem(atPath: destPath)
-            } catch let rmErr {
-                removeError = rmErr
-            }
+                try mgr.removeItem(atPath: dest.path)
+            } catch let rmErr { removeError = rmErr }
         }
         if removeError == nil {
             do {
                 try mgr.moveItem(at: source, to: dest)
-            } catch {
-                throw ABPDownloadTaskError.failedMove
-            }
-        } else {
-            throw ABPDownloadTaskError.failedRemoval
-        }
+            } catch { throw ABPDownloadTaskError.failedMove }
+        } else { throw ABPDownloadTaskError.failedRemoval }
     }
 
-    /// Remove downloads no longer in user's downloads.
-    /// Updates persistent state.
+    /// Remove downloads no longer in user's downloads based on a given user state.
+    /// This should be called carefully as the correct state is often difficult to track.
     public
     func syncDownloads() -> (User) throws -> User {
-        return {
+        return { user in
             let pstr = try Persistor()
-            let saved = try $0.updateDownloads().saved() // downloads nil check
+            let saved = try self.userBlockListUpdated()(user)
+                .historyUpdated()
+                .downloadsUpdated() // downloads nil check
+                .saved()
+            self.user = saved // internal state change
             let notInSaved = pstr.jsonFiles()(try pstr.fileEnumeratorForRoot()(Config().containerURL()))
                 .filter { url in
-                    !saved.downloads!.contains { $0.name.addingFileExtension(Constants.rulesExtension) == url.lastPathComponent }
+                    !saved.downloads!.contains {
+                        $0.name.addingFileExtension(Constants.rulesExtension) == url.lastPathComponent
+                    }
                 }
             let mgr = FileManager.default
             try notInSaved.forEach {
                 try mgr.removeItem(at: $0)
+                self.logWith?($0.path)
             }
             return saved
         }

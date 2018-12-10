@@ -35,12 +35,6 @@
                                     <action selector="reloadPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="XVL-9E-s8R"/>
                                 </connections>
                             </button>
-                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Unit Testing is Active" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Msw-Cc-Qex">
-                                <rect key="frame" x="97" y="394" width="181" height="24"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <wkWebView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UX8-rR-XY8">
                                 <rect key="frame" x="0.0" y="82" width="375" height="658"/>
                                 <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -49,6 +43,13 @@
                                     <wkPreferences key="preferences"/>
                                 </wkWebViewConfiguration>
                             </wkWebView>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Unit Testing is Active" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Msw-Cc-Qex" userLabel="Status Label">
+                                <rect key="frame" x="88.666666666666671" y="393" width="197.66666666666663" height="26.333333333333314"/>
+                                <color key="backgroundColor" red="0.0" green="0.68235294120000001" blue="0.93725490199999995" alpha="0.80000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="22"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="52R-5a-oAf" userLabel="AA Button">
                                 <rect key="frame" x="0.0" y="740" width="375" height="38"/>
                                 <constraints>
@@ -83,7 +84,7 @@
                     <connections>
                         <outlet property="aaButton" destination="52R-5a-oAf" id="OBJ-aS-gdC"/>
                         <outlet property="reloadButton" destination="HUh-7h-FuL" id="sc5-Ft-Xbz"/>
-                        <outlet property="unitTestingLabel" destination="Msw-Cc-Qex" id="g3p-1S-Ea7"/>
+                        <outlet property="statusLabel" destination="Msw-Cc-Qex" id="qy7-JP-2Ih"/>
                         <outlet property="urlField" destination="OWk-2w-3vT" id="ddS-Tt-GD8"/>
                         <outlet property="webView" destination="UX8-rR-XY8" id="yMv-5l-J8c"/>
                     </connections>

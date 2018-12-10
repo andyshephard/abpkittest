@@ -754,14 +754,6 @@
                                     <action selector="reloadPressed:" target="XfG-lQ-9wD" id="uQz-Dl-c8G"/>
                                 </connections>
                             </button>
-                            <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ot7-Wj-oaA">
-                                <rect key="frame" x="420" y="276" width="185" height="24"/>
-                                <textFieldCell key="cell" lineBreakMode="clipping" title="Unit Testing is Active" id="gO4-zR-Z0t">
-                                    <font key="font" metaFont="system" size="20"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
                             <wkWebView wantsLayer="YES" allowsBackForwardNavigationGestures="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mqB-yd-gtK">
                                 <rect key="frame" x="0.0" y="0.0" width="1024" height="544"/>
                                 <wkWebViewConfiguration key="configuration">
@@ -769,6 +761,14 @@
                                     <wkPreferences key="preferences" javaScriptCanOpenWindowsAutomatically="NO"/>
                                 </wkWebViewConfiguration>
                             </wkWebView>
+                            <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ot7-Wj-oaA">
+                                <rect key="frame" x="407" y="272" width="210" height="32"/>
+                                <textFieldCell key="cell" lineBreakMode="truncatingTail" borderStyle="bezel" alignment="center" title="Unit Testing is Active" drawsBackground="YES" id="gO4-zR-Z0t">
+                                    <font key="font" metaFont="system" size="22"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" red="0.0" green="0.68235294117647061" blue="0.93725490196078431" alpha="0.80000000000000004" colorSpace="custom" customColorSpace="sRGB"/>
+                                </textFieldCell>
+                            </textField>
                         </subviews>
                         <constraints>
                             <constraint firstItem="mqB-yd-gtK" firstAttribute="top" secondItem="MlV-Bh-2ts" secondAttribute="bottom" id="1Zj-Xm-cYX"/>
@@ -789,7 +789,7 @@
                     <connections>
                         <outlet property="aaCheckButton" destination="uLF-wk-Z8R" id="pj5-ka-oC6"/>
                         <outlet property="reloadButton" destination="6zy-Fk-lTH" id="mGn-h8-Vhh"/>
-                        <outlet property="unitTestingField" destination="Ot7-Wj-oaA" id="TKn-zU-DWf"/>
+                        <outlet property="statusField" destination="Ot7-Wj-oaA" id="RdA-Jf-B9N"/>
                         <outlet property="urlField" destination="MlV-Bh-2ts" id="nRJ-bB-0hh"/>
                         <outlet property="webView" destination="mqB-yd-gtK" id="kG3-Rf-oOV"/>
                     </connections>

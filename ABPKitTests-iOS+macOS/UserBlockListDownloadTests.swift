@@ -35,7 +35,7 @@ class UserBlockListDownloadTests: XCTestCase {
         bag = DisposeBag()
         do {
             user = try UserUtility().aaUserNewSaved(testSource.easylistPlusExceptions)
-            dler = UserBlockListDownloader(user: user)
+            dler = UserBlockListDownloader(user: user, logWith: { log("🗑️\($0)") })
         } catch let err { XCTFail("Error: \(err)") }
     }
 

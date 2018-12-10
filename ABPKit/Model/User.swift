@@ -15,12 +15,12 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// User has one BlockList active at a time.
-/// It may be a copy from the download collection.
+/// User state has one active BlockList. It may be a copy from a cache
+/// collection.
 public
 struct User: Persistable,
              Equatable {
-    let name: String?
+    let name: String
     /// Active block list.
     var blockList: BlockList?
     /// To be synced with rule lists in WKContentRuleListStore.
@@ -68,8 +68,7 @@ extension User {
     /// Multiple user support will be in a future version.
     init?(persistenceID: String) throws {
         let pstr = try Persistor()
-        let data = try pstr.load(type: Data.self,
-                                 key: ABPMutableState.StateName.user)
+        let data = try pstr.load(type: Data.self, key: ABPMutableState.StateName.user)
         self = try pstr.decodeModelData(type: User.self, modelData: data)
         try Persistor().logRulesFiles()
     }
@@ -79,8 +78,23 @@ extension User {
 
 extension User {
     public
+    func getName() -> String {
+        return name
+    }
+
+    public
+    func getBlockList() -> BlockList? {
+        return blockList
+    }
+
+    public
     func getHistory() -> [BlockList]? {
         return blockListHistory
+    }
+
+    public
+    func getDownloads() -> [BlockList]? {
+        return downloads
     }
 
     func blockListNamed(_ name: String) -> ([BlockList]) throws -> BlockList? {
@@ -101,28 +115,33 @@ extension User {
     }
 }
 
-// MARK: - Mutators -
+// MARK: - Copiers -
 
 extension User {
-    public mutating
-    func setBlockList(_ blockList: BlockList) {
-        self.blockList = blockList
+    public
+    func blockListSet() -> (BlockList) -> User {
+        return {
+            var copy = self
+            copy.blockList = $0
+            return copy
+        }
     }
 
-    mutating
-    func addDownloaded(_ blockList: BlockList, withSave: Bool = false) throws {
-        if downloads == nil { downloads = [] }
-        var copy = blockList
-        copy.dateDownload = Date()
-        downloads!.append(copy)
-        if withSave { try save() }
+    func downloadAdded() -> (BlockList) -> User {
+        return {
+            var copy = self
+            if copy.downloads == nil { copy.downloads = [] }
+            var blst = $0
+            blst.dateDownload = Date()
+            copy.downloads!.append(blst)
+            return copy
+        }
     }
 
     /// Adds the current blocklist to history while pruning.
     /// Does not automatically get called.
     /// Should be called when changing the user's rule list.
-    /// Performs a save.
-    func updateHistory() throws -> User {
+    func historyUpdated() throws -> User {
         let max = Constants.userBlockListMax
         var copy = self
         guard let blst = copy.blockList else { throw ABPUserModelError.failedUpdateData }
@@ -136,7 +155,7 @@ extension User {
     }
 
     /// Does not include current block list.
-    func updateDownloads() throws -> User {
+    func downloadsUpdated() throws -> User {
         let max = Constants.userBlockListMax
         var copy = self
         if copy.downloads == nil { copy.downloads = [] }

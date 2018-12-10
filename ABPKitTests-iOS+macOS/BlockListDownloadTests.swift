@@ -62,8 +62,7 @@ class BlockListDownloadTests: XCTestCase {
     func runDownloadDelegation(remoteSource: Bool = false) {
         let expect = expectation(description: #function)
         var cnt = 0
-        dler.blockListDownload(for: testList,
-                               runInBackground: false)
+        dler.blockListDownload(for: testList, runInBackground: false)
             .flatMap { task -> Observable<DownloadEvent> in
                 task.resume()
                 return self.downloadEvents(for: task)
@@ -74,8 +73,7 @@ class BlockListDownloadTests: XCTestCase {
                 return Observable.just(evt)
             }
             .filter {
-                $0.didFinishDownloading == true &&
-                $0.errorWritten == true
+                $0.didFinishDownloading == true && $0.errorWritten == true
             }
             .flatMap { evt -> Observable<BlockingRule> in
                 return self.downloadedRules(for: evt, remoteSource: remoteSource)

@@ -56,8 +56,6 @@ extension Persistor {
         }
         /// Custom bundle only used if defined.
         let rulesURL: (FilterList) -> (URL?, Error?) = { model in
-            let name = model.name
-            if name == nil { return (nil, ABPFilterListError.missingName) }
             do { let url = try model.rulesURL()
                  return (url, nil)
             } catch let err { return (nil, err) }

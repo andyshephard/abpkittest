@@ -31,8 +31,9 @@ extension UserBlockListDownloader {
         }
     }
 
+    // swiftlint:disable opening_brace
     /// A download task has finished downloading. Update the user's block list
-    /// metadata and move the downloaded file.
+    /// metadata and move the downloaded file. Updates user state.
     public
     func urlSession(_ session: URLSession,
                     downloadTask: URLSessionDownloadTask,
@@ -44,35 +45,36 @@ extension UserBlockListDownloader {
         guard let containerURL = try? Config().containerURL() else {
             reportError(taskID: taskID, error: .badContainerURL); return
         }
-        var fname: String!
         let index = indexForTaskID()(taskID)
+        var fname: String!
         if index != nil {
             fname = srcDownloads[index!].blockList?.name.addingFileExtension(Constants.rulesExtension)
         } else {
             reportError(taskID: taskID, error: .badFilename); return
-            fname = UUID().uuidString.addingFileExtension(Constants.rulesExtension)
+            fname = UUID().uuidString.addingFileExtension(Constants.rulesExtension) // save it anyway
         }
         let dst = containerURL
-            .appendingPathComponent(fname,
-                                    isDirectory: false)
+            .appendingPathComponent(fname, isDirectory: false)
         do {
-            try moveOrReplaceItem(source: location,
-                                  destination: dst)
+            try moveOrReplaceItem(source: location, destination: dst)
         } catch let err {
-            let fileError = err as? ABPDownloadTaskError
-            if fileError != nil { reportError(taskID: taskID, error: fileError!) }
+            { if let fErr = $0 as? ABPDownloadTaskError { self.reportError(taskID: taskID, error: fErr) } }(err)
         }
         if index != nil {
             do {
                 if let srcBL = srcDownloads[index!].blockList {
-                    try self.user.addDownloaded( // only AA enableable sources succeed
+                    self.user = try self.user.downloadAdded()( // only AA enableable sources succeed
                         BlockList(
                             withAcceptableAds: AcceptableAdsHelper().aaExists()(srcBL.source),
-                            source: srcBL.source, name: srcBL.name))
+                            source: srcBL.source,
+                            name: srcBL.name,
+                            dateDownload: Date()))
+                    try self.user.save() // state updated
                 }
             } catch { reportError(taskID: taskID, error: ABPDownloadTaskError.failedToUpdateUserDownloads) }
         }
     }
+    // swiftlint:enable opening_brace
 
     /// A URL session task has finished transferring data.
     /// Download events are updated.

@@ -46,7 +46,8 @@ class UserAfterDownloadsTests: XCTestCase {
         DownloadUtility().downloadForUser(
             lastUser,
             afterDownloadTest: {
-                XCTAssert(lastUser(true) == start,
+                // Downloads get added to user DL cache.
+                XCTAssert(lastUser(true) != start,
                           "Bad equivalence for persisted.")
             },
             afterUserSavedTest: { saved in

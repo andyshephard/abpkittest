@@ -15,28 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ABPKit
-import WebKit
+/// For debugging.
+protocol Loggable {
+    associatedtype LogType
 
-extension WebViewVC {
-    func webView(_ webView: WKWebView,
-                 didFailProvisionalNavigation navigation: WKNavigation!,
-                 withError error: Error) {
-        // Handle provisional navigation.
-    }
-
-    func webView(_ webView: WKWebView,
-                 didStartProvisionalNavigation navigation: WKNavigation!) {
-        // Handle start.
-    }
-
-    func webView(_ webView: WKWebView,
-                 didCommit navigation: WKNavigation!) {
-        // Handle commit.
-    }
-
-    func webView(_ webView: WKWebView,
-                 didFinish navigation: WKNavigation!) {
-        // Handle finish.
-    }
+    var logWith: ((LogType) -> Void)? { get }
 }

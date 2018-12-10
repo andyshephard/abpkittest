@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// Helpers for encoding/decoding block list sources.
-class SourceHelper {
+extension SourceHelper {
     // swiftlint:disable cyclomatic_complexity
     func sourceDecoded() -> (String) throws -> BlockListSourceable {
         return { source in
@@ -74,7 +73,7 @@ class SourceHelper {
                 case .easylistPlusExceptions:
                     return self.src2str(true, true, false)
                 }
-            case let type where type is RemoteBlockList:
+            case let type where self.isRemote()(type):
                 switch source as! RemoteBlockList {
                 case .easylist:
                     return self.src2str(false, false, false)

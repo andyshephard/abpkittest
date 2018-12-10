@@ -104,20 +104,16 @@ class RulesHelper {
         case let src where src as? BundledBlockList != nil:
             switch withAA {
             case true:
-                return fromBundle(filename: BundledBlockList.easylistPlusExceptions.rawValue,
-                                  bundle: bundle)
+                return fromBundle(filename: BundledBlockList.easylistPlusExceptions.rawValue, bundle: bundle)
             case false:
-                return fromBundle(filename: BundledBlockList.easylist.rawValue,
-                                  bundle: bundle)
+                return fromBundle(filename: BundledBlockList.easylist.rawValue, bundle: bundle)
             }
         case let src where src as? BundledTestingBlockList != nil:
             switch withAA {
             case true:
-                return fromBundle(filename: BundledTestingBlockList.fakeExceptions.rawValue,
-                                  bundle: bundle)
+                return fromBundle(filename: BundledTestingBlockList.fakeExceptions.rawValue, bundle: bundle)
             case false:
-                return fromBundle(filename: BundledTestingBlockList.testingEasylist.rawValue,
-                                  bundle: bundle)
+                return fromBundle(filename: BundledTestingBlockList.testingEasylist.rawValue, bundle: bundle)
             }
         default:
             return nil
@@ -130,10 +126,7 @@ class RulesHelper {
             guard let data = try? self.filterListData(url: $0!) else {
                 return Observable.error(ABPFilterListError.badData)
             }
-            guard let list =
-                try? JSONDecoder().decode(V1FilterList.self,
-                                          from: data)
-            else {
+            guard let list = try? JSONDecoder().decode(V1FilterList.self, from: data) else {
                 return Observable.error(ABPFilterListError.badData)
             }
             return list.rules()
@@ -158,8 +151,9 @@ class RulesHelper {
         }
     }
 
+    /// Closure withName for debugging as found useful during testing.
     private
-    func fromLocalStorage(_ name: String) throws -> URL? {
+    func fromLocalStorage(_ name: String, withName: ((String) -> Void)? = nil) throws -> URL? {
         let url = try Config().containerURL()
             .appendingPathComponent(name.addingFileExtension(Constants.rulesExtension))
         if FileManager.default
@@ -179,8 +173,7 @@ class RulesHelper {
     private
     func fromBundle(name: String, bundle: Bundle) -> URL? {
         return try? ContentBlockerUtility()
-            .getBundledFilterListFileURL(modelName: name,
-                                         bundle: bundle)
+            .getBundledFilterListFileURL(modelName: name, bundle: bundle)
     }
 
     /// Get filter list data.
@@ -189,11 +182,7 @@ class RulesHelper {
     /// - throws: ABPKitTestingError
     private
     func filterListData(url: URL) throws -> Data {
-        guard let data = try? Data(contentsOf: url,
-                                   options: .uncached)
-        else {
-            throw ABPFilterListError.badData
-        }
+        guard let data = try? Data(contentsOf: url, options: .uncached) else { throw ABPFilterListError.badData }
         return data
     }
 }

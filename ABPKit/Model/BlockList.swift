@@ -38,13 +38,14 @@ struct BlockList: BlockListable {
     public
     init(withAcceptableAds: Bool,
          source: BlockListSourceable,
-         name: String? = nil) throws {
+         name: String? = nil,
+         dateDownload: Date? = nil) throws {
         if try AcceptableAdsHelper().aaExists()(source) != withAcceptableAds {
             throw ABPFilterListError.aaStateMismatch
         }
         self.name = name ?? UUID().uuidString
         self.source = source
-        dateDownload = nil
+        self.dateDownload = dateDownload
     }
 }
 

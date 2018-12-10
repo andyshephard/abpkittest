@@ -24,39 +24,35 @@ class UserStateHelper {
         self.user = user
     }
 
-    /// Does not verify uniqueness.
+    /// Return a BL in user history that matches a given source.
     public
     func historyMatch() throws -> (BlockListSourceable) throws -> BlockList? {
         guard let hist = user.blockListHistory else { throw ABPUserModelError.badDataUser }
-        return { src in
-            return
-                hist
-                    .filter { self.matchSources(src1: src, src2: $0.source) }
-                    .count >= 1
-                ? hist.first : nil
-        }
+        return { try self.blockListsMatch(hist)($0) }
     }
 
-    private
-    func matchSources(src1: BlockListSourceable,
-                      src2: BlockListSourceable) -> Bool {
-        switch src1 {
-        case let src where src as? BundledBlockList == .easylist:
-            return src2 as? BundledBlockList == .easylist
-        case let src where src as? BundledBlockList == .easylistPlusExceptions:
-            return src2 as? BundledBlockList == .easylistPlusExceptions
-        case let src where src as? BundledTestingBlockList == .testingEasylist:
-            return src2 as? BundledTestingBlockList == .testingEasylist
-        case let src where src as? BundledTestingBlockList == .fakeExceptions:
-            return src2 as? BundledTestingBlockList == .fakeExceptions
-        default:
-            return false
-        }
+    /// Return a DL in user downloads that matches a given source.
+    public
+    func downloadsMatch() throws -> (BlockListSourceable) throws -> BlockList? {
+        guard let dls = user.downloads else { throw ABPUserModelError.badDataUser }
+        return { try self.blockListsMatch(dls)($0) }
     }
 
     public
     func clearBlockListHistory() throws {
         user.blockListHistory = []
         try user.save()
+    }
+
+    /// Return a blocklist in a set of lists that matches a given source.
+    /// Does not verify uniqueness.
+    private
+    func blockListsMatch(_ lists: [BlockList]) throws -> (BlockListSourceable) throws -> BlockList? {
+        return { src in
+            return
+                lists
+                    .filter { SourceHelper().matchSources(src1: src, src2: $0.source) }
+                    .first
+        }
     }
 }

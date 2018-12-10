@@ -44,22 +44,20 @@ class UserHistoryCachingTests: XCTestCase {
         guard let wkcb = WebKitContentBlocker() else { XCTFail("Bad WebKitContentBlocker."); return }
         let blst = try BlockList(withAcceptableAds: true, source: BundledTestingBlockList.fakeExceptions)
         guard let user = try User(fromPersistentStorage: true) else { throw ABPUserModelError.badDataUser }
-        var copy = user
-        copy.setBlockList(blst)
-        let saved = try copy.updateHistory().saved()
+        let saved = try user.blockListSet()(blst).saved()
         log("👩‍🎤hist cnt \(saved.blockListHistory?.count as Int?)")
         wkcb.concatenatedRules(user: saved, customBundle: Bundle(for: UserHistoryCachingTests.self))
-            .flatMap { rules, _ -> Observable<WKContentRuleList> in
-                return wkcb.rulesCompiled(user: copy, rules: rules)
+            .flatMap { result -> Observable<WKContentRuleList> in
+                return wkcb.rulesCompiled(user: saved, rules: result.0)
             }
             .flatMap { _ -> Observable<[String]?> in
                 return wkcb.ruleIdentifiers()
             }
             .flatMap { ids -> Observable<Observable<String>> in
-                let hist = copy.blockListHistory?.reduce([]) { $0 + [$1.name] }.sorted()
+                let hist = saved.blockListHistory?.reduce([]) { $0 + [$1.name] }.sorted()
                 log("1. hist - #\(hist?.count as Int?) - \(hist as [String]?)")
                 log("1. store - #\(ids?.count as Int?) - \(ids?.sorted() as [String]?)")
-                return wkcb.syncHistoryRemovers(user: copy)
+                return wkcb.syncHistoryRemovers(user: saved)
             }
             .flatMap { remove -> Observable<String> in
                 return remove
@@ -67,7 +65,7 @@ class UserHistoryCachingTests: XCTestCase {
                 return wkcb.ruleIdentifiers()
             }
             .subscribe(onNext: { ids in
-                let hist = copy.blockListHistory?.reduce([]) { $0 + [$1.name] }.sorted()
+                let hist = saved.blockListHistory?.reduce([]) { $0 + [$1.name] }.sorted()
                 log("2. hist - #\(hist?.count as Int?) - \(hist as [String]?)")
                 log("2. store - #\(ids?.count as Int?) - \(ids?.sorted() as [String]?)")
             }, onError: { err in

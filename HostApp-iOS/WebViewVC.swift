@@ -28,12 +28,13 @@ class WebViewVC: UIViewController,
                  WKUIDelegate {
     @IBOutlet weak var aaButton: UIButton!
     @IBOutlet weak var reloadButton: UIButton!
-    @IBOutlet weak var unitTestingLabel: UILabel!
+    @IBOutlet weak var statusLabel: UILabel!
     @IBOutlet weak var urlField: UITextField!
     @IBOutlet weak var webView: WKWebView!
     let aaOff = "AA is Off"
     let aaOn = "AA is On"
     let initialURLString = "https://adblockplus.org"
+    let statusDuration: TimeInterval = 20
     var abp: ABPWebViewBlocker!
     var location: String?
     private let userHist: (ABPWebViewBlocker) -> [String] = {
@@ -57,46 +58,40 @@ class WebViewVC: UIViewController,
         } catch let err { log("🚨 Error: \(err)") }
     }
 
+    /// Add and enable content blocking rules while loading a URL and start
+    /// download of remote sources. Some user caching is logged.
     func setupABP(aaChangeTo: Bool? = nil, completion: @escaping () -> Void) throws {
-        DispatchQueue.main.async { log("👩🏻‍🎤0 \(self.userHist(self.abp))") }
+        log("👩🏻‍🎤0 hist \(self.userHist(self.abp))")
         if aaChangeTo != nil { try changeUserAA(aaChangeTo!) }
-        updateAA(abp.user.acceptableAdsInUse())
-        // Add and enable content blocking rules while loading a URL:
-        try abp.addExistingRuleList { added in
-            if added {
-                self.loadURLString(self.location ?? self.initialURLString)
-                DispatchQueue.main.async { log("👩🏻‍🎤1 \(self.userHist(self.abp))") }
-                completion()
-            } else {
-                self.abp.addNewRuleList { errors in
-                    guard errors == nil else {
-                        log("🚨 Errors: \(errors!)")
-                        do {
-                            try self.clearUserState()
-                        } catch let err { log("Error: \(err)") }
-                        log("😎 Try running again. Cleared user state.")
-                        return
-                    }
-                    DispatchQueue.main.async { log("👩🏻‍🎤2 \(self.userHist(self.abp))") }
-                    self.loadURLString(self.location ?? self.initialURLString)
-                    completion()
-                }
-            }
-        }
+        try updateAA(self.abp.lastUser().acceptableAdsInUse())
+        abp.userListAutoActivate(reportStatusSwitch: {
+            self.reportStatus("Switching to Downloaded Rules")
+            log("▶️ Switching to Downloaded Rules")
+        }, logUser: { user in
+            log("👩🏻‍🎤1 blst \(user.getBlockList() as BlockList?)")
+            log("👩🏻‍🎤1 hist \(user.getHistory() as [BlockList]?)")
+            log("👩🏻‍🎤1 dlds \(user.getDownloads() as [BlockList]?)")
+        }, loadURL: {
+            self.loadURLString(self.location ?? self.initialURLString)
+            completion()
+        })
     }
 
     func changeUserAA(_ aaIsOn: Bool) throws {
-        var src: BlockListSourceable!
-        switch aaIsOn {
-        case true:
-            src = BundledBlockList.easylistPlusExceptions
-        case false:
-            src = BundledBlockList.easylist
+        if let dls = abp.user.getDownloads(), dls.count >= RemoteBlockList.allCases.count {
+            if let remoteList = try
+                UserStateHelper(user: self.abp.user)
+                    .downloadsMatch()(SourceHelper()
+                    .remoteSourceForAA()(aaIsOn)) {
+                        abp.user = try abp.user.blockListSet()(remoteList).saved()
+                    } else { throw ABPFilterListError.badSource }
+            return
         }
-        let blockList = try BlockList(withAcceptableAds: aaIsOn,
-                                      source: src)
-        abp.user.setBlockList(blockList)
-        try abp.user.save()
+        // Downloads not ready:
+        abp.user = try abp.user.blockListSet()(BlockList(
+            withAcceptableAds: aaIsOn,
+            source: SourceHelper().bundledSourceForAA()(aaIsOn)))
+            .saved()
     }
 
     /// Can be used to recover from errors.
@@ -142,18 +137,38 @@ class WebViewVC: UIViewController,
     }
 
     func reportTesting() {
-        unitTestingLabel.isHidden = false
-        urlField.isEnabled = false
-        reloadButton.isEnabled = false
-        webView.isHidden = true
+        DispatchQueue.main.async {
+            self.statusLabel.isHidden = false
+            self.urlField.isEnabled = false
+            self.reloadButton.isEnabled = false
+            self.webView.isHidden = true
+        }
+    }
+
+    func reportStatus(_ status: String) {
+        DispatchQueue.main.async {
+            self.statusLabel.text = status
+            self.statusLabel.isHidden = false
+            UIView.animate(
+                withDuration: self.statusDuration,
+                delay: 0,
+                options: .curveEaseIn,
+                animations: { self.statusLabel.alpha = 0 },
+                completion: { _ in
+                    self.statusLabel.isHidden = true
+                    self.statusLabel.alpha = 1
+                })
+        }
     }
 
     func updateAA(_ withAA: Bool) {
-        switch withAA {
-        case true:
-            aaButton.setTitle(aaOn, for: .normal)
-        case false:
-            aaButton.setTitle(aaOff, for: .normal)
+        DispatchQueue.main.async {
+            switch withAA {
+            case true:
+                self.aaButton.setTitle(self.aaOn, for: .normal)
+            case false:
+                self.aaButton.setTitle(self.aaOff, for: .normal)
+            }
         }
     }
 

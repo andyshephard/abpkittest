@@ -30,6 +30,7 @@ extension WebKitContentBlocker {
         } catch let err { return Observable.error(err) }
     }
 
+    /// Handles blocklist rules for a user.
     func concatenatedRules(user: User,
                            customBundle: Bundle? = nil) -> Observable<(String, Int)> {
         let rhlp = RulesHelper(customBundle: customBundle) // only uses bundle if overridden

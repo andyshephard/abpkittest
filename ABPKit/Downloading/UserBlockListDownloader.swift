@@ -24,11 +24,13 @@ struct SourceDownload {
     var url: URL?
 }
 
-/// Handles all downloads for a user.
-/// Does not automatically persist user states - persistence requires manual
-/// invocation.
+/// Handles all downloads for a user. Some user states are persisted based on
+/// their initial state.
 class UserBlockListDownloader: NSObject,
-                               URLSessionDownloadDelegate {
+                               URLSessionDownloadDelegate,
+                               Loggable {
+    typealias LogType = String
+
     /// Current user state.
     var user: User!
     /// Active downloads for use by delegate - state is not persisted.
@@ -37,11 +39,14 @@ class UserBlockListDownloader: NSObject,
     var downloadEvents = TaskDownloadEvents()
     /// For download tasks.
     var downloadSession: URLSession!
+    /// For debugging.
+    var logWith: ((LogType) -> Void)?
 
-    init(user: User) {
+    init(user: User, logWith: ((LogType) -> Void)? = nil) {
         super.init()
         self.user = user
         downloadSession = newDownloadSession()
+        self.logWith = logWith
     }
 }
 
@@ -174,9 +179,7 @@ extension UserBlockListDownloader {
                     srcDL.url = URL(string: $0.rawValue)
                     if let url = srcDL.url {
                         srcDL.task = self.downloadSession.downloadTask(with: url)
-                    } else {
-                        throw ABPDownloadTaskError.badSourceURL
-                    }
+                    } else { throw ABPDownloadTaskError.badSourceURL }
                     return srcDL
                 }
             default:
