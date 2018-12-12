@@ -16,17 +16,18 @@
  */
 
 extension ContentBlockerUtility {
-    /// Intended to match definitions in
-    /// https://gitlab.com/eyeo/adblockplus/abp2blocklist.
-    func whiteListRuleForDomain() -> (String) -> BlockingRule {
+    /// Based on abp2blocklist but slightly modified here.
+    /// See https://gitlab.com/eyeo/adblockplus/abp2blocklist.
+    func whiteListRuleForDomains() -> ([String]) -> BlockingRule {
         return {
-            let type = "ignore-previous-rules"
+            let actionType = "ignore-previous-rules"
+            let loadType = ["first-party", "third-party"]
             let urlFilter = ".*"
             return BlockingRule(
-                action: Action(selector: nil, type: type),
+                action: Action(selector: nil, type: actionType),
                 trigger: Trigger(
-                    ifTopURL: [self.wrappedDomain()($0)],
-                    loadType: nil,
+                    ifTopURL: $0.map { self.wrappedDomain()($0) } ,
+                    loadType: loadType,
                     resourceType: nil,
                     unlessTopURL: nil,
                     urlFilter: urlFilter,
@@ -34,7 +35,15 @@ extension ContentBlockerUtility {
         }
     }
 
+    func whiteListRuleForUser() -> (User) throws -> BlockingRule {
+        return { user in
+            if let domains = user.whitelistedDomains {
+                return self.whiteListRuleForDomains()(domains)
+            } else { throw ABPUserModelError.badDataUser }
+        }
+    }
+
     func wrappedDomain() -> (String) -> String {
-        return { "^[^:]+:(//)?([^/]+.)?" + $0 + "([^-_.%a-z0-9].*)?$" }
+        return { "^[^:]+:(//)?([^/]+.)?" + $0 + "([^-_.a-z0-9].*)?$" }
     }
 }

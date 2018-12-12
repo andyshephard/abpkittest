@@ -32,6 +32,7 @@ class UserAfterWhiteListTests: XCTestCase {
     var user: User!
     var wkcb: WebKitContentBlocker!
     var expectedCount: Int?
+    /// Test domains.
     let domains: (_ expectedCount: inout Int) throws -> [String] = { expCnt in
         guard let arr = RandomStateUtility().randomState(for: [String].self) else {
             throw ABPKitTestingError.invalidData
@@ -66,144 +67,36 @@ class UserAfterWhiteListTests: XCTestCase {
                   "Failed to clear rules.")
     }
 
-    func testEmptyWL() throws {
-        user.whiteLists? += [WhiteList()]
-        let saved = try user.saved()
-        XCTAssert(lastUser(true)?.whiteLists?.first == saved.whiteLists?.first,
-                  "Bad list.")
+    func testMakeWhiteListRuleForDomains() throws {
+        user.whitelistedDomains = RandomStateUtility().randomState(for: [String].self)
+        let rule = try ContentBlockerUtility().whiteListRuleForUser()(user)
+        XCTAssert(rule.trigger?.ifTopURL?.count == user.whitelistedDomains?.count,
+                  "Bad count.")
     }
 
-    func testUpdateWLHistory() throws {
-        user.whiteLists = Array(
-            repeating: WhiteList(), count: Constants.userWhiteListMax + Int.random(in: 1...3))
-        let saved = try user.updateWhiteLists().saved()
-        XCTAssert(saved.whiteLists?.count == Constants.userWhiteListMax,
-                  "Bad count of \(saved.whiteLists?.count as Int?).")
-    }
-
-    /// Test rules for single WL with sync attempt.
-    func testRulesForWL() throws {
+    func testMultiDomainRuleToList() throws {
         let expect = expectation(description: #function)
-        let wlst = WhiteList()
+        let name = "user-whitelist"
+        user.whitelistedDomains = RandomStateUtility().randomState(for: [String].self)
         let cbUtil = try ContentBlockerUtility()
-        var expectedCount: Int = 0
-        try wkcb.concatenatedRules()(Observable.from(
-            domains(&expectedCount).map { cbUtil.whiteListRuleForDomain()($0) }
-        ))
-        .flatMap { result -> Observable<WKContentRuleList> in
-            XCTAssert(result.1 == expectedCount,
-                      "Bad count.")
-            return self.wkcb.rulesCompiledForIdentifier(wlst.name)(result.0)
-        }
-        .flatMap { list -> Observable<[String]?> in
-            XCTAssert(list.identifier == wlst.name,
-                      "Bad name.")
-            self.user.whiteLists? += [wlst]
-            do {
-                try self.user.save()
-            } catch let err { XCTFail("Error: \(err)") }
-            return self.wkcb.ruleIdentifiers()
-        }
-        .flatMap { ids -> Observable<Observable<String>> in
-            guard let last = self.lastUser(true) else {
-                XCTFail("Bad user."); return Observable.empty()
+        let whitelistRuleAddForUser: (User) -> Observable<WKContentRuleList> = { user in
+            guard let dmns = user.whitelistedDomains else {
+                return Observable.error(ABPUserModelError.badDataUser)
             }
-            XCTAssert(last.whiteLists?.first?.name == ids?.first,
-                      "Bad name.")
-            return self.wkcb.syncHistoryRemovers(user: last)
-        }
-        .flatMap { remove -> Observable<String> in
-            return remove
-        }
-        .flatMap { _ -> Observable<[String]?> in
-            return self.wkcb.ruleIdentifiers()
-        }
-        .subscribe(onNext: { ids in
-            XCTAssert(ids?.count == 1,
+            let rule = cbUtil.whiteListRuleForDomains()(dmns)
+            XCTAssert(rule.trigger?.ifTopURL?.count == dmns.count,
                       "Bad count.")
-        }, onError: { err in
-            XCTFail("Error: \(err)")
-        }, onCompleted: {
-            expect.fulfill()
-        }).disposed(by: bag)
-        wait(for: [expect], timeout: timeout)
-    }
-
-    func testWLMultiple() throws {
-        let expect = expectation(description: #function)
-        let iterMax = Constants.userWhiteListMax + Int.random(in: 1...3)
-        Observable<Int>
-            .interval(timeout, scheduler: MainScheduler.asyncInstance)
-            .startWith(-1)
-            .take(iterMax)
-            .subscribe(onNext: {
-                if let user = self.lastUser(true) {
-                    self.addWLSubscription(expect, $0 + 2 == iterMax)(user).disposed(by: self.bag)
-                } else { XCTFail("Bad user.") }
-            }, onError: { err in
+            return self.wkcb.concatenatedRules()(Observable.from([rule]))
+                .flatMap { result -> Observable<WKContentRuleList> in
+                    return self.wkcb.rulesCompiledForIdentifier(name)(result.0)
+                }
+        }
+        whitelistRuleAddForUser(user)
+            .subscribe(onError: { err in
                 XCTFail("Error: \(err)")
+            }, onCompleted: {
+                expect.fulfill()
             }).disposed(by: bag)
-        wait(for: [expect], timeout: timeout * Double(iterMax))
-    }
-
-    private
-    func addWLtoUser(wlst: WhiteList = WhiteList()) -> (User) -> Observable<WKContentRuleList> {
-        return { user in
-            var expectedCount: Int = 0
-            var cbUtil: ContentBlockerUtility!
-            var dmns: [String]!
-            do {
-                cbUtil = try ContentBlockerUtility()
-                dmns = try self.domains(&expectedCount)
-            } catch let err { return Observable.error(err) }
-            return self.wkcb.concatenatedRules()(Observable.from(
-                dmns.map { cbUtil.whiteListRuleForDomain()($0) }
-            ))
-            .flatMap { result -> Observable<WKContentRuleList> in
-                XCTAssert(result.1 == expectedCount,
-                          "Bad count.")
-                var copy = user
-                copy.whiteLists? += [wlst]
-                do {
-                    try copy.save()
-                } catch let err { return Observable.error(err) }
-                return self.wkcb.rulesCompiledForIdentifier(wlst.name)(result.0)
-            }
-        }
-    }
-
-    private
-    func addWLSubscription(_ expect: XCTestExpectation, _ shouldEnd: Bool) -> (User) -> Disposable {
-        return { user in
-            var saved: User?
-            return self.addWLtoUser()(user)
-                .flatMap { lst -> Observable<Observable<String>> in
-                    do {
-                        guard let last = self.lastUser(true) else { XCTFail("Bad user."); return Observable.empty() }
-                        XCTAssert(last.whiteLists?.filter { $0.name == lst.identifier }.count == 1,
-                                  "Bad count.")
-                        saved = try last.updateWhiteLists().saved()
-                        log("👩‍🎤WLs before sync #\(saved?.whiteLists?.count as Int?) - \(saved?.whiteLists as [WhiteList]?)")
-                    } catch let err { return Observable.error(err) }
-                    return self.wkcb.syncHistoryRemovers(user: saved!)
-                }
-                .flatMap { remove -> Observable<String> in
-                    return remove
-                }
-                .flatMap { removed -> Observable<[String]?> in
-                    XCTAssert(saved?.whiteLists?.filter { $0.name == removed }.count == 0,
-                              "Bad remove.")
-                    return self.wkcb.ruleIdentifiers()
-                }
-                .subscribe(onError: { err in
-                    XCTFail("Error: \(err)")
-                }, onCompleted: {
-                    let last = self.lastUser(true)
-                    log("👩‍🎤WLs after sync #\(last?.whiteLists?.count as Int?) - \(last?.whiteLists as [WhiteList]?)")
-                    XCTAssert((last?.whiteLists?.count)! <= Constants.userWhiteListMax,
-                              "Bad count: Expected \(Constants.userWhiteListMax), got \(last?.whiteLists?.count as Int?).")
-                    if shouldEnd { expect.fulfill() }
-                })
-        }
+        wait(for: [expect], timeout: timeout)
     }
 }

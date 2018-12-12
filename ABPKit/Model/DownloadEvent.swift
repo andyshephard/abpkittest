@@ -37,10 +37,11 @@ public struct DownloadEvent {
     }
 
     public init() {
-        self.init(filterListName: nil,
-                  didFinishDownloading: nil,
-                  totalBytesWritten: nil,
-                  error: nil,
-                  errorWritten: nil)
+        self.init(
+            filterListName: nil,
+            didFinishDownloading: nil,
+            totalBytesWritten: nil,
+            error: nil,
+            errorWritten: nil)
     }
 }

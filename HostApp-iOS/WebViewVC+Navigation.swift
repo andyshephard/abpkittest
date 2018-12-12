@@ -22,7 +22,7 @@ extension WebViewVC {
     func webView(_ webView: WKWebView,
                  didFailProvisionalNavigation navigation: WKNavigation!,
                  withError error: Error) {
-        log("🚨 Error during provisional navigation: \(error)")
+        // Handle provisional navigation.
     }
 
     func webView(_ webView: WKWebView,

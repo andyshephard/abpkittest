@@ -22,9 +22,9 @@ import Foundation
 /// Override testBundleFilename, if needed.
 class FilterListTestModeler: NSObject {
     let cfg = Config()
-    let testVersion = "20181020"
+    let testVersion = "201812121111"
     var bundle: Bundle!
-    var testBundleFilename = "test_easylist_content_blocker.json"
+    var testBundleFilename = "test-easylist_content_blocker.json"
 
     override
     init() {

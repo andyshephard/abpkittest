@@ -23,7 +23,7 @@ import XCTest
 class UserSourceTests: XCTestCase {
     let lastUser = UserUtility().lastUser
     let testSource = RemoteBlockList.self
-    let timeout: TimeInterval = 10
+    let timeout: TimeInterval = 15
     var bag: DisposeBag!
     var user: User!
 

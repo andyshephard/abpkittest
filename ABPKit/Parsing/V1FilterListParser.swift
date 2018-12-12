@@ -32,6 +32,9 @@ enum TriggerResourceType: String,
     case popup
 }
 
+/// Trigger loadType is correct as an array. The following error is reported if
+/// set to a String:
+///     Rule list compilation failed: Invalid trigger flags array.
 struct Trigger: Codable {
     var ifTopURL: [String]?
     var loadType: [String]?
@@ -58,8 +61,8 @@ struct Action: Codable {
     var type: String?
 }
 
-/// A filter list WebKit content blocking rule.
-/// Used for decoding individual rules.
+/// A filter list WebKit content blocking rule. Used for decoding individual
+/// rules.
 public
 struct BlockingRule: Codable {
     var action: Action?

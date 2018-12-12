@@ -46,22 +46,18 @@ extension ContentBlockerUtility {
 
     public
     func endBlockListFile(blocklist: BlockListFileURL) {
-        if let outStream = OutputStream(url: blocklist,
-                                        append: true) {
+        if let outStream = OutputStream(url: blocklist, append: true) {
             outStream.open()
-            outStream.write(Constants.blocklistArrayEnd,
-                            maxLength: 1)
+            outStream.write(Constants.blocklistArrayEnd, maxLength: 1)
             outStream.close()
         }
     }
 
     public
     func addRuleSeparator(blocklist: BlockListFileURL) {
-        if let outStream = OutputStream(url: blocklist,
-                                        append: true) {
+        if let outStream = OutputStream(url: blocklist, append: true) {
             outStream.open()
-            outStream.write(Constants.blocklistRuleSeparator,
-                            maxLength: 1)
+            outStream.write(Constants.blocklistRuleSeparator, maxLength: 1)
             outStream.close()
         }
     }

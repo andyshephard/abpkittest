@@ -28,9 +28,9 @@ import XCTest
 @available(OSX 10.13, *)
 class WebKitContentBlockingTests: XCTestCase {
     let maxRules = 50000
-    let testRulesCount = 45899
+    let testRulesCount = 21475
     let testRulesCountUserFakeExceptions = 7
-    let testRulesCountUserTestEasylist = 45899
+    let testRulesCountUserTestEasylist = 21475
     let timeout: TimeInterval = 20
     var bag: DisposeBag!
     var cfg: Config!
@@ -70,8 +70,7 @@ class WebKitContentBlockingTests: XCTestCase {
     func testClearRulesForUser() throws {
         let expect = expectation(description: #function)
         var user = try User()
-        user.blockList = try BlockList(withAcceptableAds: true,
-                                       source: BundledTestingBlockList.fakeExceptions)
+        user.blockList = try BlockList(withAcceptableAds: true, source: BundledTestingBlockList.fakeExceptions)
         guard let lst = user.blockList else { XCTFail("Bad BL"); return }
         addNewRules(arg: user, name: lst.name) {
             self.wkcb.clearedRules(user: user)
@@ -142,7 +141,7 @@ class WebKitContentBlockingTests: XCTestCase {
     /// Rules handling through ABPKit with a final clear.
     func testLocalBlocklistAddToWKStore1() {
         let mdlr = FilterListTestModeler()
-        mdlr.testBundleFilename = "test-easylist-42perc.json"
+        mdlr.testBundleFilename = "test-easylist_content_blocker.json"
         let expect = expectation(description: #function)
         do {
             try pstr.clearRulesFiles()
@@ -188,8 +187,7 @@ class WebKitContentBlockingTests: XCTestCase {
         do {
             try pstr.clearRulesFiles()
             var user = try User()
-            user.blockList = try BlockList(withAcceptableAds: true,
-                                           source: BundledTestingBlockList.fakeExceptions)
+            user.blockList = try BlockList(withAcceptableAds: true, source: BundledTestingBlockList.fakeExceptions)
             try pstr.logRulesFiles()
             addNewRules(arg: user, name: user.blockList!.name) { expect.fulfill() }
         } catch let err { XCTFail("🚨 Error during add: \(err)") }
@@ -201,16 +199,13 @@ class WebKitContentBlockingTests: XCTestCase {
         do {
             try pstr.clearRulesFiles()
             var user1 = try User()
-            let blst1 = try BlockList(withAcceptableAds: true,
-                                      source: BundledTestingBlockList.fakeExceptions)
+            let blst1 = try BlockList(withAcceptableAds: true, source: BundledTestingBlockList.fakeExceptions)
             user1.blockList = blst1
             var user2 = try User()
-            let blst2 = try BlockList(withAcceptableAds: false,
-                                      source: BundledTestingBlockList.testingEasylist)
+            let blst2 = try BlockList(withAcceptableAds: false, source: BundledTestingBlockList.testingEasylist)
             user2.blockList = blst2
             try pstr.logRulesFiles()
-            guard let lst1 = user1.blockList else { XCTFail("Bad BL"); return }
-            guard let lst2 = user2.blockList else { XCTFail("Bad BL"); return }
+            guard let lst1 = user1.blockList, let lst2 = user2.blockList else { XCTFail("Bad BL"); return }
             addNewRules(arg: user1, name: lst1.name) {
                 self.addNewRules(arg: user2, name: lst2.name) {
                     self.wkcb.rulesStore.getAvailableContentRuleListIdentifiers { ids in
@@ -248,8 +243,7 @@ class WebKitContentBlockingTests: XCTestCase {
         switch type {
         case .user:
             if let user = arg as? User {
-                return wkcb.concatenatedRules(user: user,
-                                              customBundle: Bundle(for: WebKitContentBlockingTests.self))
+                return wkcb.concatenatedRules(user: user, customBundle: Bundle(for: WebKitContentBlockingTests.self))
             }
         case .filterList:
             if let list = arg as? FilterList {
@@ -295,7 +289,7 @@ class WebKitContentBlockingTests: XCTestCase {
         concat(type, arg: arg)
             .flatMap { rules, cnt -> Observable<(WKContentRuleList?, Error?)> in
                 let end1 = fabs(start.timeIntervalSinceNow)
-                ABPKit.log("cat rules ⏱️1 \(end1)")
+                log("cat rules ⏱️1 \(end1)")
                 let expectCnt = self.concatCount(type, arg: arg)
                 XCTAssert(expectCnt == cnt,
                           "Bad rules count: Expected \(expectCnt) but got \(cnt)).")
@@ -303,7 +297,7 @@ class WebKitContentBlockingTests: XCTestCase {
             }
             .subscribe(onNext: { _ in
                 let end2 = fabs(start.timeIntervalSinceNow)
-                ABPKit.log("add rules ⏱️2 \(end2)")
+                log("add rules ⏱️2 \(end2)")
                 completion()
             }, onError: { err in
                 XCTFail("🚨 Error during processing rules: \(err)")
@@ -343,7 +337,7 @@ class WebKitContentBlockingTests: XCTestCase {
     func logRules() {
         wkcb?.rulesStore
             .getAvailableContentRuleListIdentifiers { (ids: [String]?) in
-                ABPKit.log("📙 \(ids as [String]?)")
+                log("📙 \(ids as [String]?)")
             }
     }
 }

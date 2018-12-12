@@ -34,7 +34,12 @@ class WebViewVC: UIViewController,
     let aaOff = "AA is Off"
     let aaOn = "AA is On"
     let initialURLString = "https://adblockplus.org"
+    /// When true, no remote blocklist downloads will be used.
+    let noRemote = false
     let statusDuration: TimeInterval = 20
+    let switchToDLMessage = "Switched to Downloaded Rules"
+    /// Domain names hardcoded here will be whitelisted for the user.
+    let whitelistedDomains: [String] = []
     var abp: ABPWebViewBlocker!
     var location: String?
     private let userHist: (ABPWebViewBlocker) -> [String] = {
@@ -50,11 +55,9 @@ class WebViewVC: UIViewController,
         webView.uiDelegate = self
         urlField.delegate = self
         do {
-            abp = try ABPWebViewBlocker(host: self)
+            abp = try ABPWebViewBlocker(host: self, noRemote: noRemote)
             try self.clearUserState()
-            try setupABP {
-                self.enableControls()
-            }
+            try setupABP { self.enableControls() }
         } catch let err { log("🚨 Error: \(err)") }
     }
 
@@ -65,12 +68,13 @@ class WebViewVC: UIViewController,
         if aaChangeTo != nil { try changeUserAA(aaChangeTo!) }
         try updateAA(self.abp.lastUser().acceptableAdsInUse())
         abp.userListAutoActivate(reportStatusSwitch: {
-            self.reportStatus("Switching to Downloaded Rules")
-            log("▶️ Switching to Downloaded Rules")
+            self.reportStatus(self.switchToDLMessage)
+            log("▶️ \(self.switchToDLMessage)")
         }, logUser: { user in
             log("👩🏻‍🎤1 blst \(user.getBlockList() as BlockList?)")
             log("👩🏻‍🎤1 hist \(user.getHistory() as [BlockList]?)")
             log("👩🏻‍🎤1 dlds \(user.getDownloads() as [BlockList]?)")
+            log("👩🏻‍🎤1 wldm \(user.getWhiteListedDomains() as [String]?)")
         }, loadURL: {
             self.loadURLString(self.location ?? self.initialURLString)
             completion()
@@ -96,9 +100,7 @@ class WebViewVC: UIViewController,
 
     /// Can be used to recover from errors.
     func clearUserState() throws {
-        let user = try User()
-        self.abp.user = user
-        try user.save()
+        abp.user = try User().whiteListedDomainsSet()(whitelistedDomains).saved()
     }
 
     // ------------------------------------------------------------

@@ -36,7 +36,7 @@ extension UserBlockListDownloader {
         } else { throw ABPDownloadTaskError.failedRemoval }
     }
 
-    /// Remove downloads no longer in user's downloads based on a given user state.
+    /// Remove downloads no longer in user download history based on a given user state.
     /// This should be called carefully as the correct state is often difficult to track.
     public
     func syncDownloads() -> (User) throws -> User {

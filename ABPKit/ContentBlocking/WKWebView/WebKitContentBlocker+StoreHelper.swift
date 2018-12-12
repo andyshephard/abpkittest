@@ -24,21 +24,31 @@ extension WebKitContentBlocker {
     /// FilterList implementation:
     func concatenatedRules(model: FilterList) -> Observable<(String, Int)> {
         do {
-            let rulesURL = bundle != nil ? try model.rulesURL(bundle: bundle!) : try model.rulesURL()
-            guard let url = rulesURL else { return Observable.error(ABPWKRuleStoreError.missingRules) }
-            return concatenatedRules()(RulesHelper().validatedRules()(url))
+            let url = bundle != nil ? try model.rulesURL(bundle: bundle!) : try model.rulesURL()
+            return try concatenatedRules()(RulesHelper().validatedRules()(url))
         } catch let err { return Observable.error(err) }
     }
 
-    /// Handles blocklist rules for a user.
+    /// Handles blocklist rules for a user. User white list rule is added here
+    /// because "ignore-previous-rules" seems to only apply within the context
+    /// of the same rule list.
     func concatenatedRules(user: User,
-                           customBundle: Bundle? = nil) -> Observable<(String, Int)> {
+                           customBundle: Bundle? = nil) -> RuleStringAndCount {
         let rhlp = RulesHelper(customBundle: customBundle) // only uses bundle if overridden
-        var url: URL!
+        let withWL: (User) throws -> RuleStringAndCount = {
+            try self.concatenatedRules(customBundle: customBundle)(rhlp.validatedRules()(rhlp.rulesForUser()($0))
+                .concat(self.whiteListRuleForUser()($0)))
+        }
+        let withoutWL: (User) throws -> RuleStringAndCount = {
+            try self.concatenatedRules(customBundle: customBundle)(rhlp.validatedRules()(rhlp.rulesForUser()($0)))
+        }
         do {
-            url = try rhlp.rulesForUser()(user)
+            if user.whitelistedDomains?.count ?? 0 > 0 {
+                return try withWL(user)
+            } else {
+                return try withoutWL(user)
+            }
         } catch let err { return Observable.error(err) }
-        return concatenatedRules(customBundle: customBundle)(rhlp.validatedRules()(url))
     }
 
     /// Embedding a subscription inside this Observable has yielded the fastest performance for

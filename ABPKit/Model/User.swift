@@ -27,20 +27,19 @@ struct User: Persistable,
     var blockListHistory: [BlockList]?
     /// To be synced with local storage.
     var downloads: [BlockList]?
-    /// To be synced with rule lists in WKContentRuleListStore.
-    var whiteLists: [WhiteList]?
     var whitelistedDomains: [String]?
 }
 
 extension User {
+    /// Default init: User gets a default block list.
     public
     init() throws {
         name = UUID().uuidString
-        blockList = try BlockList(withAcceptableAds: true,
-                                  source: BundledBlockList.easylistPlusExceptions)
+        blockList = try BlockList(
+            withAcceptableAds: true,
+            source: BundledBlockList.easylistPlusExceptions)
         blockListHistory = []
         downloads = []
-        whiteLists = []
         whitelistedDomains = []
     }
 
@@ -88,6 +87,11 @@ extension User {
     }
 
     public
+    func getWhiteListedDomains() -> [String]? {
+        return whitelistedDomains
+    }
+
+    public
     func getHistory() -> [BlockList]? {
         return blockListHistory
     }
@@ -127,6 +131,16 @@ extension User {
         }
     }
 
+    /// Set domains for user's white list.
+    public
+    func whiteListedDomainsSet() -> ([String]) -> User {
+        return {
+            var copy = self
+            copy.whitelistedDomains = $0
+            return copy
+        }
+    }
+
     func downloadAdded() -> (BlockList) -> User {
         return {
             var copy = self
@@ -160,14 +174,6 @@ extension User {
         var copy = self
         if copy.downloads == nil { copy.downloads = [] }
         copy.downloads = prunedHistory(max)(copy.downloads!)
-        return copy
-    }
-
-    func updateWhiteLists() throws -> User {
-        let max = Constants.userWhiteListMax
-        var copy = self
-        if copy.whiteLists == nil { copy.whiteLists = [] }
-        copy.whiteLists = prunedHistory(max)(copy.whiteLists!)
         return copy
     }
 

@@ -24,8 +24,8 @@ class BlockListDownloadTests: XCTestCase {
     let hlpr = RulesHelper()
     let mdlr = FilterListTestModeler()
     let timeout: TimeInterval = 15
-    let totalBytes = Int64(9383979)
-    let totalRules = 45899
+    let totalBytes = Int64(8857514)
+    let totalRules = 21475
     var bag: DisposeBag!
     var dler: BlockListDownloader!
     var filterLists = [FilterList]()
@@ -48,7 +48,7 @@ class BlockListDownloadTests: XCTestCase {
 
     func testRemoteSource() throws {
         testList.source = RemoteBlockList.easylist.rawValue
-        testList.fileName = "easylist_content_blocker.json"
+        testList.fileName = "29A0D68E-F12E-40BA-A610-61CA6EEA001F.json"
         try pstr.saveFilterListModel(testList)
         runDownloadDelegation(remoteSource: true)
     }
@@ -80,10 +80,12 @@ class BlockListDownloadTests: XCTestCase {
             }
             .subscribe(onNext: { rule in
                 cnt += [rule].count
+            }, onError: { err in
+                XCTFail("Error: \(err)")
             }, onCompleted: {
                 if !remoteSource {
                     XCTAssert(cnt == self.totalRules,
-                              "Rule count is wrong.")
+                              "Rule count is wrong: Expected \(self.totalRules), got \(cnt).")
                 }
                 expect.fulfill()
             }).disposed(by: bag)
@@ -112,13 +114,10 @@ class BlockListDownloadTests: XCTestCase {
             try pstr.saveFilterListModel(testList)
             if !remoteSource {
                 XCTAssert(finalEvent.totalBytesWritten == self.totalBytes,
-                          "🚨 Bytes wrong.")
+                          "🚨 Bytes wrong: Expected \(self.totalBytes), got \(finalEvent.totalBytesWritten as Int64?).")
             }
-            if let url = try testList.rulesURL(bundle: Bundle(for: BlockListDownloadTests.self)) {
-                return self.hlpr.validatedRules()(url)
-            } else { XCTFail("Bad rules URL.") }
-        } catch let err { XCTFail("Error: \(err)"); return Observable.empty() }
-        return Observable.empty()
+            return try self.hlpr.validatedRules()(testList.rulesURL(bundle: Bundle(for: BlockListDownloadTests.self)))
+        } catch let err { return Observable.error(err) }
     }
 
     private

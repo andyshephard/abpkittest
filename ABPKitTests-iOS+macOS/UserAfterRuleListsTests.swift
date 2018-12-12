@@ -86,7 +86,7 @@ class UserAfterRuleListsTests: XCTestCase {
                         }).disposed(by: self.bag)
                 } catch let err { XCTFail("Error: \(err)") }
             }).disposed(by: bag)
-        wait(for: [expect], timeout: timeout * 2.0)
+        wait(for: [expect], timeout: timeout * 4.0)
     }
 
     private

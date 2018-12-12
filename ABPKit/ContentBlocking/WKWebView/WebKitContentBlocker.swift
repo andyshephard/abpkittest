@@ -22,6 +22,7 @@ import WebKit
 public
 class WebKitContentBlocker: Loggable {
     typealias LogType = [String]?
+    typealias RuleStringAndCount = Observable<(String, Int)>
 
     let cfg = Config()
     var bag: DisposeBag!
@@ -44,28 +45,42 @@ class WebKitContentBlocker: Loggable {
             .flatMap { result -> Observable<WKContentRuleList> in
                 return self.rulesCompiled(user: user, rules: result.0)
             }
-            .flatMap { list -> Observable<WKContentRuleList> in
-                return self.ruleListVerified(user: user, list: list)
+            .flatMap { rlst -> Observable<WKContentRuleList> in
+                return self.ruleListVerified(userList: user.blockList, ruleList: rlst)
             }
     }
 
+    func whiteListRuleForUser() -> (User) -> Observable<BlockingRule> {
+        return { user in
+            guard let dmns = user.whitelistedDomains, dmns.count > 0 else { return Observable.error(ABPUserModelError.badDataUser) }
+            let userWLRule: (User) -> Observable<BlockingRule> = { user in
+                var cbUtil: ContentBlockerUtility!
+                do {
+                    cbUtil = try ContentBlockerUtility()
+                } catch let err { return Observable.error(err) }
+                return Observable.just(cbUtil.whiteListRuleForDomains()(dmns))
+            }
+            return userWLRule(user)
+        }
+    }
+
     /// IDs may be logged using withIDs.
-    func ruleListVerified(user: User, list: WKContentRuleList) -> Observable<WKContentRuleList> {
+    func ruleListVerified<U: BlockListable>(userList: U?, ruleList: WKContentRuleList) -> Observable<WKContentRuleList> {
         return ruleIdentifiers()
             .flatMap { ids -> Observable<WKContentRuleList> in
                 return Observable.create { observer in
-                    if let blst = user.blockList,
-                       blst.name != list.identifier ||
-                       ids?.contains(blst.name) == false { observer.onError(ABPWKRuleStoreError.invalidData) }
+                    if let ulst = userList,
+                       ulst.name != ruleList.identifier ||
+                       ids?.contains(ulst.name) == false { observer.onError(ABPWKRuleStoreError.invalidData) }
                     self.logWith?(ids)
-                    observer.onNext(list)
+                    observer.onNext(ruleList)
                     observer.onCompleted()
                     return Disposables.create()
                 }
             }
     }
 
-    /// Wrapper for ids.
+    /// Wrapper for IDs.
     func ruleIdentifiers() -> Observable<[String]?> {
         return Observable.create { observer in
             self.rulesStore
@@ -100,12 +115,12 @@ class WebKitContentBlocker: Loggable {
         }
     }
 
-    /// Correct state is rule store is less than or equal to user history.
-    /// Rules are added from user history.
+    /// Remove rule lists from store that are not in user state. Correct state is
+    /// rule store is less than or equal to user history.
     func syncHistoryRemovers(user: User) -> Observable<Observable<String>> {
         var all: [String]!
         do {
-            all = try names()(user.blockListHistory) + names()(user.whiteLists) + names()(user.downloads)
+            all = try names()(user.blockListHistory) + names()(user.downloads)
         } catch let err { return Observable.error(err) }
         return ruleIdentifiers()
             .flatMap { ids -> Observable<Observable<String>> in

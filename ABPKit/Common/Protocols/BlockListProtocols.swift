@@ -38,8 +38,3 @@ public
 protocol RulesDownloadable {
     // Intentionally empty.
 }
-
-public
-protocol UserWhiteListable {
-    var dateModified: Date? { get }
-}

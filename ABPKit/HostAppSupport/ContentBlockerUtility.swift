@@ -177,7 +177,7 @@ class ContentBlockerUtility {
                 return Observable.create { observer in
                     whitelistedWebsites.forEach {
                         do {
-                            let data = try encoder.encode(self.whiteListRuleForDomain()($0))
+                            let data = try encoder.encode(self.whiteListRuleForDomains()([$0]))
                             self.writeToEndOfFile(blocklist: dest, with: data)
                             self.addRuleSeparator(blocklist: dest)
                         } catch let err { observer.onError(err); return }

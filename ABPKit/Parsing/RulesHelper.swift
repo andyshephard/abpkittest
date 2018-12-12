@@ -120,16 +120,10 @@ class RulesHelper {
         }
     }
 
-    func validatedRules() -> (URL?) -> Observable<BlockingRule> {
+    func validatedRules() -> (URL?) throws -> Observable<BlockingRule> {
         return {
             if $0 == nil { return Observable.error(ABPFilterListError.badSource) }
-            guard let data = try? self.filterListData(url: $0!) else {
-                return Observable.error(ABPFilterListError.badData)
-            }
-            guard let list = try? JSONDecoder().decode(V1FilterList.self, from: data) else {
-                return Observable.error(ABPFilterListError.badData)
-            }
-            return list.rules()
+            return try JSONDecoder().decode(V1FilterList.self, from: self.contentBlockingData(url: $0!)).rules()
         }
     }
 
@@ -176,13 +170,12 @@ class RulesHelper {
             .getBundledFilterListFileURL(modelName: name, bundle: bundle)
     }
 
-    /// Get filter list data.
+    /// Get content blocking data.
     /// - parameter url: File URL of the data
     /// - returns: Data of the filter list
     /// - throws: ABPKitTestingError
     private
-    func filterListData(url: URL) throws -> Data {
-        guard let data = try? Data(contentsOf: url, options: .uncached) else { throw ABPFilterListError.badData }
-        return data
+    func contentBlockingData(url: URL) throws -> Data {
+        return try Data(contentsOf: url, options: .uncached)
     }
 }

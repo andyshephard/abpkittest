@@ -1,0 +1,72 @@
+[
+  {
+    "trigger": {
+      "url-filter": "^https?://([^/:]*\\.)?community\\.adlandpro\\.com[/:]",
+      "url-filter-is-case-sensitive": true
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "[id=AdContent], [id=ctl00_slider]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": "^https?://([^/:]*\\.)?autotrader\\.ca[/:]",
+      "url-filter-is-case-sensitive": true
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "[id=AdSense], .at_headerBannerContainer, .ba1, .ba2, .ba3, .leaderboard"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": "^https?://([^/:]*\\.)?rosemaryconley\\.tv[/:]",
+      "url-filter-is-case-sensitive": true
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "[id=Add]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": "^https?://([^/:]*\\.)?carsdir\\.com[/:]",
+      "url-filter-is-case-sensitive": true
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "[id=AddCarBanner]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": "^https?://([^/:]*\\.)?igcd\\.net[/:]",
+      "url-filter-is-case-sensitive": true
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "[id=Ads]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": "^https?://([^/:]*\\.)?tangorin\\.com[/:]",
+      "url-filter-is-case-sensitive": true
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "[id=Ads]"
+    }
+  },
+  {
+    "trigger": {
+      "url-filter": "^https?://([^/:]*\\.)?webcarstory\\.com[/:]",
+      "url-filter-is-case-sensitive": true
+    },
+    "action": {
+      "type": "css-display-none",
+      "selector": "[id=Ads]"
+    }
+  }
+]

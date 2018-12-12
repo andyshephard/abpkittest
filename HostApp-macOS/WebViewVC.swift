@@ -32,7 +32,12 @@ class WebViewVC: NSViewController,
     @IBOutlet weak var urlField: NSTextField!
     @IBOutlet weak var webView: WKWebView!
     let initialURLString = "https://adblockplus.org"
+    /// When true, no remote blocklist downloads will be used.
+    let noRemote = false
     let statusDuration: TimeInterval = 20
+    let switchToDLMessage = "Switched to Downloaded Rules"
+    /// Domain names hardcoded here will be whitelisted for the user.
+    let whitelistedDomains: [String] = []
     var abp: ABPWebViewBlocker!
     var location: String?
     private let userHist: (ABPWebViewBlocker) -> [String] = {
@@ -48,25 +53,26 @@ class WebViewVC: NSViewController,
         webView.uiDelegate = self
         urlField.delegate = self
         do {
-            abp = try ABPWebViewBlocker(host: self)
+            abp = try ABPWebViewBlocker(host: self, noRemote: noRemote)
             try self.clearUserState()
             try setupABP { self.enableControls() }
         } catch let err { log("🚨 Error: \(err)") }
     }
 
     /// Add and enable content blocking rules while loading a URL and start
-    /// download of remote sources. Some user caching is logged.
+    /// download of remote sources. Some user state is logged.
     func setupABP(aaChangeTo: Bool? = nil, completion: @escaping () -> Void) throws {
         log("👩🏻‍🎤0 hist \(self.userHist(self.abp))")
         if aaChangeTo != nil { try changeUserAA(aaChangeTo!) }
         try updateAA(self.abp.lastUser().acceptableAdsInUse())
         abp.userListAutoActivate(reportStatusSwitch: {
-            self.reportStatus("Switching to Downloaded Rules")
-            log("▶️ Switching to Downloaded Rules")
+            self.reportStatus(self.switchToDLMessage)
+            log("▶️ \(self.switchToDLMessage)")
         }, logUser: { user in
             log("👩🏻‍🎤1 blst \(user.getBlockList() as BlockList?)")
             log("👩🏻‍🎤1 hist \(user.getHistory() as [BlockList]?)")
             log("👩🏻‍🎤1 dlds \(user.getDownloads() as [BlockList]?)")
+            log("👩🏻‍🎤1 wldm \(user.getWhiteListedDomains() as [String]?)")
         }, loadURL: {
             self.loadURLString(self.location ?? self.initialURLString)
             completion()
@@ -92,7 +98,7 @@ class WebViewVC: NSViewController,
 
     /// Can be used to recover from errors.
     func clearUserState() throws {
-        abp.user = try User().saved()
+        abp.user = try User().whiteListedDomainsSet()(whitelistedDomains).saved()
     }
 
     // ------------------------------------------------------------

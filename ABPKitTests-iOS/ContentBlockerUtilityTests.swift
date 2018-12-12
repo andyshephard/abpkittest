@@ -65,20 +65,20 @@ class ContentBlockerUtilityTests: XCTestCase {
     }
 
     func testMakeWhitelistRules() {
-        let domain = "test.com"
-        let type = "ignore-previous-rules"
+        let max = Int.random(in: 100...1000)
+        let actionType = "ignore-previous-rules"
+        let loadType = ["first-party", "third-party"]
+        let testDomains = domains(1, max, [])
         do {
-            let data = try JSONEncoder().encode(cbUtil.whiteListRuleForDomain()(domain))
+            let data = try JSONEncoder().encode(cbUtil.whiteListRuleForDomains()(testDomains))
             let decoded: BlockingRule = try JSONDecoder().decode(BlockingRule.self, from: data)
             XCTAssert(decoded.action?.selector == nil,
                       "Bad action selector.")
-            XCTAssert(decoded.action?.type == type,
+            XCTAssert(decoded.action?.type == actionType,
                       "Bad action type.")
-            if decoded.trigger?.ifTopURL != nil {
-                XCTAssert(decoded.trigger?.ifTopURL![0] == cbUtil.wrappedDomain()(domain),
-                          "Bad trigger ifTopURL.")
-            } else { XCTFail("Bad trigger ifTopURL - missing.") }
-            XCTAssert(decoded.trigger?.loadType == nil,
+            XCTAssert(Set(decoded.trigger?.ifTopURL ?? []) == Set(testDomains.map { cbUtil.wrappedDomain()($0) }),
+                      "Bad trigger ifTopURL.")
+            XCTAssert(Set(decoded.trigger?.loadType ?? []) == Set(loadType),
                       "Bad trigger loadType.")
             XCTAssert(decoded.trigger?.resourceType == nil,
                       "Bad trigger resourceType.")
@@ -121,47 +121,45 @@ class ContentBlockerUtilityTests: XCTestCase {
     /// Version of merge testing that doesn't use RxSwift inside ABPKit.
     /// Included within are tests for the following:
     /// * test getting a blocklist on disk
+    ///
+    /// Single domain WL rule is used here.
     func testMergeWhitelistedWebsitesNonRx() throws {
         let expect = expectation(description: #function)
         let fmgr = FileManager.default
         let filename = "testfile"
         let ruleMax = 1 // max rules to read
         let encoder = JSONEncoder()
-        let encoded: (BlockingRule?) -> Data = {
-            // Empty Data only in testing:
-            guard let data = try? encoder.encode($0) else { XCTFail("Failed encoding."); return Data() }
-            return data
-        }
-        let rules = try localTestFilterListRules()
-        let rulesDir = cbUtil.rulesDir(blocklist: rules)
-        let fileurl = cbUtil.makeNewBlocklistFileURL(name: filename, at: rulesDir)
+        let encoded: (BlockingRule?) throws -> Data = { return try encoder.encode($0) }
         setupABPState(state: .defaultFilterListEnabled)
-        var rule: BlockingRule?
-        var cnt = 0
+        let rules = try localTestFilterListRules()
+        let fileurl = cbUtil.makeNewBlocklistFileURL(name: filename, at: cbUtil.rulesDir(blocklist: rules))
         testingFile = fileurl
         try cbUtil.startBlockListFile(blocklist: fileurl)
         guard let rulesData = fmgr.contents(atPath: rules.path) else { XCTFail("Bad rules."); return }
+        var cnt = 0
         try JSONDecoder().decode(V1FilterList.self, from: rulesData).rules()
             .takeWhile { _ in cnt < ruleMax }
             .subscribe(onNext: { rule in
                 cnt += 1
-                self.cbUtil.writeToEndOfFile(blocklist: fileurl, with: encoded(rule))
+                do {
+                    try self.cbUtil.writeToEndOfFile(blocklist: fileurl, with: encoded(rule))
+                } catch let err { XCTFail("Error: \(err)") }
                 self.cbUtil.addRuleSeparator(blocklist: fileurl)
             }, onCompleted: {
                 self.whitelistDomains.forEach {
-                    rule = self.cbUtil.whiteListRuleForDomain()($0)
-                    self.cbUtil.writeToEndOfFile(blocklist: fileurl, with: encoded(rule))
+                    do {
+                        try self.cbUtil.writeToEndOfFile(blocklist: fileurl, with: encoded(self.cbUtil.whiteListRuleForDomains()([$0])))
+                    } catch let err { XCTFail("Error: \(err)") }
                     self.cbUtil.addRuleSeparator(blocklist: fileurl)
                 }
                 self.cbUtil.endBlockListFile(blocklist: fileurl)
                 do {
-                    self.ruleCount(rules: try self.cbUtil.blocklistData(blocklist: fileurl),
-                                   completion: { cnt in
+                    self.ruleCount(rules: try self.cbUtil.blocklistData(blocklist: fileurl)) { cnt in
                         XCTAssert(cnt == ruleMax + self.whitelistDomains.count,
                                   "Rule count is wrong.")
                         expect.fulfill()
-                    })
-                } catch let error { XCTFail("Failed with error: \(error)") }
+                    }
+                } catch let err { XCTFail("Error: \(err) - \(fileurl)") }
             }).disposed(by: bag)
         waitForExpectations(timeout: timeout)
     }
@@ -173,8 +171,8 @@ class ContentBlockerUtilityTests: XCTestCase {
     private
     func localTestFilterListRules() throws -> BlockListFileURL {
         var list = try FilterList()
-        list.name = "v1 easylist short"
-        list.fileName = "v1 easylist short.json"
+        list.name = "test-v1-easylist-short"
+        list.fileName = "test-v1-easylist-short.json"
         // Adding a list for testing to the relay does not work because the host
         // app loads its own lists into the relay.
         try Persistor().saveFilterListModel(list)
@@ -223,5 +221,11 @@ class ContentBlockerUtilityTests: XCTestCase {
         do {
             try FileManager.default.removeItem(at: fileURL)
         } catch let err { XCTFail("Remove failed for: \(fileURL)) with error: \(err)"); return }
+    }
+
+    private
+    func domains(_ cnt: Int, _ max: Int, _ arr: [String]) -> [String] {
+        if cnt >= max { return arr }
+        return domains(cnt + 1, max, arr + ["test\(cnt).com"])
     }
 }

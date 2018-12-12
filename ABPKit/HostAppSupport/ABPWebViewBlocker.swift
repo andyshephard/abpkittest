@@ -24,7 +24,7 @@ protocol ABPBlockable: class {
     var webView: WKWebView! { get }
 }
 
-/// Block ads in a WKWebView.
+/// Block ads in a WKWebView for framework adopters.
 @available(iOS 11.0, macOS 10.13, *)
 public
 class ABPWebViewBlocker {
@@ -38,15 +38,16 @@ class ABPWebViewBlocker {
     var bag: DisposeBag!
     var ctrl: WKUserContentController!
     /// For debugging: Don't use remote rules when true.
-    var noRemote = false
+    var noRemote: Bool!
     var ruleListID: String?
     var wkcb: WebKitContentBlocker!
     weak var host: ABPBlockable!
 
     public
-    init(host: ABPBlockable) throws {
+    init(host: ABPBlockable, noRemote: Bool = false) throws {
         bag = DisposeBag()
         self.host = host
+        self.noRemote = noRemote
         wkcb = WebKitContentBlocker(logWith: { log("📙store \($0 as [String]?)") })
         ctrl = host.webView.configuration.userContentController
         do {
@@ -136,18 +137,21 @@ class ABPWebViewBlocker {
     /// Add rules from history or user's blocklist.
     public
     func fromExistingOrNewRuleList() -> Observable<WKContentRuleList?> {
-        guard let blst = user.blockList else { return Observable.error(ABPUserModelError.badDataUser) }
+        guard let blst = user.blockList else {
+            return Observable.error(ABPUserModelError.badDataUser)
+        }
         var existing: BlockList?
-        var added: WKContentRuleList?
         do {
             existing = try UserStateHelper(user: user).historyMatch()(blst.source)
             // Download matching is not handled here.
         } catch let err { return Observable.error(err) }
+        var added: WKContentRuleList?
+        ctrl.removeAllContentRuleLists() // remove all before adds
         if existing != nil {
             // Use existing rules in the store:
-            return rulesUseWithContentController(blockList: existing)
-                .flatMap { list -> Observable<Observable<String>> in
-                    added = list
+            return contentControllerAddBlocklistable()(existing)
+                .flatMap { blst -> Observable<Observable<String>> in
+                    added = blst
                     return self.wkcb.syncHistoryRemovers(user: self.user)
                 }
                 .flatMap { remove -> Observable<String> in
@@ -159,8 +163,8 @@ class ABPWebViewBlocker {
         }
         // Add new rules to the store:
         return wkcb.rulesAddedWKStore(user: self.user)
-            .flatMap { _ -> Observable<WKContentRuleList> in
-                return self.rulesAddToContentController()
+            .flatMap { _ -> Observable<WKContentRuleList?> in
+                return self.contentControllerAddBlocklistable()(blst)
             }
             .flatMap { list -> Observable<Observable<String>> in
                 added = list
@@ -180,7 +184,7 @@ class ABPWebViewBlocker {
     public
     func withRemoteBL(_ aaInUse: Bool) -> Observable<User> {
         // Don't DL if remote src is being used.
-        if let blst = self.user.blockList?.source, SourceHelper().isRemote()(blst) {
+        if let src = self.user.blockList?.source, SourceHelper().isRemote()(src) {
             return Observable.just(self.user)
         }
         var user: User!
@@ -196,53 +200,28 @@ class ABPWebViewBlocker {
             .observeOn(self.scheduler)
     }
 
-    /// Adds a rule list to the content controller if it exists for the user's
-    /// current block list.
+    /// Add rules for a Blocklistable to the content controller. Return list added.
     private
-    func rulesAddToContentController() -> Observable<WKContentRuleList> {
-        guard let blst = user.blockList else {
-            return Observable.error(ABPUserModelError.badDataUser)
-        }
-        return Observable.create { observer in
-            // Remove all existing before adding:
-            self.ctrl.removeAllContentRuleLists()
-            self.wkcb.rulesStore
-                .lookUpContentRuleList(forIdentifier: blst.name) { list, err in
+    func contentControllerAddBlocklistable<U: BlockListable>() -> (U?) -> Observable<WKContentRuleList?> {
+        return {
+            guard let ulst = $0 else { return Observable.empty() }
+            return Observable.create { observer in
+                self.wkcb.rulesStore.lookUpContentRuleList(forIdentifier: ulst.name) { rlist, err in
                     if err != nil { observer.onError(err!) }
-                    if list != nil {
-                        self.ctrl.add(list!)
-                        do {
-                            self.user = try self.user.historyUpdated().saved()
-                        } catch let err { observer.onError(err) }
-                        observer.onNext(list!)
-                        observer.onCompleted()
-                    }
+                    do {
+                        try observer.onNext(self.toContentControllerAdd()(rlist))
+                        self.user = try self.user.historyUpdated().saved() // state change
+                    } catch let err { observer.onError(err) }
+                    observer.onCompleted()
                 }
-            return Disposables.create()
+                return Disposables.create()
+            }
         }
     }
 
-    /// Add rules for a block list to the content controller. Return name of
-    /// list added.
+    /// The only adder for the content controller.
     private
-    func rulesUseWithContentController(blockList: BlockList?) -> Observable<WKContentRuleList?> {
-        guard let blst = blockList else { return Observable.just(nil) }
-        return Observable.create { observer in
-            self.wkcb.rulesStore
-                .lookUpContentRuleList(forIdentifier: blst.name) { rlist, err in
-                    if err != nil { observer.onError(err!) }
-                    if let list = rlist {
-                        self.ctrl.add(list)
-                        do {
-                            self.user = try self.user.historyUpdated().saved()
-                        } catch let err { observer.onError(err) }
-                        observer.onNext(list)
-                        observer.onCompleted()
-                    }
-                    observer.onNext(nil)
-                    observer.onCompleted()
-                }
-            return Disposables.create()
-        }
+    func toContentControllerAdd() -> (WKContentRuleList?) throws -> WKContentRuleList? {
+        return { if $0 != nil { self.ctrl.add($0!); return $0! }; return nil }
     }
 }

@@ -77,15 +77,17 @@ class PersistUserModelTests: XCTestCase {
     /// Use bundled testing source.
     func testRulesFromUser() throws {
         let expect = expectation(description: #function)
-        let blst = try BlockList(withAcceptableAds: true, source: BundledTestingBlockList.fakeExceptions)
         var user = try User()
-        user.blockList = blst
+        user.blockList = try BlockList(withAcceptableAds: true, source: BundledTestingBlockList.fakeExceptions)
         let hlpr = RulesHelper()
         hlpr.useBundle = Bundle(for: PersistUserModelTests.self)
         try hlpr.validatedRules()(hlpr.rulesForUser()(user))
             .reduce(0) { acc, _ in return acc + 1 }
             .subscribe(onNext: { cnt in
-                XCTAssert(cnt == self.testRuleCnt, "Rule count is wrong.")
+                XCTAssert(cnt == self.testRuleCnt,
+                          "Rule count is wrong.")
+            }, onError: { err in
+                XCTFail("Error: \(err)")
             }, onCompleted: {
                 expect.fulfill()
             }).disposed(by: bag)
@@ -100,12 +102,10 @@ class PersistUserModelTests: XCTestCase {
                 self.hosts = self.rndutil.randomState(for: [WhitelistedHostname].self)
                 switch self.aae! {
                 case true:
-                    copy.blockList = try BlockList(withAcceptableAds: true,
-                                                   source: BundledBlockList.easylistPlusExceptions)
+                    copy.blockList = try BlockList(withAcceptableAds: true, source: BundledBlockList.easylistPlusExceptions)
                     self.src = copy.blockList?.source
                 case false:
-                    copy.blockList = try BlockList(withAcceptableAds: false,
-                                                   source: BundledBlockList.easylist)
+                    copy.blockList = try BlockList(withAcceptableAds: false, source: BundledBlockList.easylist)
                     self.src = copy.blockList?.source
                 }
                 copy.whitelistedDomains = self.hosts
@@ -115,16 +115,15 @@ class PersistUserModelTests: XCTestCase {
     }
 
     private
-    func addDLs() throws -> (User) throws -> (User) {
+    func addDLs() throws -> (User) throws -> User {
         return { user in
             var copy = user
             var dls = [BlockList]()
             let srcUtil = BlockListSourceUtility()
             for _ in 1...self.rnd(self.min, self.max) {
                 if let boolRnd = self.rndutil.randomState(for: Bool.self),
-                    let src = try srcUtil.srcForAAState(boolRnd)(self.rnd(0, 1)) {
-                    var newBL = try BlockList(withAcceptableAds: boolRnd,
-                                              source: src)
+                   let src = try srcUtil.srcForAAState(boolRnd)(self.rnd(0, 1)) {
+                    var newBL = try BlockList(withAcceptableAds: boolRnd, source: src)
                     newBL.dateDownload = Date()
                     self.names.append(newBL.name)
                     copy.downloads?.append(newBL)
