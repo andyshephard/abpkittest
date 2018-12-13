@@ -53,8 +53,7 @@ class WebViewVC: NSViewController,
         webView.uiDelegate = self
         urlField.delegate = self
         do {
-            abp = try ABPWebViewBlocker(host: self, noRemote: noRemote)
-            try self.clearUserState()
+            abp = try ABPWebViewBlocker(host: self, user: clearedStateUser(), noRemote: noRemote)
             try setupABP { self.enableControls() }
         } catch let err { log("🚨 Error: \(err)") }
     }
@@ -96,9 +95,8 @@ class WebViewVC: NSViewController,
             .saved()
     }
 
-    /// Can be used to recover from errors.
-    func clearUserState() throws {
-        abp.user = try User().whiteListedDomainsSet()(whitelistedDomains).saved()
+    func clearedStateUser() throws -> User {
+        return try User().whiteListedDomainsSet()(whitelistedDomains).saved()
     }
 
     // ------------------------------------------------------------

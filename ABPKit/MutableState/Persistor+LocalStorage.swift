@@ -43,7 +43,7 @@ extension Persistor {
     func fileEnumeratorForRoot() -> (URL) throws -> FileManager.DirectoryEnumerator {
         return {
             let errHandler: (URL, Error) -> Bool = { _, err in
-                ABPKit.log("Error during enumeration: \(err)")
+                log("Error during enumeration: \(err)")
                 return true
             }
             if let enmr = FileManager.default
@@ -88,7 +88,7 @@ extension Persistor {
                 if !onlyLog {
                     do {
                         try mgr.removeItem(at: fileURL)
-                        ABPKit.log("🗑️ \(fileURL.path)")
+                        log("🗑️ \(fileURL.path)")
                     } catch let err { throw err }
                 } else {
                     paths.append(fileURL.path)
@@ -99,8 +99,8 @@ extension Persistor {
             }
         }
         paths.sorted().forEach {
-            ABPKit.log("🔵 \($0)")
+            log("🔵 \($0)")
         }
-       ABPKit.log("")
+        log("")
     }
 }

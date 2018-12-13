@@ -33,10 +33,9 @@ class Persistor {
     public
     init() throws {
         let cfg = Config()
-        guard let dflts = try? UserDefaults(suiteName: cfg.defaultsSuiteName()) else {
-            throw ABPMutableStateError.missingDefaults
-        }
-        defaults = dflts
+        do {
+            defaults = try UserDefaults(suiteName: cfg.defaultsSuiteName())
+        } catch { throw ABPMutableStateError.missingDefaults }
     }
 
     /// Observe changes in the value for a key in defaults.
@@ -44,17 +43,14 @@ class Persistor {
     func observe<T>(dataType: T.Type,
                     key: ABPMutableState.StateName,
                     nextAction: @escaping Action) -> Disposable? where T: (KVORepresentable) {
-        return defaults?.rx
+        return defaults.rx
             .observe(dataType,
                      key.rawValue,
-                     options: [.initial,
-                               .new],
+                     options: [.initial, .new],
                      retainSelf: false)
             .subscribeOn(scheduler)
             .subscribe(onNext: { next in
-                guard let val = next else {
-                    return
-                }
+                guard let val = next else { return }
                 nextAction(val)
             })
     }
@@ -66,14 +62,11 @@ class Persistor {
         return defaults?.rx
             .observe(dataType,
                      key.rawValue,
-                     options: [.initial,
-                               .new],
+                     options: [.initial, .new],
                      retainSelf: false)
             .subscribeOn(scheduler)
             .subscribe(onNext: { next in
-                guard let val = next else {
-                    return
-                }
+                guard let val = next else { return }
                 nextAction(val)
             })
     }
@@ -82,31 +75,19 @@ class Persistor {
     func save<T>(type: T.Type,
                  value: T,
                  key: ABPMutableState.StateName) throws {
-        guard let defaults = self.defaults else {
-            throw ABPMutableStateError.missingDefaults
-        }
         defaults
-            .setValue(value,
-                      forKey: key.rawValue)
+            .setValue(value, forKey: key.rawValue)
     }
 
     /// This function should not not return nil.
     func load<T>(type: T.Type,
                  key: ABPMutableState.StateName) throws -> T {
-        guard let defaults = self.defaults else {
-            throw ABPMutableStateError.missingDefaults
-        }
-        guard let res = defaults.value(forKeyPath: key.rawValue) as? T else {
-            throw ABPMutableStateError.invalidType
-        }
+        guard let res = defaults.value(forKeyPath: key.rawValue) as? T else { throw ABPMutableStateError.invalidType }
         return res
     }
 
     /// Set value nil should be an equivalent action here.
     func clear(key: ABPMutableState.StateName) throws {
-        guard let defaults = self.defaults else {
-            throw ABPMutableStateError.missingDefaults
-        }
         defaults
             .removeObject(forKey: key.rawValue)
     }

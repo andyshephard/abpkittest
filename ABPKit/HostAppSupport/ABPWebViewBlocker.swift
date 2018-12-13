@@ -37,22 +37,27 @@ class ABPWebViewBlocker {
     let scheduler = SerialDispatchQueueScheduler(qos: .userInitiated)
     var bag: DisposeBag!
     var ctrl: WKUserContentController!
+    /// Log file removals during user state syncing if true.
+    var logFileRemovals = false
     /// For debugging: Don't use remote rules when true.
     var noRemote: Bool!
     var ruleListID: String?
     var wkcb: WebKitContentBlocker!
     weak var host: ABPBlockable!
 
+    /// Uses a given user state.
     public
-    init(host: ABPBlockable, noRemote: Bool = false) throws {
+    init(host: ABPBlockable,
+         user: User,
+         noRemote: Bool = false,
+         logFileRemovals: Bool = false) throws {
         bag = DisposeBag()
         self.host = host
+        self.logFileRemovals = logFileRemovals
         self.noRemote = noRemote
         wkcb = WebKitContentBlocker(logWith: { log("📙store \($0 as [String]?)") })
         ctrl = host.webView.configuration.userContentController
-        do {
-            user = try User(fromPersistentStorage: true)
-        } catch let err { throw err }
+        self.user = user
     }
 
     deinit {
@@ -127,10 +132,8 @@ class ABPWebViewBlocker {
 
     public
     func syncDownloads() throws {
-        self.user = try UserBlockListDownloader(
-            user: self.user,
-            logWith: { log("🗑️\($0)") })
-                .syncDownloads()(self.user).saved()
+        self.user = try UserBlockListDownloader(user: user, logWith: logFileRemovals ? { log("🗑️\($0)") } : nil)
+            .syncDownloads()(self.user).saved()
     }
 
     // swiftlint:disable unused_closure_parameter

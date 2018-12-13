@@ -31,14 +31,14 @@ extension Persistor {
             saved = try loadFilterListModels()
         } catch let err { try modelsNotYetExist(error: err) }
         let newLists = try replaceFilterListModel(list, lists: saved)
-        return try save(type: Data.self,
-                        value: encodeModel(newLists),
-                        key: ABPMutableState.StateName.filterLists)
+        return try save(
+            type: Data.self,
+            value: encodeModel(newLists),
+            key: ABPMutableState.StateName.filterLists)
     }
 
     func loadFilterListModels() throws -> [FilterList] {
-        return try loadModels(type: [FilterList].self,
-                              state: .filterLists)
+        return try loadModels(type: [FilterList].self, state: .filterLists)
     }
 
     /// Clears filter list models and their associated rules, if they exist.
@@ -83,29 +83,25 @@ extension Persistor {
         if !failed {
             try clear(key: ABPMutableState.StateName.filterLists)
             let data = try encodeModel([FilterList]())
-            try save(type: Data.self,
-                     value: data,
-                     key: ABPMutableState.StateName.filterLists)
+            try save(
+                type: Data.self,
+                value: data,
+                key: ABPMutableState.StateName.filterLists)
             do {
                 models = try loadFilterListModels()
             } catch let err { try modelsNotYetExist(error: err) }
             if models.count > 0 { throw ABPFilterListError.failedRemoveModels }
-        } else {
-            throw ABPFilterListError.failedRemoveModels
-        }
+        } else { throw ABPFilterListError.failedRemoveModels }
     }
 
     func loadModels<T: Decodable>(type: T.Type,
                                   state: ABPMutableState.StateName) throws -> T {
-        return try decodeModelData(type: T.self,
-                                   modelData: load(type: Data.self,
-                                                   key: state))
+        return try decodeModelData(type: T.self, modelData: load(type: Data.self, key: state))
     }
 
     func decodeModelData<T: Decodable>(type: T.Type,
                                        modelData: Data) throws -> T {
-        return try PropertyListDecoder().decode(T.self,
-                                                from: modelData)
+        return try PropertyListDecoder().decode(T.self, from: modelData)
     }
 
     func saveModel<T: Encodable>(_ model: T,
@@ -138,8 +134,7 @@ extension Persistor {
     private
     func replaceFilterListModel(_ list: FilterList,
                                 lists: [FilterList]) throws -> [FilterList] {
-        return try replaceModel(list,
-                                models: lists)
+        return try replaceModel(list, models: lists)
     }
 
     private

@@ -69,7 +69,13 @@ extension User {
         let pstr = try Persistor()
         let data = try pstr.load(type: Data.self, key: ABPMutableState.StateName.user)
         self = try pstr.decodeModelData(type: User.self, modelData: data)
-        try Persistor().logRulesFiles()
+    }
+
+    /// Log stored rules files when logRulesFiles is true.
+    init?(persistenceID: String,
+          logRulesFiles: Bool = false) throws {
+        try self.init(persistenceID: persistenceID)
+        if logRulesFiles { try Persistor().logRulesFiles() }
     }
 }
 
