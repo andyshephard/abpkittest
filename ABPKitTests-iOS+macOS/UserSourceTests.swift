@@ -37,6 +37,7 @@ class UserSourceTests: XCTestCase {
         } catch let err { XCTFail("Error: \(err)") }
     }
 
+    /// Integration test:
     func testDownloadSourceMatch() {
         let expect = expectation(description: #function)
         let lastUser = UserUtility().lastUser
@@ -51,8 +52,7 @@ class UserSourceTests: XCTestCase {
                     }
                 } catch let err { XCTFail("Error: \(err)") }
             },
-            withCompleted: { expect.fulfill() }
-            ).disposed(by: bag)
+            withCompleted: { expect.fulfill() }).disposed(by: bag)
         wait(for: [expect], timeout: timeout)
     }
 }

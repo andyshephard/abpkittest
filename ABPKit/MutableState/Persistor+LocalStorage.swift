@@ -17,18 +17,15 @@
 
 extension Persistor {
     /// Show files in the container.
-    public
     func logRulesFiles() throws {
         try clearRulesFiles(onlyLog: true)
     }
 
     /// Wipe out rules files in the current configured container.
-    public
     func clearRulesFiles() throws {
         try clearRulesFiles(onlyLog: false)
     }
 
-    public
     func jsonFiles() -> (FileManager.DirectoryEnumerator) -> [URL] {
         return {
             var urls = [URL]()
@@ -39,7 +36,6 @@ extension Persistor {
         }
     }
 
-    public
     func fileEnumeratorForRoot() -> (URL) throws -> FileManager.DirectoryEnumerator {
         return {
             let errHandler: (URL, Error) -> Bool = { _, err in

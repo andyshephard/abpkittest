@@ -63,7 +63,6 @@ struct Action: Codable {
 
 /// A filter list WebKit content blocking rule. Used for decoding individual
 /// rules.
-public
 struct BlockingRule: Codable {
     var action: Action?
     var trigger: Trigger?
@@ -81,11 +80,9 @@ struct BlockingRule: Codable {
 ///
 /// This struct is used for decoding all rules where the rules are unkeyed.
 /// This is for verification and handling of v1 filter lists in JSON format.
-public
 struct V1FilterList: Decodable {
     var container: UnkeyedDecodingContainer!
 
-    public
     init(from decoder: Decoder) {
         guard let container = try? decoder.unkeyedContainer() else {
             return
@@ -96,7 +93,6 @@ struct V1FilterList: Decodable {
 
 extension V1FilterList {
     /// - returns: Observable of filter list rules
-    public
     func rules() -> Observable<BlockingRule> {
         var mself = self // copy
         guard let container = mself.container,

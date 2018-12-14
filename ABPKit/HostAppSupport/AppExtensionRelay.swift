@@ -33,32 +33,31 @@ import RxCocoa
 /// This implementation only exists to serve the legacy ABP iOS app and will be
 /// re-factored in a future version.
 @objc
-public class AppExtensionRelay: NSObject {
+class AppExtensionRelay: NSObject {
     private static var privateSharedInstance: AppExtensionRelay?
 
     // ------------------------------------------------------------
     // MARK: - Legacy host app states -
     // ------------------------------------------------------------
 
-    public var acceptableAdsEnabled = BehaviorRelay<Bool?>(value: nil)
-    public var customFilterListEnabled = BehaviorRelay<Bool?>(value: nil)
-    public var defaultFilterListEnabled = BehaviorRelay<Bool?>(value: nil)
-    public var downloadedVersion = BehaviorRelay<Int?>(value: nil)
-    public var enabled = BehaviorRelay<Bool?>(value: nil)
-    public var filterLists = BehaviorRelay<[FilterList]>(value: [])
-    public var group = BehaviorRelay<String?>(value: nil)
-    public var installedVersion = BehaviorRelay<Int?>(value: nil)
-    public var lastActivity = BehaviorRelay<Date?>(value: nil)
-    public var shouldRespondToActivityTest = BehaviorRelay<Bool?>(value: nil)
-    public var whitelistedWebsites = BehaviorRelay<[String]>(value: [])
+    var acceptableAdsEnabled = BehaviorRelay<Bool?>(value: nil)
+    var customFilterListEnabled = BehaviorRelay<Bool?>(value: nil)
+    var defaultFilterListEnabled = BehaviorRelay<Bool?>(value: nil)
+    var downloadedVersion = BehaviorRelay<Int?>(value: nil)
+    var enabled = BehaviorRelay<Bool?>(value: nil)
+    var filterLists = BehaviorRelay<[FilterList]>(value: [])
+    var group = BehaviorRelay<String?>(value: nil)
+    var installedVersion = BehaviorRelay<Int?>(value: nil)
+    var lastActivity = BehaviorRelay<Date?>(value: nil)
+    var shouldRespondToActivityTest = BehaviorRelay<Bool?>(value: nil)
+    var whitelistedWebsites = BehaviorRelay<[String]>(value: [])
 
     // End legacy host app states
 
-    override private init() {
+    override private
+    init() {
         let cfg = Config()
-        guard let grp = try? cfg.appGroup() else {
-            return
-        }
+        guard let grp = try? cfg.appGroup() else { return }
         self.group.accept(grp)
     }
 
@@ -69,7 +68,7 @@ public class AppExtensionRelay: NSObject {
 
     /// Access the shared instance.
     @objc
-    public class func sharedInstance() -> AppExtensionRelay {
+    class func sharedInstance() -> AppExtensionRelay {
         guard let shared = privateSharedInstance else {
             privateSharedInstance = AppExtensionRelay()
             return privateSharedInstance!
@@ -82,12 +81,12 @@ public class AppExtensionRelay: NSObject {
     // ------------------------------------------------------------
 
     @objc
-    public func legacyContentBlockerIdentifier() -> ContentBlockerIdentifier? {
+    func legacyContentBlockerIdentifier() -> ContentBlockerIdentifier? {
         return Config().contentBlockerIdentifier(platform: .ios)
     }
 
     @objc
-    public func legacyGroup() -> AppGroupName? {
+    func legacyGroup() -> AppGroupName? {
         return group.value
     }
 
@@ -96,37 +95,36 @@ public class AppExtensionRelay: NSObject {
     // ------------------------------------------------------------
 
     @objc
-    public func legacyAcceptableAdsEnabledSet(_ acceptableAdsEnabled: Bool) {
+    func legacyAcceptableAdsEnabledSet(_ acceptableAdsEnabled: Bool) {
         self.acceptableAdsEnabled.accept(acceptableAdsEnabled)
     }
 
     @objc
-    public func legacyCustomFilterListEnabledSet(_ customFilterListEnabled: Bool) {
+    func legacyCustomFilterListEnabledSet(_ customFilterListEnabled: Bool) {
         self.customFilterListEnabled.accept(customFilterListEnabled)
     }
 
     @objc
-    public func legacyDefaultFilterListEnabledSet(_ defaultFilterListEnabled: Bool) {
+    func legacyDefaultFilterListEnabledSet(_ defaultFilterListEnabled: Bool) {
         self.defaultFilterListEnabled.accept(defaultFilterListEnabled)
     }
 
     @objc
-    public func legacyDownloadedVersionSet(_ downloadedVersion: Int) {
+    func legacyDownloadedVersionSet(_ downloadedVersion: Int) {
         self.downloadedVersion.accept(downloadedVersion)
     }
 
     @objc
-    public func legacyEnabledSet(_ enabled: Bool) {
+    func legacyEnabledSet(_ enabled: Bool) {
         self.enabled.accept(enabled)
     }
 
     /// Add all Swift filter list structs from the legacy type.
     @objc
-    public func legacyFilterListsSet(_ filterLists: LegacyFilterLists) {
+    func legacyFilterListsSet(_ filterLists: LegacyFilterLists) {
         var swiftLists = [FilterList]()
         for key in filterLists.keys {
-            if let list = FilterList(named: key,
-                                     fromDictionary: filterLists[key]) {
+            if let list = FilterList(named: key, fromDictionary: filterLists[key]) {
                 swiftLists.append(list)
             }
         }
@@ -134,17 +132,17 @@ public class AppExtensionRelay: NSObject {
     }
 
     @objc
-    public func legacyInstalledVersionSet(_ installedVersion: Int) {
+    func legacyInstalledVersionSet(_ installedVersion: Int) {
         self.installedVersion.accept(installedVersion)
     }
 
     @objc
-    public func legacyLastActivitySet(_ lastActivity: Date) {
+    func legacyLastActivitySet(_ lastActivity: Date) {
         self.lastActivity.accept(lastActivity)
     }
 
     @objc
-    public func legacyWhitelistedWebsitesSet(_ whitelistedWebsites: [String]) {
+    func legacyWhitelistedWebsitesSet(_ whitelistedWebsites: [String]) {
         self.whitelistedWebsites.accept(whitelistedWebsites)
     }
 }

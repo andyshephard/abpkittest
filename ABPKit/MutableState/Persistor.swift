@@ -23,14 +23,12 @@ import RxSwift
 /// * save
 /// * load
 /// * clear
-public
 class Persistor {
     typealias Action = (_ value: Any) -> Void
     /// Scheduler for all operations, main thread subscription is necessary for correct results.
     let scheduler = MainScheduler.asyncInstance
     let defaults: UserDefaults!
 
-    public
     init() throws {
         let cfg = Config()
         do {

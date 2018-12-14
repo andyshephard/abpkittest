@@ -20,7 +20,6 @@ import RxSwift
 // Implements URLSessionDownloadDelegate functions for the BlockListDownloader.
 extension BlockListDownloader {
     /// A URL session task is transferring data.
-    public
     func urlSession(_ session: URLSession,
                     downloadTask: URLSessionDownloadTask,
                     didWriteData bytesWritten: Int64,
@@ -36,7 +35,6 @@ extension BlockListDownloader {
     /// A download task for a filter list has finished downloading. Update the user's filter list
     /// metadata and move the downloaded file. Future optimization can include retrying the
     /// post-download operations if an error is encountered.
-    public
     func urlSession(_ session: URLSession,
                     downloadTask: URLSessionDownloadTask,
                     didFinishDownloadingTo location: URL) {
@@ -89,7 +87,6 @@ extension BlockListDownloader {
     /// A URL session task has finished transferring data.
     /// Download events are updated.
     /// The downloaded data is persisted to local storage.
-    public
     func urlSession(_ session: URLSession,
                     task: URLSessionTask,
                     didCompleteWithError error: Error?) {

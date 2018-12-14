@@ -17,7 +17,6 @@
 
 extension UserBlockListDownloader {
     /// A URL session task is transferring data.
-    public
     func urlSession(_ session: URLSession,
                     downloadTask: URLSessionDownloadTask,
                     didWriteData bytesWritten: Int64,
@@ -34,7 +33,6 @@ extension UserBlockListDownloader {
     // swiftlint:disable opening_brace
     /// A download task has finished downloading. Update the user's block list
     /// metadata and move the downloaded file. Updates user state.
-    public
     func urlSession(_ session: URLSession,
                     downloadTask: URLSessionDownloadTask,
                     didFinishDownloadingTo location: URL) {
@@ -79,7 +77,6 @@ extension UserBlockListDownloader {
     /// A URL session task has finished transferring data.
     /// Download events are updated.
     /// The downloaded data is persisted to local storage.
-    public
     func urlSession(_ session: URLSession,
                     task: URLSessionTask,
                     didCompleteWithError error: Error?) {

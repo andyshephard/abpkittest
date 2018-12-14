@@ -57,21 +57,21 @@ struct Constants {
     /// Limit for background operations, less than the allowed limit to allow time for content blocker reloading.
     static let backgroundOperationLimit: TimeInterval = 28
     /// Internal name.
-    public static let customFilterListName = "customFilterList"
+    static let customFilterListName = "customFilterList"
     /// Internal name.
-    public static let defaultFilterListName = "easylist"
+    static let defaultFilterListName = "easylist"
     /// Internal name.
-    public static let defaultFilterListPlusExceptionRulesName = "easylist+exceptionrules"
+    static let defaultFilterListPlusExceptionRulesName = "easylist+exceptionrules"
     /// On-disk name.
-    public static let defaultFilterListFilename = "easylist_content_blocker.json"
+    static let defaultFilterListFilename = "easylist_content_blocker.json"
     // swiftlint:disable identifier_name
     /// On-disk name.
-    public static let defaultFilterListPlusExceptionRulesFilename = "easylist+exceptionrules_content_blocker.json"
+    static let defaultFilterListPlusExceptionRulesFilename = "easylist+exceptionrules_content_blocker.json"
     // swiftlint:enable identifier_name
     /// On-disk name.
-    public static let emptyFilterListFilename = "empty.json"
+    static let emptyFilterListFilename = "empty.json"
     /// On-disk name.
-    public static let customFilterListFilename = "custom.json"
+    static let customFilterListFilename = "custom.json"
 }
 
 /// ABPKit configuration class for accessing globally relevant functions.
@@ -139,9 +139,7 @@ class Config {
     }
 
     func backgroundSessionConfigurationIdentifier() throws -> String {
-        guard let prefix = bundlePrefix() else {
-            throw ABPConfigurationError.invalidBundlePrefix
-        }
+        guard let prefix = bundlePrefix() else { throw ABPConfigurationError.invalidBundlePrefix }
         return "\(prefix).\(Constants.productNameIOS).\(backgroundSession)"
     }
 

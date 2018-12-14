@@ -19,7 +19,6 @@ import RxSwift
 import WebKit
 
 @available(iOS 11.0, macOS 10.13, *)
-public
 class WebKitContentBlocker: Loggable {
     typealias LogType = [String]?
     typealias RuleStringAndCount = Observable<(String, Int)>

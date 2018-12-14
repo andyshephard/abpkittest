@@ -19,14 +19,11 @@
     /// Construct a new filter list matching one saved in the legacy adblockPlusDetails user
     /// defaults.
     /// - Parameter name: The name of the existing filter list.
-    public init?(matching name: FilterListName,
-                 root: [String: Any]?) {
+    public
+    init?(matching name: FilterListName,
+          root: [String: Any]?) {
         let listDict = root?[name] as? [String: Any]
-        guard let filterList = FilterList(named: name,
-                                          fromDictionary: listDict)
-        else {
-            return nil
-        }
+        guard let filterList = FilterList(named: name, fromDictionary: listDict) else { return nil }
         self = filterList
     }
 }

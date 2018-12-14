@@ -65,8 +65,7 @@ class UserAfterDownloadsTests: XCTestCase {
                               "List not found.")
                 } else { XCTFail("Missing lists.") }
             },
-            withCompleted: { expect.fulfill() }
-        ).disposed(by: bag)
+            withCompleted: { expect.fulfill() }).disposed(by: bag)
         wait(for: [expect], timeout: timeout)
     }
 

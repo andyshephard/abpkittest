@@ -607,7 +607,6 @@
 				65756175217FBA6100D8A4F2 /* ABPDebug.swift */,
 				651EC17621B763E500F9FE2C /* AcceptableAdsHelper.swift */,
 				65756176217FBA6100D8A4F2 /* ActiveVersions.swift */,
-				65756177217FBA6100D8A4F2 /* URLComponents+Encoding.swift */,
 			);
 			path = Utility;
 			sourceTree = "<group>";
@@ -734,6 +733,7 @@
 			children = (
 				6511B87E21AD929B00A1E70E /* String+Path.swift */,
 				65ECBEB921963EEB00551F26 /* String+ProtocolText.swift */,
+				65756177217FBA6100D8A4F2 /* URLComponents+Encoding.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";

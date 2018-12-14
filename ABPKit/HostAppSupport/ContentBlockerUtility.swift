@@ -20,11 +20,9 @@ import RxSwift
 
 /// Utility functions related to content blocking.
 /// These support the ABP Safari iOS app.
-public
 class ContentBlockerUtility {
     var bag: DisposeBag!
 
-    public
     init() throws {
         bag = DisposeBag()
     }
@@ -32,13 +30,10 @@ class ContentBlockerUtility {
     /// Get NS item provider for a resource matching filter list rules.
     /// - parameter resource: Name of JSON filter list without extension
     /// - returns: NSItemProvider for the attachment
-    public
     func getAttachment(resource: String) -> NSItemProvider? {
-        let bndl = Bundle(for: ContentBlockerUtility.self)
-        let itemProvider =
-            NSItemProvider(contentsOf: bndl.url(forResource: resource,
-                                                withExtension: Constants.rulesExtension))
-        return itemProvider
+        return NSItemProvider(
+            contentsOf: Bundle(for: ContentBlockerUtility.self)
+                .url(forResource: resource, withExtension: Constants.rulesExtension))
     }
 
     /// Get filter list name based on the following legacy states:
@@ -47,7 +42,6 @@ class ContentBlockerUtility {
     /// * State of custom filter list downloaded
     ///
     /// - returns: Name of filter list
-    public
     func activeFilterListName() -> FilterListName? {
         let cstm = Constants.customFilterListName
         let dfltAA = Constants.defaultFilterListPlusExceptionRulesName
@@ -60,30 +54,12 @@ class ContentBlockerUtility {
         } else {
             if let customList =
                 try? FilterList(persistenceID: cstm) {
-                if relay.defaultFilterListEnabled.value == true &&
-                   customList?.downloaded == true {
+                if relay.defaultFilterListEnabled.value == true && customList?.downloaded == true {
                     return cstm
                 }
             }
         }
         return nil
-    }
-
-    /// Tell if a file corresponding to a filter list exists.
-    /// - parameter filename: Name of file for filter list rules
-    /// - returns: True if file exists, otherwise false
-    func filterListFileExists(_ filename: String) -> Bool {
-        let mgr = FileManager.default
-        guard let group = try? Config().appGroup() else {
-            return false
-        }
-        var url = mgr.containerURL(forSecurityApplicationGroupIdentifier: group)
-        url = url?.appendingPathComponent(filename,
-                                          isDirectory: false)
-        if mgr.fileExists(atPath: (url?.path)!) {
-            return true
-        }
-        return false
     }
 
     /// Get the internal name of a Filter List model object.
@@ -101,13 +77,9 @@ class ContentBlockerUtility {
     /// Legacy function: Get the filter list rules file URL from the bundle.
     /// - returns: File URL for the filter list rules
     /// - throws: ABPFilterListError
-    public
     func activeFilterListsURL() throws -> FilterListFileURL {
-        let relay = AppExtensionRelay.sharedInstance()
-        if relay.enabled.value == true {
-            guard let name = activeFilterListName() else {
-                throw ABPFilterListError.missingName
-            }
+        if AppExtensionRelay.sharedInstance().enabled.value == true {
+            guard let name = activeFilterListName() else { throw ABPFilterListError.missingName }
             return try getBundledFilterListFileURL(modelName: name)
         }
         throw ABPFilterListError.notFound
@@ -120,12 +92,9 @@ class ContentBlockerUtility {
                                      bundle: Bundle = Config().bundle()) throws -> FilterListFileURL {
         if let model = try? FilterList(persistenceID: modelName),
            let filename = model?.fileName {
-            if let url = bundle.url(forResource: filename,
-                                    withExtension: "") {
+            if let url = bundle.url(forResource: filename, withExtension: "") {
                 return url
-            } else {
-                throw ABPFilterListError.notFound
-            }
+            } else { throw ABPFilterListError.notFound }
         }
         throw ABPFilterListError.notFound
     }
@@ -133,12 +102,9 @@ class ContentBlockerUtility {
     /// Get bundled rules by filename only.
     func getBundledFilterListFileURL(filename: String,
                                      bundle: Bundle = Config().bundle()) throws -> FilterListFileURL {
-        if let url = bundle.url(forResource: filename,
-                                withExtension: "") {
+        if let url = bundle.url(forResource: filename, withExtension: "") {
             return url
-        } else {
-            throw ABPFilterListError.notFound
-        }
+        } else { throw ABPFilterListError.notFound }
     }
 
     func filenameFromURL(_ url: BlockListFileURL) -> BlockListFilename {
@@ -157,8 +123,7 @@ class ContentBlockerUtility {
         var ruleList: V1FilterList!
         do {
             ruleList = try JSONDecoder()
-                .decode(V1FilterList.self,
-                        from: self.blocklistData(blocklist: sourceURL))
+                .decode(V1FilterList.self, from: self.blocklistData(blocklist: sourceURL))
              try self.startBlockListFile(blocklist: dest)
         } catch let err { return Observable.error(err) }
         var cnt = 0

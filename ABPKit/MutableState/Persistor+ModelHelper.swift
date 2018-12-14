@@ -24,7 +24,6 @@ import RxSwift
 extension Persistor {
     /// Save and replace, if needed.
     /// Return true if save succeeded.
-    public
     func saveFilterListModel(_ list: FilterList) throws {
         var saved = [FilterList]()
         do {
@@ -158,8 +157,7 @@ extension Persistor {
     /// No models exist yet - bypass error condition.
     private
     func modelsNotYetExist(error: Error) throws {
-        if let casted = error as? ABPMutableStateError,
-           casted == .invalidType {
+        if let casted = error as? ABPMutableStateError, casted == .invalidType {
             return
         } else { throw error }
     }

@@ -16,14 +16,16 @@
  */
 
 /// Represents a filter list update.
-public struct FilterListUpdate {
+public
+struct FilterListUpdate {
     public var filterList: FilterList
     public var task: URLSessionDownloadTask
     public var userTriggered: Bool
 
-    public init(filterList: FilterList,
-                task: URLSessionDownloadTask,
-                userTriggered: Bool) {
+    public
+    init(filterList: FilterList,
+         task: URLSessionDownloadTask,
+         userTriggered: Bool) {
         self.filterList = filterList
         self.task = task
         self.userTriggered = userTriggered

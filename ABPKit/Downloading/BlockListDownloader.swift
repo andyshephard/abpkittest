@@ -17,7 +17,6 @@
 
 import RxSwift
 
-public
 class BlockListDownloader: NSObject,
                            URLSessionDownloadDelegate {
     let updatingKey = "updatingGroupIdentifier"
@@ -45,7 +44,7 @@ class BlockListDownloader: NSObject,
 
     // These inits will be refactored to be failable while supporting Objective-C in a future issue.
 
-    public override
+    override
     init() {
         super.init()
         downloadedVersion = 0

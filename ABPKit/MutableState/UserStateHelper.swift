@@ -25,7 +25,6 @@ class UserStateHelper {
     }
 
     /// Return a BL in user history that matches a given source.
-    public
     func historyMatch() throws -> (BlockListSourceable) throws -> BlockList? {
         guard let hist = user.blockListHistory else { throw ABPUserModelError.badDataUser }
         return { try self.blockListsMatch(hist)($0) }
@@ -38,7 +37,6 @@ class UserStateHelper {
         return { try self.blockListsMatch(dls)($0) }
     }
 
-    public
     func clearBlockListHistory() throws {
         user.blockListHistory = []
         try user.save()

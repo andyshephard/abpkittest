@@ -16,7 +16,6 @@
  */
 
 extension ContentBlockerUtility {
-    public
     func blocklistData(blocklist fileURL: BlockListFileURL) throws -> BlockListData {
         guard let data = FileManager.default.contents(atPath: fileURL.path) else {
             throw ABPFilterListError.notFound
@@ -24,18 +23,15 @@ extension ContentBlockerUtility {
         return data
     }
 
-    public
     func rulesDir(blocklist fileURL: BlockListFileURL) -> BlockListDirectoryURL {
         return fileURL.deletingLastPathComponent()
     }
 
-    public
     func makeNewBlocklistFileURL(name: BlockListFilename,
                                  at directory: BlockListDirectoryURL) -> BlockListFileURL {
         return directory.appendingPathComponent(name)
     }
 
-    public
     func startBlockListFile(blocklist: BlockListFileURL) throws {
         return
             try Constants.blocklistArrayStart
@@ -44,7 +40,6 @@ extension ContentBlockerUtility {
                        encoding: Constants.blocklistEncoding)
     }
 
-    public
     func endBlockListFile(blocklist: BlockListFileURL) {
         if let outStream = OutputStream(url: blocklist, append: true) {
             outStream.open()
@@ -53,7 +48,6 @@ extension ContentBlockerUtility {
         }
     }
 
-    public
     func addRuleSeparator(blocklist: BlockListFileURL) {
         if let outStream = OutputStream(url: blocklist, append: true) {
             outStream.open()
@@ -62,7 +56,6 @@ extension ContentBlockerUtility {
         }
     }
 
-    public
     func writeToEndOfFile(blocklist: BlockListFileURL,
                           with data: Data) {
         if let fileHandle = try? FileHandle(forWritingTo: blocklist) {

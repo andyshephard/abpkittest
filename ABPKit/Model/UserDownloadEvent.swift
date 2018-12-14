@@ -33,8 +33,9 @@ struct UserDownloadEvent {
 
     public
     init() {
-        self.init(didFinishDownloading: nil,
-                  totalBytesWritten: nil,
-                  error: nil)
+        self.init(
+            didFinishDownloading: nil,
+            totalBytesWritten: nil,
+            error: nil)
     }
 }

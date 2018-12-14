@@ -16,7 +16,8 @@
  */
 
 /// Represents the changing state of a download.
-public struct DownloadEvent {
+public
+struct DownloadEvent {
     public var filterListName: FilterListName?
     public var didFinishDownloading: Bool?
     public var totalBytesWritten: Int64?
@@ -24,11 +25,12 @@ public struct DownloadEvent {
     /// This may no longer be needed outside of the legacy implementation.
     public var errorWritten: Bool?
 
-    public init(filterListName: FilterListName?,
-                didFinishDownloading: Bool?,
-                totalBytesWritten: Int64?,
-                error: Error?,
-                errorWritten: Bool?) {
+    public
+    init(filterListName: FilterListName?,
+         didFinishDownloading: Bool?,
+         totalBytesWritten: Int64?,
+         error: Error?,
+         errorWritten: Bool?) {
         self.filterListName = filterListName
         self.didFinishDownloading = didFinishDownloading
         self.totalBytesWritten = totalBytesWritten
@@ -36,7 +38,8 @@ public struct DownloadEvent {
         self.errorWritten = errorWritten
     }
 
-    public init() {
+    public
+    init() {
         self.init(
             filterListName: nil,
             didFinishDownloading: nil,
