@@ -78,20 +78,19 @@ class ABPWebViewBlocker {
         }
     }
 
-    /// Use bundled or downloaded rule list, as needed.
-    /// Error handling is not complete yet.
+    /// Activate bundled or downloaded rule list, as needed.
     public
-    func userListAutoActivate(reportStatusSwitch: (() -> Void)?,
-                              logUser: ((User) -> Void)?,
-                              loadURL: @escaping () -> Void,
-                              finally: (() -> Void)? = nil) {
+    func useContentBlocking(logPreparationTime: Bool = false,
+                            logBlockListSwitch: (() -> Void)? = nil,
+                            logUserState: ((User) -> Void)? = nil,
+                            completeWith: @escaping (Error?) -> Void) {
         var statusSwitchShow = false
         let start = Date()
         fromExistingOrNewRuleList()
             .takeLast(1) // due to multiple removes
             .flatMap { _ -> Observable<User> in
-                log("⏱️\(fabs(start.timeIntervalSinceNow))")
-                loadURL()
+                if logPreparationTime { log("⏱️\(fabs(start.timeIntervalSinceNow))") }
+                completeWith(nil)
                 let shlp = SourceHelper()
                 if let src = shlp.userSourceable(self.user), !shlp.isRemote()(src) && !self.noRemote {
                     statusSwitchShow = true
@@ -101,22 +100,21 @@ class ABPWebViewBlocker {
             .flatMap { user -> Observable<WKContentRuleList> in
                 do { // state change to remote BL after DLs
                     self.user = try self.userUpdatedFromDownloads()(user).saved()
-                } catch let err { log("🚨 Error during DL update: \(err)") }
-                logUser?(self.user)
+                } catch let err { completeWith(err) }
+                logUserState?(self.user)
                 return self.wkcb.rulesAddedWKStore(user: self.user)
             }
             .subscribe(onNext: { _ in
                 if statusSwitchShow {
-                    loadURL()
-                    reportStatusSwitch?()
+                    logBlockListSwitch?()
                 }
             }, onError: { err in
-                log("🚨 Error during auto activate: \(err)")
+                completeWith(err)
             }, onCompleted: {
                 do {
                     try self.syncDownloads()
-                } catch let err { log("🚨 Error on completed: \(err)") }
-                finally?()
+                } catch let err { completeWith(err) }
+                completeWith(nil)
             }).disposed(by: bag)
     }
 

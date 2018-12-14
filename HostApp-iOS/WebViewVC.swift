@@ -66,15 +66,16 @@ class WebViewVC: UIViewController,
         log("👩🏻‍🎤0 hist \(self.userHist(self.abp))")
         if aaChangeTo != nil { try changeUserAA(aaChangeTo!) }
         try updateAA(self.abp.lastUser().acceptableAdsInUse())
-        abp.userListAutoActivate(reportStatusSwitch: {
+        abp.useContentBlocking(logBlockListSwitch: {
             self.reportStatus(self.switchToDLMessage)
             log("▶️ \(self.switchToDLMessage)")
-        }, logUser: { user in
+        }, logUserState: { user in
             log("👩🏻‍🎤1 blst \(user.getBlockList() as BlockList?)")
             log("👩🏻‍🎤1 hist \(user.getHistory() as [BlockList]?)")
             log("👩🏻‍🎤1 dlds \(user.getDownloads() as [BlockList]?)")
             log("👩🏻‍🎤1 wldm \(user.getWhiteListedDomains() as [String]?)")
-        }, loadURL: {
+        }, completeWith: { err in
+            if err != nil { log("🚨 Error: \(err as Error?)") }
             self.loadURLString(self.location ?? self.initialURLString)
             completion()
         })
@@ -124,9 +125,9 @@ class WebViewVC: UIViewController,
 
     func loadURLString(_ urlString: String) {
         abp.loadURLString(urlString) { url, err in
-            guard let uwURL = url, err == nil else { log("🚨 Error: \(err!)"); return }
-            self.updateURLField(urlString: uwURL.absoluteString)
-            self.location = uwURL.absoluteString
+            guard let url = url, err == nil else { log("🚨 Error: \(err!)"); return }
+            self.updateURLField(urlString: url.absoluteString)
+            self.location = url.absoluteString
         }
     }
 

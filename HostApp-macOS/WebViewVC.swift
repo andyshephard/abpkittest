@@ -64,15 +64,16 @@ class WebViewVC: NSViewController,
         log("👩🏻‍🎤0 hist \(self.userHist(self.abp))")
         if aaChangeTo != nil { try changeUserAA(aaChangeTo!) }
         try updateAA(self.abp.lastUser().acceptableAdsInUse())
-        abp.userListAutoActivate(reportStatusSwitch: {
+        abp.useContentBlocking(logBlockListSwitch: {
             self.reportStatus(self.switchToDLMessage)
             log("▶️ \(self.switchToDLMessage)")
-        }, logUser: { user in
+        }, logUserState: { user in
             log("👩🏻‍🎤1 blst \(user.getBlockList() as BlockList?)")
             log("👩🏻‍🎤1 hist \(user.getHistory() as [BlockList]?)")
             log("👩🏻‍🎤1 dlds \(user.getDownloads() as [BlockList]?)")
             log("👩🏻‍🎤1 wldm \(user.getWhiteListedDomains() as [String]?)")
-        }, loadURL: {
+        }, completeWith: { err in
+            if err != nil { log("🚨 Error: \(err as Error?)") }
             self.loadURLString(self.location ?? self.initialURLString)
             completion()
         })
@@ -146,21 +147,19 @@ class WebViewVC: NSViewController,
         }
     }
 
-    // swiftlint:disable multiple_closures_with_trailing_closure
     func reportStatus(_ status: String) {
         DispatchQueue.main.async {
             self.statusField.stringValue = status
             self.statusField.isHidden = false
-            NSAnimationContext.runAnimationGroup ({ context in
+            NSAnimationContext.runAnimationGroup({ context in
                 context.duration = self.statusDuration
                 self.statusField.animator().alphaValue = 0
-            }) {
+            }, completionHandler: {
                 self.statusField.isHidden = true
                 self.statusField.alphaValue = 1
-            }
+            })
         }
     }
-    // swiftlint:enable multiple_closures_with_trailing_closure
 
     func updateAA(_ withAA: Bool) {
         DispatchQueue.main.async {
