@@ -89,8 +89,17 @@ extension UserBlockListDownloader {
                 .takeLast(1)
                 .filter { $0.didFinishDownloading == true }
                 .flatMap { _ -> Observable<User> in
-                    return Observable.just(self.user)
+                    return Observable.just(self.userDownloadStateUpdated()(self.user))
                 }
+        }
+    }
+
+    func userDownloadStateUpdated() -> (User) -> User {
+        return { user in
+            var copy = user
+            copy.downloadCount = (copy.downloadCount ?? 0) + 1
+            copy.lastVersion = "0" // not currently parsed
+            return copy
         }
     }
 
@@ -174,17 +183,27 @@ extension UserBlockListDownloader {
             switch $0 {
             case let src where src as? RemoteBlockList != nil:
                 return try RemoteBlockList.allCases.map {
-                    var srcDL = SourceDownload()
-                    srcDL.blockList = try BlockList(withAcceptableAds: $0.hasAcceptableAds(), source: $0)
-                    srcDL.url = URL(string: $0.rawValue)
-                    if let url = srcDL.url {
-                        srcDL.task = self.downloadSession.downloadTask(with: url)
-                    } else { throw ABPDownloadTaskError.badSourceURL }
-                    return srcDL
+                    if let url = self.queryItemsAdded()(URL(string: $0.rawValue)) {
+                        return SourceDownload(
+                            task: self.downloadSession.downloadTask(with: url),
+                            blockList: try BlockList(withAcceptableAds: $0.hasAcceptableAds(), source: $0),
+                            url: url)
+                    } else {  throw ABPDownloadTaskError.badSourceURL }
                 }
             default:
                 return []
             }
+        }
+    }
+
+    func queryItemsAdded() -> (URL?) -> URL? {
+        return {
+            if let url = $0, var cmps = URLComponents(string: url.absoluteString) {
+                cmps.queryItems = BlockListDownloadData(user: self.user).queryItems
+                cmps.encodePlusSign()
+                return cmps.url
+            }
+            return nil
         }
     }
 

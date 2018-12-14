@@ -28,6 +28,10 @@ struct User: Persistable,
     /// To be synced with local storage.
     var downloads: [BlockList]?
     var whitelistedDomains: [String]?
+    /// Successful download count.
+    public var downloadCount: Int?
+    /// Last downloaded blocklist version, if available.
+    var lastVersion: String?
 }
 
 extension User {
@@ -41,6 +45,8 @@ extension User {
         blockListHistory = []
         downloads = []
         whitelistedDomains = []
+        downloadCount = 0
+        lastVersion = "0"
     }
 
     /// For use during the period where only a single user is supported.
@@ -67,8 +73,9 @@ extension User {
     /// Multiple user support will be in a future version.
     init?(persistenceID: String) throws {
         let pstr = try Persistor()
-        let data = try pstr.load(type: Data.self, key: ABPMutableState.StateName.user)
-        self = try pstr.decodeModelData(type: User.self, modelData: data)
+        self = try pstr.decodeModelData(
+            type: User.self,
+            modelData: pstr.load(type: Data.self, key: ABPMutableState.StateName.user))
     }
 
     /// Log stored rules files when logRulesFiles is true.
@@ -131,9 +138,7 @@ extension User {
     public
     func blockListSet() -> (BlockList) -> User {
         return {
-            var copy = self
-            copy.blockList = $0
-            return copy
+            var copy = self; copy.blockList = $0; return copy
         }
     }
 
@@ -141,9 +146,7 @@ extension User {
     public
     func whiteListedDomainsSet() -> ([String]) -> User {
         return {
-            var copy = self
-            copy.whitelistedDomains = $0
-            return copy
+            var copy = self; copy.whitelistedDomains = $0; return copy
         }
     }
 

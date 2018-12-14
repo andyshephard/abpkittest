@@ -24,12 +24,12 @@ class ABPActiveVersions {
     /// Key containing active WebKit version.
     private static let webkitVersionKey = "CFBundleVersion"
 
-    /// - Returns: Version of the app.
+    /// - returns: Version of the app.
     class func appVersion() -> String? {
         return Bundle.main.infoDictionary?[versionKey] as? String
     }
 
-    /// - Returns: Current WebKit version as a string.
+    /// - returns: Current WebKit version as a string.
     class func webkitVersion() -> String? {
         let webkit = Bundle(identifier: webkitID)
         if let dict = webkit?.infoDictionary,
@@ -39,9 +39,15 @@ class ABPActiveVersions {
         return nil
     }
 
-    /// - Returns: Current iOS version as a string.
-    class func iosVersion() -> String {
+    /// - returns: Current OS version as a string.
+    class func osVersion() -> String {
         let osv = ProcessInfo().operatingSystemVersion
         return "\(osv.majorVersion).\(osv.minorVersion).\(osv.patchVersion)"
+    }
+
+    /// - returns: Version of ABPKit.
+    class func abpkitVersion() -> String? {
+        return Bundle(for: ABPKit.Config.self)
+            .infoDictionary?[versionKey] as? String
     }
 }

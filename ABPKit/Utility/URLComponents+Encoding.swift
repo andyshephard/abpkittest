@@ -18,9 +18,9 @@
 extension URLComponents {
     /// Encode the plus sign so that the URL will contain the encoding.
     /// Otherwise, it is stripped during URL formation.
-    mutating func encodePlusSign() {
-        let charSet = CharacterSet(charactersIn: "+").inverted
-        let query = percentEncodedQuery?.addingPercentEncoding(withAllowedCharacters: charSet)
-        percentEncodedQuery = query
+    mutating
+    func encodePlusSign() {
+        percentEncodedQuery = percentEncodedQuery?
+            .addingPercentEncoding(withAllowedCharacters: CharacterSet(charactersIn: "+").inverted)
     }
 }

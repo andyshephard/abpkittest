@@ -103,6 +103,8 @@
 		6583A81221B373B6003E206F /* UserAfterRuleListsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6583A81021B373B6003E206F /* UserAfterRuleListsTests.swift */; };
 		6583A81421B37410003E206F /* DownloadUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6583A81321B37410003E206F /* DownloadUtility.swift */; };
 		6583A81521B37410003E206F /* DownloadUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6583A81321B37410003E206F /* DownloadUtility.swift */; };
+		658D054821C3289700E14BC6 /* BlockListDownloadData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658D054721C3289700E14BC6 /* BlockListDownloadData.swift */; };
+		658D054921C3289700E14BC6 /* BlockListDownloadData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658D054721C3289700E14BC6 /* BlockListDownloadData.swift */; };
 		65A2653121A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */; };
 		65A2653221A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */; };
 		65A7406121B75625004A41EC /* UserAfterWhiteListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A7406021B75625004A41EC /* UserAfterWhiteListTests.swift */; };
@@ -342,6 +344,7 @@
 		6581087D217FDCB3001D6FFE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6583A81021B373B6003E206F /* UserAfterRuleListsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAfterRuleListsTests.swift; sourceTree = "<group>"; };
 		6583A81321B37410003E206F /* DownloadUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadUtility.swift; sourceTree = "<group>"; };
+		658D054721C3289700E14BC6 /* BlockListDownloadData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockListDownloadData.swift; sourceTree = "<group>"; };
 		65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockListSourceUtility.swift; sourceTree = "<group>"; };
 		65A7406021B75625004A41EC /* UserAfterWhiteListTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserAfterWhiteListTests.swift; sourceTree = "<group>"; };
 		65B0440521ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserBlockListDownloader+Persistence.swift"; sourceTree = "<group>"; };
@@ -574,6 +577,7 @@
 			children = (
 				65756169217FBA6100D8A4F2 /* ABPMutableState.swift */,
 				65486F3B219FB57500565AC8 /* BlockList.swift */,
+				658D054721C3289700E14BC6 /* BlockListDownloadData.swift */,
 				6575616B217FBA6100D8A4F2 /* DownloadEvent.swift */,
 				6575616D217FBA6100D8A4F2 /* FilterList.swift */,
 				6575616E217FBA6100D8A4F2 /* FilterList+ObjectiveC.swift */,
@@ -1206,6 +1210,7 @@
 				65ECBEBE2196403D00551F26 /* String+ProtocolText.swift in Sources */,
 				65D4C77F2188C68500B1E16F /* FilterList.swift in Sources */,
 				65670FD021951E96003B8F53 /* ABPWebViewBlocker.swift in Sources */,
+				658D054921C3289700E14BC6 /* BlockListDownloadData.swift in Sources */,
 				65D4C7862188C68500B1E16F /* Persistor+ModelHelper.swift in Sources */,
 				651D45DC21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift in Sources */,
 				655DB0202191447200A33E66 /* ABPAliases.swift in Sources */,
@@ -1289,6 +1294,7 @@
 				6575617C217FBA6100D8A4F2 /* AppExtensionRelay.swift in Sources */,
 				65756185217FBA6100D8A4F2 /* FilterList.swift in Sources */,
 				655DB0232191447200A33E66 /* ABPAliases.swift in Sources */,
+				658D054821C3289700E14BC6 /* BlockListDownloadData.swift in Sources */,
 				65670FCF21951E96003B8F53 /* ABPWebViewBlocker.swift in Sources */,
 				651D45DB21ACCA1400C00FAC /* UserBlockListDownloader+Delegate.swift in Sources */,
 				65756157217FBA5500D8A4F2 /* SafariContentBlocker.swift in Sources */,

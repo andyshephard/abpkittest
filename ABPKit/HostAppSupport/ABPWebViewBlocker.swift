@@ -120,6 +120,7 @@ class ABPWebViewBlocker {
             }).disposed(by: bag)
     }
 
+    /// Update user's blocklist to a new downloaded blocklist.
     func userUpdatedFromDownloads() -> (User) throws -> User {
         return { user in
             if let blst = user.getBlockList(),

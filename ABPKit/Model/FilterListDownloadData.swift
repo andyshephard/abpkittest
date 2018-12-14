@@ -20,7 +20,7 @@ public struct FilterListDownloadData {
     let addonName = "adblockplusios",
         addonVer = ABPActiveVersions.appVersion() ?? "",
         application = "safari",
-        applicationVer = ABPActiveVersions.iosVersion(),
+        applicationVer = ABPActiveVersions.osVersion(),
         platform = "webkit",
         platformVer = ABPActiveVersions.webkitVersion() ?? ""
 
