@@ -29,15 +29,9 @@ enum ABPConfigurationError: Error {
 }
 
 /// Error cases for managing content blocking.
-/// - invalidAppGroup: Invalid app group.
-/// - invalidFilterListAttachment: Filter list attachment is invalid.
-/// - invalidFilterListName: Filter list name is invalid.
 /// - invalidIdentifier: Invalid ID.
 public
 enum ABPContentBlockerError: Error {
-    case invalidAppGroup
-    case invalidFilterListAttachment
-    case invalidFilterListName
     case invalidIdentifier
 }
 
@@ -49,13 +43,11 @@ enum ABPDeviceTokenSaveError: Error {
 }
 
 /// Error cases for download tasks.
-/// - badAppGroup: App group was not obtained successfully.
 /// - badContainerURL: Container URL is not valid.
 /// - badDestinationURL: Bad destination URL for a file operation.
 /// - badFilename: Bad filename for filter list rules.
 /// - badFilterListModel: Bad model object.
 /// - badFilterListModelName: Bad name for model object.
-/// - badSourceDownload: Bad source download data.
 /// - badSourceURL: URL is invalid.
 /// - failedCopy: Failure during copy operation.
 /// - failedFilterListModelSave: Failed to save model object.
@@ -68,13 +60,11 @@ enum ABPDeviceTokenSaveError: Error {
 /// - tooManyRequests: HTTP connection failed due to temporary state.
 public
 enum ABPDownloadTaskError: Error {
-    case badAppGroup
     case badContainerURL
     case badDestinationURL
     case badFilename
     case badFilterListModel
     case badFilterListModelName
-    case badSourceDownload
     case badSourceURL
     case failedCopy
     case failedFilterListModelSave
@@ -91,15 +81,10 @@ enum ABPDownloadTaskError: Error {
 /// - aaStateMismatch: Acceptable ads state is mismatched.
 /// - ambiguousModels: Model objects are not unique or are missing.
 /// - badContainer: Container could not be accessed.
-/// - badData: Valid data was not obtained.
 /// - badSource: BlockList source is invalid.
 /// - failedDecoding: Could not decode a list.
 /// - failedEncodeRule: A rule could not be encoded.
-/// - failedEncoding: A list model could not be encoded.
-/// - failedFileCreation: Could not make a file.
-/// - failedLoadModels: Could not load models.
 /// - failedRemoveModels: Failed to remove model(s).
-/// - failedRemoveRules: Failed to remove rules.
 /// - invalidData: Data could not be read from the list.
 /// - missingName: Name could not be read.
 /// - missingRules: Rules could not be read.
@@ -109,15 +94,10 @@ enum ABPFilterListError: Error {
     case aaStateMismatch
     case ambiguousModels
     case badContainer
-    case badData
     case badSource
     case failedDecoding
     case failedEncodeRule
-    case failedEncoding
-    case failedFileCreation
-    case failedLoadModels
     case failedRemoveModels
-    case failedRemoveRules
     case invalidData
     case missingName
     case missingRules
@@ -128,37 +108,27 @@ enum ABPFilterListError: Error {
 /// - ambiguousModels: Model objects are not unique or are missing.
 /// - badEnumerator: Failed to obtain enumerator.
 /// - badState: Encountered invalid state.
-/// - failedClear: Clearing models failed.
 /// - invalidData: Indicates error with data.
 /// - invalidType: Indicates error with a type.
-/// - missingContainer: Storage container not found.
 /// - missingDefaults: UserDefaults not found.
-/// - missingDefaultsSuiteName: Suite name not found.
 public
 enum ABPMutableStateError: Error {
     case ambiguousModels
     case badEnumerator
     case badState
-    case failedClear
     case invalidData
     case invalidType
-    case missingContainer
     case missingDefaults
-    case missingDefaultsSuiteName
 }
 
 /// Error cases for the user model.
 /// - badDataUser: Data for user is invalid.
 /// - badDownloads: Download data is invalid.
-/// - failedDecodingUser: Data decoding failed.
-/// - failedEncodingUser: Data encoding failed.
 /// - failedUpdateData: Internal data update failed.
 public
 enum ABPUserModelError: Error {
     case badDataUser
     case badDownloads
-    case failedDecodingUser
-    case failedEncodingUser
     case failedUpdateData
 }
 
@@ -171,17 +141,11 @@ enum ABPWebViewBlockerError: Error {
 
 /// Error cases for the rule store.
 /// - invalidData: Bad/missing data.
-/// - invalidName: Bad/missing name.
-/// - missingRules: Rules not found.
 /// - missingRuleList: Rule list not found.
-/// - ruleListErrors(errorDictionary: NamedErrors): Errors named after lists in the store.
 public
 enum ABPWKRuleStoreError: Error {
     case invalidData
-    case invalidName
-    case missingRules
     case missingRuleList
-    case ruleListErrors(errorDictionary: NamedErrors)
 }
 
 // ------------------------------------------------------------
@@ -191,14 +155,8 @@ enum ABPWKRuleStoreError: Error {
 /// Custom errors for ABPKit tests.
 
 /// Error cases for download tasks.
-/// - failedModelCreation: Failed when making a model object.
-/// - failedSave: Unable to save data.
 /// - invalidData: Unable to obtain valid data.
-/// - invalidURL: Unable to obtain a valid URL.
 public
 enum ABPKitTestingError: Error {
-    case failedModelCreation
-    case failedSave
     case invalidData
-    case invalidURL
 }
