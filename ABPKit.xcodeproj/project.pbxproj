@@ -1615,6 +1615,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				"OTHER_SWIFT_FLAGS[arch=*]" = "-DABPDEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = org.adblockplus.ABPKit;
 				PRODUCT_NAME = ABPKit;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1862,6 +1863,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				"OTHER_SWIFT_FLAGS[arch=*]" = "-DABPDEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = org.adblockplus.ABPKit;
 				PRODUCT_NAME = ABPKit;
 				PROVISIONING_PROFILE_SPECIFIER = "";

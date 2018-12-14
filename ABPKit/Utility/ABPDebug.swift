@@ -23,17 +23,16 @@ func log(_ message: String,
          filename: String = #file,
          line: Int = #line,
          function: String = #function) {
-    #if DEBUG
+    #if ABPDEBUG
         let newMsg = "-[\((filename as NSString).lastPathComponent):\(line)] \(function) - \(message)"
         NSLog(newMsg)
     #endif
 }
 
 /// Print out all of the user's filter lists.
-public
 func debugPrintFilterLists(_ lists: [FilterList],
                            caller: String? = nil) {
-    #if DEBUG
+    #if ABPDEBUG
         if caller != nil {
             NSLog("Called from \(caller!)")
         }
