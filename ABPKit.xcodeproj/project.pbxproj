@@ -109,6 +109,14 @@
 		65A2653221A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A2653021A4FE2D008345B8 /* BlockListSourceUtility.swift */; };
 		65A7406121B75625004A41EC /* UserAfterWhiteListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A7406021B75625004A41EC /* UserAfterWhiteListTests.swift */; };
 		65A7406221B75625004A41EC /* UserAfterWhiteListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A7406021B75625004A41EC /* UserAfterWhiteListTests.swift */; };
+		65A74A9A21C592BD003847F0 /* ContentBlockerUtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CC3375217FBB5F00FF0CEF /* ContentBlockerUtilityTests.swift */; };
+		65A74A9B21C592BD003847F0 /* RuleCountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CC3374217FBB5F00FF0CEF /* RuleCountTests.swift */; };
+		65A74A9C21C592BD003847F0 /* ParsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CC3377217FBB5F00FF0CEF /* ParsingTests.swift */; };
+		65A74A9D21C592BD003847F0 /* PersistentStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CC3373217FBB5F00FF0CEF /* PersistentStateTests.swift */; };
+		65A74A9E21C592BD003847F0 /* FilterListTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65CC3372217FBB5F00FF0CEF /* FilterListTests.swift */; };
+		65A74A9F21C59355003847F0 /* UserHistoryCachingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B6EB8921A7C49C00B2F600 /* UserHistoryCachingTests.swift */; };
+		65A74AA021C59355003847F0 /* PersistFilterListModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B94AD621928AB70084F480 /* PersistFilterListModelsTests.swift */; };
+		65A74AA121C59355003847F0 /* WebKitContentBlockingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655DB00B219142AB00A33E66 /* WebKitContentBlockingTests.swift */; };
 		65B0440621ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B0440521ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift */; };
 		65B0440721ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B0440521ACD45300DB8560 /* UserBlockListDownloader+Persistence.swift */; };
 		65B6EB8721A7802900B2F600 /* UserStateHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B6EB8621A7802900B2F600 /* UserStateHelper.swift */; };
@@ -639,12 +647,20 @@
 			children = (
 				65CC3376217FBB5F00FF0CEF /* BlockListDownloadTests.swift */,
 				65486F39219F8BA200565AC8 /* BlockListModelTests.swift */,
+				65CC3375217FBB5F00FF0CEF /* ContentBlockerUtilityTests.swift */,
+				65CC3372217FBB5F00FF0CEF /* FilterListTests.swift */,
+				65CC3377217FBB5F00FF0CEF /* ParsingTests.swift */,
+				65CC3373217FBB5F00FF0CEF /* PersistentStateTests.swift */,
+				65B94AD621928AB70084F480 /* PersistFilterListModelsTests.swift */,
 				65C11C9E219BDDFC00E3D09C /* PersistUserModelTests.swift */,
+				65CC3374217FBB5F00FF0CEF /* RuleCountTests.swift */,
 				6560843D21B08C1500E0EA9D /* UserAfterDownloadsTests.swift */,
 				6583A81021B373B6003E206F /* UserAfterRuleListsTests.swift */,
 				65A7406021B75625004A41EC /* UserAfterWhiteListTests.swift */,
 				651D45D721ACA2C100C00FAC /* UserBlockListDownloadTests.swift */,
+				65B6EB8921A7C49C00B2F600 /* UserHistoryCachingTests.swift */,
 				65BF605221BE020A0081D9C1 /* UserSourceTests.swift */,
+				655DB00B219142AB00A33E66 /* WebKitContentBlockingTests.swift */,
 			);
 			path = "ABPKitTests-iOS+macOS";
 			sourceTree = "<group>";
@@ -711,9 +727,6 @@
 			children = (
 				655DB00A219142AA00A33E66 /* ContentBlockerTests.swift */,
 				65D4C76A2188C64C00B1E16F /* Info.plist */,
-				65B94AD621928AB70084F480 /* PersistFilterListModelsTests.swift */,
-				65B6EB8921A7C49C00B2F600 /* UserHistoryCachingTests.swift */,
-				655DB00B219142AB00A33E66 /* WebKitContentBlockingTests.swift */,
 			);
 			path = "ABPKitTests-macOS";
 			sourceTree = "<group>";
@@ -811,12 +824,7 @@
 		65FF7B0D216EB8B300470103 /* ABPKitTests-iOS */ = {
 			isa = PBXGroup;
 			children = (
-				65CC3375217FBB5F00FF0CEF /* ContentBlockerUtilityTests.swift */,
-				65CC3372217FBB5F00FF0CEF /* FilterListTests.swift */,
 				65FF7B10216EB8B300470103 /* Info.plist */,
-				65CC3377217FBB5F00FF0CEF /* ParsingTests.swift */,
-				65CC3373217FBB5F00FF0CEF /* PersistentStateTests.swift */,
-				65CC3374217FBB5F00FF0CEF /* RuleCountTests.swift */,
 			);
 			path = "ABPKitTests-iOS";
 			sourceTree = "<group>";
@@ -1271,13 +1279,18 @@
 				65D476DE21895C7400D4F5DA /* TestingFileUtility.swift in Sources */,
 				6583A81221B373B6003E206F /* UserAfterRuleListsTests.swift in Sources */,
 				651D45CA21AC7F8A00C00FAC /* BlockListDownloadTests.swift in Sources */,
+				65A74A9C21C592BD003847F0 /* ParsingTests.swift in Sources */,
+				65A74A9E21C592BD003847F0 /* FilterListTests.swift in Sources */,
 				65B6EB8A21A7C49C00B2F600 /* UserHistoryCachingTests.swift in Sources */,
 				65A7406221B75625004A41EC /* UserAfterWhiteListTests.swift in Sources */,
+				65A74A9D21C592BD003847F0 /* PersistentStateTests.swift in Sources */,
 				65A2653221A4FE2D008345B8 /* BlockListSourceUtility.swift in Sources */,
 				65D476DD21895C7400D4F5DA /* FilterListTestModeler.swift in Sources */,
+				65A74A9B21C592BD003847F0 /* RuleCountTests.swift in Sources */,
 				651D45D921ACA2C100C00FAC /* UserBlockListDownloadTests.swift in Sources */,
 				65D476DC21895C7400D4F5DA /* CaseIterable.swift in Sources */,
 				6583A81521B37410003E206F /* DownloadUtility.swift in Sources */,
+				65A74A9A21C592BD003847F0 /* ContentBlockerUtilityTests.swift in Sources */,
 				6560843F21B08C1500E0EA9D /* UserAfterDownloadsTests.swift in Sources */,
 				65486F3A219F8BA200565AC8 /* BlockListModelTests.swift in Sources */,
 				650BCDB721B4D76300C63E35 /* UserUtility.swift in Sources */,
@@ -1349,6 +1362,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				65A7406121B75625004A41EC /* UserAfterWhiteListTests.swift in Sources */,
+				65A74A9F21C59355003847F0 /* UserHistoryCachingTests.swift in Sources */,
 				65CC3371217FBB5100FF0CEF /* FilterListTestModeler.swift in Sources */,
 				65486F42219FC20900565AC8 /* FilterListTests.swift in Sources */,
 				651D45D821ACA2C100C00FAC /* UserBlockListDownloadTests.swift in Sources */,
@@ -1363,10 +1377,12 @@
 				65CC336F217FBB5100FF0CEF /* CaseIterable.swift in Sources */,
 				65CC337E217FBB5F00FF0CEF /* ParsingTests.swift in Sources */,
 				65CC337D217FBB5F00FF0CEF /* BlockListDownloadTests.swift in Sources */,
+				65A74AA121C59355003847F0 /* WebKitContentBlockingTests.swift in Sources */,
 				6560843E21B08C1500E0EA9D /* UserAfterDownloadsTests.swift in Sources */,
 				65BF605321BE020A0081D9C1 /* UserSourceTests.swift in Sources */,
 				6583A81121B373B6003E206F /* UserAfterRuleListsTests.swift in Sources */,
 				6583A81421B37410003E206F /* DownloadUtility.swift in Sources */,
+				65A74AA021C59355003847F0 /* PersistFilterListModelsTests.swift in Sources */,
 				65C11C9F219BDDFC00E3D09C /* PersistUserModelTests.swift in Sources */,
 				6560844321B08C8A00E0EA9D /* MockEventer.swift in Sources */,
 			);
