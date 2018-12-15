@@ -1,1 +1,1 @@
-git "https://gitlab.com/eyeo/adblockplus/ios-libraries/RxSwift" ~> 4.0
+binary "Dependencies/rxswift.json" ~> 4.0
