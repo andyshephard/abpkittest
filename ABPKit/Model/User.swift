@@ -186,8 +186,8 @@ extension User {
         return copy
     }
 
-    func updatedBlockList(blockList: BlockList) -> (User) -> User {
-        return { var copy = $0; copy.blockList = blockList; return copy }
+    func updatedBlockList() -> (BlockList) -> User {
+        return { var copy = self; copy.blockList = $0; return copy }
     }
 }
 

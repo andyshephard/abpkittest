@@ -16,26 +16,29 @@
  */
 
 /// Represents the changing state of a download.
-public
 struct UserDownloadEvent {
-    public var didFinishDownloading: Bool?
-    public var totalBytesWritten: Int64?
-    public var error: Error?
+    var didFinishDownloading: Bool?
+    var totalBytesWritten: Int64?
 
-    public
     init(didFinishDownloading: Bool?,
-         totalBytesWritten: Int64?,
-         error: Error?) {
+         totalBytesWritten: Int64?) {
         self.didFinishDownloading = didFinishDownloading
         self.totalBytesWritten = totalBytesWritten
-        self.error = error
     }
 
-    public
     init() {
         self.init(
             didFinishDownloading: nil,
-            totalBytesWritten: nil,
-            error: nil)
+            totalBytesWritten: nil)
+    }
+
+    init(withNotFinishedEvent: UserDownloadEvent?, bytesWritten: Int64) {
+        didFinishDownloading = false
+        totalBytesWritten = bytesWritten
+    }
+
+    init(finishWithEvent: UserDownloadEvent?) {
+        didFinishDownloading = true
+        totalBytesWritten = finishWithEvent?.totalBytesWritten
     }
 }

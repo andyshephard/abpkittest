@@ -77,7 +77,6 @@ class UserBlockListDownloadTests: XCTestCase {
             .subscribe(onNext: { _ in
                 evtCnt += 1
             }, onError: { err in
-                evtCnt += 1
                 errAt = evtCnt
                 XCTAssert(err as? ABPDownloadTaskError == mockError,
                           "Bad error.")
@@ -105,11 +104,10 @@ class UserBlockListDownloadTests: XCTestCase {
         dler.downloadEvents.forEach { key, val in
             val.asObservable()
                 .subscribe(onNext: {
-                    XCTAssert($0.error == nil,
-                              "DL error: \($0.error as Error?)")
                     dlEvents[key] = $0
-                },
-                onCompleted: {
+                }, onError: { err in
+                    XCTFail("DL error: \(err)")
+                }, onCompleted: {
                     XCTAssert(dlEvents[key]?.didFinishDownloading == true,
                               "Bad DL state.")
                     completeCount += 1
@@ -124,15 +122,13 @@ class UserBlockListDownloadTests: XCTestCase {
             .first()
         XCTAssert(waitDone == true,
                   "Timed out.")
-        let mgr = FileManager.default
-        let root = try Config().containerURL()
-        let exists = dler.srcDownloads.map {
+        let exists = try dler.srcDownloads.map {
             $0.blockList?.name.addingFileExtension(Constants.rulesExtension)
         }.compactMap {
-            mgr.fileExists(atPath: root.appendingPathComponent($0!).path)
+            try FileManager.default.fileExists(atPath: Config().containerURL().appendingPathComponent($0!).path)
         }
         XCTAssert(exists.filter { !$0 }.count == 0,
-                  "Bad count.")
+                  "Bad count: Expected \(0), got \(exists.filter { !$0 }.count).")
     }
 
     /// Integration test:
@@ -157,20 +153,18 @@ class UserBlockListDownloadTests: XCTestCase {
             .subscribe(onNext: { _ in
                 DownloadUtility().downloadForUser(lastUser).disposed(by: self.bag)
             }, onCompleted: {
-                if let user = lastUser(true) {
-                    do {
-                        let synced = try self.dler.syncDownloads()(user).saved()
-                        log("👩‍🎤multicomplete downloads #\(synced.downloads?.count as Int?) - \(synced.downloads as [BlockList]?)")
-                        let user = lastUser(true)
-                        XCTAssert(user?.downloads?.count == Constants.userBlockListMax,
-                                  "Bad count downloads: Expected \(Constants.userBlockListMax), got \(user?.downloads?.count as Int?).")
-                        let fcnt = try pstr.jsonFiles()(pstr.fileEnumeratorForRoot()(Config().containerURL())).count
-                        XCTAssert(fcnt == user?.downloads?.count,
-                                  "Bad count files.")
-                    } catch let err { XCTFail("Error: \(err)") }
-                }
+                do {
+                    let synced = try (lastUser(true).map { try self.dler.syncDownloads()($0) })?.saved()
+                    log("👩‍🎤multicomplete downloads #\(synced?.downloads?.count as Int?) - \(synced?.downloads as [BlockList]?)")
+                    let user = lastUser(true)
+                    XCTAssert(user?.downloads?.count == Constants.userBlockListMax,
+                              "Bad count downloads: Expected \(Constants.userBlockListMax), got \(user?.downloads?.count as Int?).")
+                    let fcnt = try pstr.jsonFiles()(pstr.fileEnumeratorForRoot()(Config().containerURL())).count
+                    XCTAssert(fcnt == user?.downloads?.count,
+                              "Bad count: Expected \(user?.downloads?.count as Int?), got \(fcnt).")
+                } catch let err { XCTFail("Error: \(err)") }
                 expect.fulfill()
             }).disposed(by: bag)
-        wait(for: [expect], timeout: timeout * Double(iterMax))
+        wait(for: [expect], timeout: timeout * Double(iterMax) * 1.2)
     }
 }

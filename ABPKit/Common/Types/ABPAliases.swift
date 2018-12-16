@@ -37,6 +37,6 @@ public typealias FilterListV2Sources = [[String: String]]
 public typealias LegacyFilterLists = [String: [String: Any]]
 public typealias NamedErrors = [String: Error]
 public typealias RulesStoreFileURL = URL
-public typealias TaskDownloadEvents = [Int: BehaviorSubject<UserDownloadEvent>]
 public typealias WhitelistedHostname = String
 public typealias WhitelistedWebsites = [String]
+typealias TaskDownloadEvents = [Int: BehaviorSubject<UserDownloadEvent>]

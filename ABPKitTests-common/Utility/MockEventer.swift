@@ -30,9 +30,10 @@ class MockEventer {
 
     func mockObservable() -> Observable<UserDownloadEvent> {
         return Observable.create { observer in
-            self.mockUserDLEvents().forEach {
-                if $0.error != nil { observer.onError($0.error!) }
-                observer.onNext($0)
+            for (idx, evt) in self.mockUserDLEvents().enumerated() {
+                if idx != self.mockUserDLEvents().count + self.expectedErrorOffset - 1 {
+                    observer.onNext(evt)
+                } else { observer.onError(self.expectedError) }
             }
             observer.onCompleted()
             return Disposables.create()
@@ -45,7 +46,6 @@ class MockEventer {
         var bytes: Int64 = 0
         var evt = UserDownloadEvent()
         for _ in 1...expectedEvents {
-            evt.error = nil
             bytes += Int64.random(in: 10000...100000)
             evt.totalBytesWritten = bytes
             evt.didFinishDownloading = false
@@ -53,8 +53,7 @@ class MockEventer {
         }
         var evtLast = events.last
         evtLast?.didFinishDownloading = true
-        events[events.count + expectedErrorOffset - 1].error = expectedError
-        if let evt = evtLast { events.append(evt) }
+        if evtLast != nil { events.append(evtLast!) }
         return events
     }
 }

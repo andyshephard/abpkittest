@@ -23,14 +23,12 @@ extension UserBlockListDownloader {
                     totalBytesWritten: Int64,
                     totalBytesExpectedToWrite: Int64) {
         let taskID = downloadTask.taskIdentifier
-        if var newEvent = lastDownloadEvent(taskID: taskID) {
-            newEvent.didFinishDownloading = false
-            newEvent.totalBytesWritten = totalBytesWritten
-            downloadEvents[taskID]?.onNext(newEvent)
-        }
+        downloadEvents[taskID]?.onNext(
+            UserDownloadEvent(
+                withNotFinishedEvent: lastDownloadEvent(taskID: taskID),
+                bytesWritten: totalBytesWritten))
     }
 
-    // swiftlint:disable opening_brace
     /// A download task has finished downloading. Update the user's block list
     /// metadata and move the downloaded file. Updates user state.
     func urlSession(_ session: URLSession,
@@ -38,41 +36,30 @@ extension UserBlockListDownloader {
                     didFinishDownloadingTo location: URL) {
         let taskID = downloadTask.taskIdentifier
         if !validURLResponse(downloadTask.response as? HTTPURLResponse) {
-            reportError(taskID: taskID, error: .invalidResponse); return
+            reportError(ABPDownloadTaskError.invalidResponse, taskID: taskID); return
         }
-        guard let containerURL = try? Config().containerURL() else {
-            reportError(taskID: taskID, error: .badContainerURL); return
-        }
-        let index = indexForTaskID()(taskID)
-        var fname: String!
-        if index != nil {
-            fname = srcDownloads[index!].blockList?.name.addingFileExtension(Constants.rulesExtension)
-        } else {
-            reportError(taskID: taskID, error: .badFilename); return
-            fname = UUID().uuidString.addingFileExtension(Constants.rulesExtension) // save it anyway
-        }
-        let dst = containerURL
-            .appendingPathComponent(fname, isDirectory: false)
-        do {
-            try moveOrReplaceItem(source: location, destination: dst)
-        } catch let err {
-            { if let fErr = $0 as? ABPDownloadTaskError { self.reportError(taskID: taskID, error: fErr) } }(err)
-        }
-        if index != nil {
+        let idx = indexForTaskID()(taskID)
+        if let fname = (idx.map {
+            srcDownloads[$0]
+        }.map {
+            $0.blockList?.name.addingFileExtension(Constants.rulesExtension)
+        })?.map({ $0 }) {
             do {
-                if let srcBL = srcDownloads[index!].blockList {
+                try moveOrReplaceItem(
+                    source: location,
+                    destination: try Config().containerURL()
+                        .appendingPathComponent(fname, isDirectory: false))
+                if let srcBL = (idx.map { srcDownloads[$0].blockList })?.map({ $0 }) {
                     self.user = try self.user.downloadAdded()( // only AA enableable sources succeed
                         BlockList(
                             withAcceptableAds: AcceptableAdsHelper().aaExists()(srcBL.source),
                             source: srcBL.source,
                             name: srcBL.name,
-                            dateDownload: Date()))
-                    try self.user.save() // state updated
+                            dateDownload: Date())).saved()
                 }
-            } catch { reportError(taskID: taskID, error: ABPDownloadTaskError.failedToUpdateUserDownloads) }
-        }
+            } catch let err { self.reportError(err, taskID: taskID) }
+        } else { reportError(ABPDownloadTaskError.badFilename, taskID: taskID) }
     }
-    // swiftlint:enable opening_brace
 
     /// A URL session task has finished transferring data.
     /// Download events are updated.
@@ -81,12 +68,11 @@ extension UserBlockListDownloader {
                     task: URLSessionTask,
                     didCompleteWithError error: Error?) {
         let taskID = task.taskIdentifier
-        if var newEvent = lastDownloadEvent(taskID: taskID) {
-            newEvent.didFinishDownloading = true
-            if error != nil { newEvent.error = error }
-            downloadEvents[taskID]?.onNext(newEvent)
-            downloadEvents[taskID]?.onCompleted()
-        }
+        downloadEvents[taskID]?.onNext(
+            UserDownloadEvent(
+                finishWithEvent: lastDownloadEvent(taskID: taskID)))
+        if error != nil { reportError(error!, taskID: taskID) }
+        downloadEvents[taskID]?.onCompleted()
     }
 
     func indexForTaskID() -> (Int) -> Int? {
@@ -95,14 +81,10 @@ extension UserBlockListDownloader {
         }
     }
 
-    /// Generate a new event and report an error.
+    /// Report an error.
     private
-    func reportError(taskID: DownloadTaskID,
-                     error: ABPDownloadTaskError) {
-        if var newEvent = lastDownloadEvent(taskID: taskID) {
-            newEvent.error = error
-            downloadEvents[taskID]?.onNext(newEvent)
-            downloadEvents[taskID]?.onError(error)
-        }
+    func reportError(_ error: Error,
+                     taskID: DownloadTaskID) {
+        downloadEvents[taskID]?.onError(error)
     }
 }

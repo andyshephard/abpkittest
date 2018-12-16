@@ -59,25 +59,14 @@ extension UserBlockListDownloader {
 
     /// Return true if the status code is valid.
     func validURLResponse(_ response: HTTPURLResponse?) -> Bool {
-        if let uwResponse = response {
-            let code = uwResponse.statusCode
-            if code >= 200 && code < 300 {
-                return true
-            }
-        }
-        return false
+        return { response?.statusCode }().map { $0 >= 200 && $0 < 300 } ?? false
     }
 
     /// Get last event from behavior subject matching the task ID.
     /// - parameter taskID: A background task identifier.
     /// - returns: The download event value if it exists, otherwise nil.
     func lastDownloadEvent(taskID: Int) -> UserDownloadEvent? {
-        if let subject = downloadEvents[taskID] {
-            if let lastEvent = try? subject.value() {
-                return lastEvent
-            }
-        }
-        return nil
+        return (downloadEvents[taskID].map { try? $0.value() })?.map { $0 }
     }
 }
 
@@ -114,8 +103,8 @@ extension UserBlockListDownloader {
                     }
                     return true
                 }.first
-            if let list = match {
-                return user.updatedBlockList(blockList: list)(user)
+            if let updated = match.map({ user.updatedBlockList()($0) }) {
+                return updated
             }
             throw ABPUserModelError.badDownloads
         }

@@ -18,26 +18,25 @@
 extension UserBlockListDownloader {
     /// Move a file to a destination. If the file exists, it will be first
     /// removed, if possible. If the operation cannot be completed, the function
-    /// will return without an error.
+    /// will throw an error.
     func moveOrReplaceItem(source: URL,
                            destination: URL?) throws {
-        guard let dest = destination else { throw ABPDownloadTaskError.badDestinationURL }
+        guard let dst = destination else { throw ABPDownloadTaskError.badDestinationURL }
         let mgr = FileManager.default
-        var removeError: Error?
-        if mgr.fileExists(atPath: dest.path) {
+        var rmErr: Error?
+        if mgr.fileExists(atPath: dst.path) {
             do {
-                try mgr.removeItem(atPath: dest.path)
-            } catch let rmErr { removeError = rmErr }
+                try mgr.removeItem(atPath: dst.path)
+            } catch let err { rmErr = err }
         }
-        if removeError == nil {
-            do {
-                try mgr.moveItem(at: source, to: dest)
-            } catch { throw ABPDownloadTaskError.failedMove }
+        if rmErr == nil {
+            try mgr.moveItem(at: source, to: dst)
         } else { throw ABPDownloadTaskError.failedRemoval }
     }
 
-    /// Remove downloads no longer in user download history based on a given user state.
-    /// This should be called carefully as the correct state is often difficult to track.
+    /// Remove downloads no longer in user download history based on a given
+    /// user state. This should be called carefully as the correct state is
+    /// often difficult to track.
     public
     func syncDownloads() -> (User) throws -> User {
         return { user in
