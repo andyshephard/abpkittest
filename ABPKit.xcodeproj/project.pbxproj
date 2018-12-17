@@ -245,10 +245,10 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				65055C1721AE35EB005FCB7F /* RxBlocking.framework in Embed Frameworks */,
 				65B94AE3219298080084F480 /* ABPKit.framework in Embed Frameworks */,
-				655145852189251200C8E7C2 /* RxSwift.framework in Embed Frameworks */,
+				65055C1721AE35EB005FCB7F /* RxBlocking.framework in Embed Frameworks */,
 				655145822189250F00C8E7C2 /* RxCocoa.framework in Embed Frameworks */,
+				655145852189251200C8E7C2 /* RxSwift.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -259,9 +259,9 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				65ECBEC821964C5A00551F26 /* ABPKit.framework in Embed Frameworks */,
 				65055C1821AE35FE005FCB7F /* RxBlocking.framework in Embed Frameworks */,
 				65ECBECF21964E0100551F26 /* RxCocoa.framework in Embed Frameworks */,
-				65ECBEC821964C5A00551F26 /* ABPKit.framework in Embed Frameworks */,
 				65ECBED121964E0300551F26 /* RxSwift.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -444,8 +444,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				65ECBECD21964DE300551F26 /* RxSwift.framework in Frameworks */,
 				65ECBECC21964DE100551F26 /* RxCocoa.framework in Frameworks */,
+				65ECBECD21964DE300551F26 /* RxSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
