@@ -16,8 +16,7 @@
  */
 
 extension ContentBlockerUtility {
-    /// Based on abp2blocklist but slightly modified here.
-    /// See https://gitlab.com/eyeo/adblockplus/abp2blocklist.
+    /// Based on [abp2blocklist](https://gitlab.com/eyeo/adblockplus/abp2blocklist).
     func whiteListRuleForDomains() -> ([String]) -> BlockingRule {
         return {
             let actionType = "ignore-previous-rules"
@@ -44,6 +43,6 @@ extension ContentBlockerUtility {
     }
 
     func wrappedDomain() -> (String) -> String {
-        return { "^[^:]+:(//)?([^/]+.)?" + $0 + "([^-_.a-z0-9].*)?$" }
+        return { "^[^:]+:(//)?([^/]+.)?" + $0 + "([^-_.%%a-z0-9].*)?$" }
     }
 }

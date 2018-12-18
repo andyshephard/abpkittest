@@ -74,6 +74,15 @@ class UserAfterWhiteListTests: XCTestCase {
                   "Bad count.")
     }
 
+    func testPercentCharacter() throws {
+        user.whitelistedDomains = RandomStateUtility().randomState(for: [String].self)
+        try ContentBlockerUtility().whiteListRuleForUser()(user)
+            .trigger?.ifTopURL?.forEach {
+                XCTAssert($0.contains("%"),
+                          "Missing '%' character in ifTopURL \($0).")
+            }
+    }
+
     func testMultiDomainRuleToList() throws {
         let expect = expectation(description: #function)
         let name = "user-whitelist"
