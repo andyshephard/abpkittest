@@ -83,6 +83,49 @@ class UserAfterWhiteListTests: XCTestCase {
             }
     }
 
+    func testDomainMatch() throws {
+        let factor = 7,
+            valid = 4,
+            domain = "example.com",
+            schemes = ["http", "https", "ftp", "sftp"],
+            ports = ["", ":80", ":8080"],
+            domains = [
+                "example.com",
+                "www.example.com",
+                "www.xxx.example.com",
+                "www.xxx.yyy.example.com",
+                "example.co",
+                "xample.com",
+                "aexample.com",
+                "example.com.us",
+                "example.not.com",
+                "www.examples.com"
+            ],
+            paths = ["", "page.html", "example.com.html"],
+            queries = ["", "?param=0", "?param1=0&param2=0", "?param=example.com", "?param=100%%25"],
+            fragments = ["", "#example.com"]
+        XCTAssert(
+            try multiplied()(domains, 1, factor)
+                .map {
+                    schemes[Int.random(in: 0...schemes.count - 1)] +
+                    "://" + $0 + ports[Int.random(in: 0...ports.count - 1)] +
+                    "/" + paths[Int.random(in: 0...paths.count - 1)] +
+                    queries[Int.random(in: 0...queries.count - 1)] +
+                    fragments[Int.random(in: 0...fragments.count - 1)]
+                }
+                .filter {
+                    try NSRegularExpression(
+                        pattern: ContentBlockerUtility()
+                            .whiteListRuleForUser()(user.whiteListedDomainsSet()([domain]))
+                            .trigger?.ifTopURL?.first ?? "",
+                        options: .caseInsensitive)
+                            .matches(in: $0, options: [], range: NSRange(location: 0, length: $0.utf8.count))
+                            .count > 0
+                }
+                .count == valid * factor,
+            "Bad match count.")
+    }
+
     func testMultiDomainRuleToList() throws {
         let expect = expectation(description: #function)
         let name = "user-whitelist"
@@ -107,5 +150,13 @@ class UserAfterWhiteListTests: XCTestCase {
                 expect.fulfill()
             }).disposed(by: bag)
         wait(for: [expect], timeout: timeout)
+    }
+
+    private
+    func multiplied() -> ([String], Int, Int) -> [String] {
+        return { arr, curr, max in
+            if curr >= max { return arr }
+            return arr + self.multiplied()(arr, curr + 1, max)
+        }
     }
 }

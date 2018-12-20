@@ -43,6 +43,6 @@ extension ContentBlockerUtility {
     }
 
     func wrappedDomain() -> (String) -> String {
-        return { "^[^:]+:(//)?([^/]+.)?" + $0 + "([^-_.%%a-z0-9].*)?$" }
+        return { "^[^:]+:(//)?([^/]+\\.)?" + $0 + "([^-_.%%a-z0-9].*)?$" }
     }
 }
