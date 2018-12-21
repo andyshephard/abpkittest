@@ -50,9 +50,9 @@ enum RemoteBlockList: String,
                       RulesDownloadable {
     public typealias RawValue = String
     case easylist =
-        "https://s3.eu-central-1.amazonaws.com/org-adblockplus-content-blocking-rules/easylist_content_blocker.json"
+        "https://easylist-downloads.adblockplus.org/easylist_min_content_blocker.json"
     case easylistPlusExceptions =
-        "https://s3.eu-central-1.amazonaws.com/org-adblockplus-content-blocking-rules/easylist%2Bexceptionrules_content_blocker.json"
+        "https://easylist-downloads.adblockplus.org/easylist_min+exceptionrules_content_blocker.json"
 
     public
     func hasAcceptableAds() -> Bool {
