@@ -50,15 +50,13 @@ class WebKitContentBlockingTests: XCTestCase {
             do { try self.pstr.clearFilterListModels() } catch let err { XCTFail("Error clearing models: \(err)") }
         }
         let unlock = BehaviorRelay<Bool>(value: false)
-        wkcb.clearedRulesAll()
-            .subscribe(onNext: { errDict in
-                if errDict.count > 0 { XCTFail("Error clearing store rules: \(errDict)") }
-                clearModels()
-            }, onError: { err in
-                XCTFail("🚨 Error during clear: \(err)")
+        wkcb.ruleListAllClearers()
+            .subscribe(onError: { err in
+                XCTFail("Error: \(err)")
             }, onCompleted: {
+                clearModels()
                 unlock.accept(true)
-            }).disposed(by: self.bag)
+            }).disposed(by: bag)
         let waitDone = try? unlock.asObservable()
             .skip(1)
             .toBlocking(timeout: timeout / 4)
@@ -72,10 +70,11 @@ class WebKitContentBlockingTests: XCTestCase {
         var user = try User()
         user.blockList = try BlockList(withAcceptableAds: true, source: BundledTestingBlockList.fakeExceptions)
         guard let lst = user.blockList else { XCTFail("Bad BL"); return }
-        addNewRules(arg: user, name: lst.name) {
-            self.wkcb.clearedRules(user: user)
-                .subscribe(onNext: { errs in
-                    if errs.count > 0 { XCTFail("Errors: \(errs)") }
+        addNewRules(arg: user, name: lst.name) { idr in
+            self.wkcb.ruleListClearersForUser()(user)
+                .subscribe(onNext: { removed in
+                    XCTAssert(removed == idr,
+                              "Bad name.")
                 }, onError: { err in
                     XCTFail("Error: \(err)")
                 }, onCompleted: {
@@ -124,6 +123,9 @@ class WebKitContentBlockingTests: XCTestCase {
         wait(for: [expect], timeout: timeout / 4)
     }
 
+    /// This test was previously failing occasionally due to a possible race
+    /// condition with setUp(). The problem should be fixed in
+    /// https://gitlab.com/eyeo/auxiliary/track/issues/230.
     func testRuleListIDs() {
         let expect = expectation(description: #function)
         let start = Date()
@@ -132,7 +134,7 @@ class WebKitContentBlockingTests: XCTestCase {
                 XCTAssert(ids?.count == 0,
                           "Failed to get IDs.")
                 let end = fabs(start.timeIntervalSinceNow)
-                ABPKit.log("get ids ⏱️ \(end)")
+                log("get ids ⏱️ \(end)")
                 expect.fulfill()
             }
         wait(for: [expect], timeout: timeout / 4)
@@ -148,15 +150,15 @@ class WebKitContentBlockingTests: XCTestCase {
             let list = try mdlr.makeLocalFilterList(bundledRules: false)
             try pstr.saveFilterListModel(list)
             wkcb.addedWKStoreRules(addList: list)
-                .flatMap { _ -> Observable<NamedErrors> in
+                .flatMap { _ -> Observable<String> in
                     let models = try? self.pstr.loadFilterListModels()
                     XCTAssert(models?.count == 1,
                               "Bad models count.")
-                    return self.wkcb.clearedRules(model: list)
+                    return self.wkcb.ruleListClearersForModel()(list)
                 }
-                .subscribe(onNext: { errDict in
-                    XCTAssert(errDict.count == 0,
-                              "Nonzero errors in \(errDict)")
+                .subscribe(onNext: { removed in
+                    XCTAssert(removed == list.name,
+                              "Name does not match.")
                 }, onError: { err in
                     XCTFail("Got error: \(err)")
                 }, onCompleted: {
@@ -170,13 +172,12 @@ class WebKitContentBlockingTests: XCTestCase {
     /// Test compiling rules with the default callback of compileRules.
     func testLocalBlocklistAddToWKStore2() {
         let expect = expectation(description: #function)
-        let mdlr = FilterListTestModeler()
         do {
             try pstr.clearRulesFiles()
-            let list = try mdlr.makeLocalFilterList(bundledRules: false)
+            let list = try FilterListTestModeler().makeLocalFilterList(bundledRules: false)
             try pstr.saveFilterListModel(list)
             try pstr.logRulesFiles()
-            addNewRules(arg: list, name: list.name) { expect.fulfill() }
+            addNewRules(arg: list, name: list.name) { _ in expect.fulfill() }
         } catch let err { XCTFail("🚨 Error during add: \(err)") }
         wait(for: [expect], timeout: timeout)
     }
@@ -189,7 +190,7 @@ class WebKitContentBlockingTests: XCTestCase {
             var user = try User()
             user.blockList = try BlockList(withAcceptableAds: true, source: BundledTestingBlockList.fakeExceptions)
             try pstr.logRulesFiles()
-            addNewRules(arg: user, name: user.blockList!.name) { expect.fulfill() }
+            addNewRules(arg: user, name: user.blockList!.name) { _ in expect.fulfill() }
         } catch let err { XCTFail("🚨 Error during add: \(err)") }
         wait(for: [expect], timeout: timeout)
     }
@@ -206,8 +207,8 @@ class WebKitContentBlockingTests: XCTestCase {
             user2.blockList = blst2
             try pstr.logRulesFiles()
             guard let lst1 = user1.blockList, let lst2 = user2.blockList else { XCTFail("Bad BL"); return }
-            addNewRules(arg: user1, name: lst1.name) {
-                self.addNewRules(arg: user2, name: lst2.name) {
+            addNewRules(arg: user1, name: lst1.name) { _ in
+                self.addNewRules(arg: user2, name: lst2.name) { _ in
                     self.wkcb.rulesStore.getAvailableContentRuleListIdentifiers { ids in
                         XCTAssert(ids?.count == 2,
                                   "Bad add.")
@@ -275,7 +276,7 @@ class WebKitContentBlockingTests: XCTestCase {
     }
 
     private
-    func addNewRules<T>(arg: T, name: String, completion: @escaping () -> Void) {
+    func addNewRules<T>(arg: T, name: String, completion: @escaping (String) -> Void) {
         var type: ConcatType!
         switch T.self {
         case let typ where typ == User.self:
@@ -298,7 +299,7 @@ class WebKitContentBlockingTests: XCTestCase {
             .subscribe(onNext: { _ in
                 let end2 = fabs(start.timeIntervalSinceNow)
                 log("add rules ⏱️2 \(end2)")
-                completion()
+                completion(name)
             }, onError: { err in
                 XCTFail("🚨 Error during processing rules: \(err)")
             }).disposed(by: bag)

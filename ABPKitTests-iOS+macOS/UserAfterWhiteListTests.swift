@@ -51,14 +51,12 @@ class UserAfterWhiteListTests: XCTestCase {
         } catch let err { XCTFail("Error: \(err)") }
         wkcb = WebKitContentBlocker()
         let unlock = BehaviorRelay<Bool>(value: false)
-        wkcb.clearedRulesAll()
-            .subscribe(onNext: { errs in
-                if errs.count > 0 { XCTFail("Error clearing store rules: \(errs)") }
-            }, onError: { err in
-                XCTFail("🚨 Error during clear: \(err)")
+        wkcb.ruleListAllClearers()
+            .subscribe(onError: { err in
+                XCTFail("Error: \(err)")
             }, onCompleted: {
                 unlock.accept(true)
-            }).disposed(by: self.bag)
+            }).disposed(by: bag)
         let waitDone = try? unlock.asObservable()
             .skip(1)
             .toBlocking(timeout: timeout / 2.0)

@@ -79,57 +79,58 @@ extension WebKitContentBlocker {
         }
     }
 
-    /// Clear all compiled rule lists.
-    /// Only for testing while FilterList usage is being transitioned to User + BlockList.
-    func clearedRulesAll() -> Observable<NamedErrors> {
-        return clearedRules(clearAll: true)
-    }
-
     /// FilterList implementation:
-    /// Clear an individual rule list associated with a filter list model.
-    func clearedRules(model: FilterList? = nil,
-                      clearAll: Bool = false) -> Observable<NamedErrors> {
-        var name: FilterListName?
-        if model != nil {
-            name = model?.name
-        } else {
-            if !clearAll { return Observable.just(NamedErrors()) }
-        }
-        return Observable.create { observer in
-            var errors = NamedErrors()
-            self.rulesStore
-                .getAvailableContentRuleListIdentifiers { identifiers in
-                    guard let ids = identifiers else { observer.onError(ABPWKRuleStoreError.invalidData); return }
-                    ids.forEach { idr in
-                        if (name != nil && idr == name!) || clearAll {
-                            self.rulesStore.removeContentRuleList(forIdentifier: idr) { errors[idr] = $0 }
-                        }
-                    }
-                    observer.onNext(errors)
-                    observer.onCompleted()
+    /// Clear one or more matching rule lists associated with a filter list model.
+    func ruleListClearersForModel() -> (FilterList) -> Observable<String> {
+        return { model in
+            return self.ruleIdentifiers()
+                .flatMap { identifiers -> Observable<String> in
+                    guard let ids = identifiers else { return Observable.error(ABPWKRuleStoreError.invalidData) }
+                    let obs = ids
+                        .filter { $0 == model.name }
+                        .map { self.ruleListClearer()($0) }
+                    if obs.count < 1 { return Observable.error(ABPWKRuleStoreError.missingRuleList) }
+                    return Observable.concat(obs)
                 }
-            return Disposables.create()
         }
     }
 
-    /// Clear rules in rule store for a user.
-    func clearedRules(user: User,
-                      clearAll: Bool = false) -> Observable<NamedErrors> {
-        guard let hist = user.blockListHistory else { return Observable.error(ABPWKRuleStoreError.invalidData) }
-        return ruleIdentifiers()
-            .flatMap { identifiers -> Observable<NamedErrors> in
-                guard let ids = identifiers else { return Observable.error(ABPWKRuleStoreError.invalidData) }
-                return Observable.create { observer in
-                    var errors = NamedErrors()
-                    ids.forEach { idr in
-                        if !(hist.contains { $0.name == idr }) || clearAll {
-                            self.rulesStore.removeContentRuleList(forIdentifier: idr) { errors[idr] = $0 }
-                        }
-                    }
-                    observer.onNext(errors)
-                    observer.onCompleted()
-                    return Disposables.create()
+    /// Return clearers for rules in the rule store for a user.
+    func ruleListClearersForUser() -> (User) -> Observable<String> {
+        return { user in
+            return self.ruleIdentifiers()
+                .flatMap { identifiers -> Observable<String> in
+                    guard let hist = user.blockListHistory,
+                          let ids = identifiers else { return Observable.error(ABPWKRuleStoreError.invalidData) }
+                    let obs = ids
+                        .filter { idr in !(hist.contains { $0.name == idr }) }
+                        .map { idr in self.ruleListClearer()(idr) }
+                    if obs.count < 1 { return Observable.error(ABPWKRuleStoreError.missingRuleList) }
+                    return Observable.concat(obs)
                 }
+        }
+    }
+
+    /// Return clearers for all RLs.
+    func ruleListAllClearers() -> Observable<String> {
+        return ruleIdentifiers()
+            .flatMap { identifiers -> Observable<String> in
+                guard let ids = identifiers else { return Observable.error(ABPWKRuleStoreError.invalidData) }
+                return Observable.concat(ids.map { self.ruleListClearer()($0) })
             }
+    }
+
+    /// Return clearer for an RL.
+    func ruleListClearer() -> (String) -> Observable<String> {
+        return { idr in
+            return Observable.create { observer in
+                self.rulesStore.removeContentRuleList(forIdentifier: idr) { err in
+                    if err != nil { observer.onError(err!) }
+                    observer.onNext(idr)
+                    observer.onCompleted()
+                }
+                return Disposables.create()
+            }
+        }
     }
 }
