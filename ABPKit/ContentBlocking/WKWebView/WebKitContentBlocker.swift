@@ -32,8 +32,9 @@ class WebKitContentBlocker: Loggable {
 
     init?(logWith: ((LogType) -> Void)? = nil) {
         bag = DisposeBag()
-        guard let rulesStore = (try? WKContentRuleListStore(url: cfg.rulesStoreIdentifier()))
-            as? WKContentRuleListStore else { return nil }
+        guard let rulesStore =
+            try? WKContentRuleListStore(url: cfg.rulesStoreIdentifier())
+        else { return nil }
         self.rulesStore = rulesStore
         self.logWith = logWith
     }

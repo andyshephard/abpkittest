@@ -27,7 +27,6 @@ struct BlockList: BlockListable {
     /// Only settable at creation.
     public let source: BlockListSourceable
     var dateDownload: Date?
-    public var hashValue: Int { return name.hashValue }
 
     enum CodingKeys: CodingKey {
         case name
@@ -46,6 +45,11 @@ struct BlockList: BlockListable {
         self.name = name ?? UUID().uuidString
         self.source = source
         self.dateDownload = dateDownload
+    }
+
+    public
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
     }
 }
 
