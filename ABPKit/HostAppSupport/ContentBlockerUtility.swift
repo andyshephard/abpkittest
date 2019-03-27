@@ -52,12 +52,19 @@ class ContentBlockerUtility {
         } else if relay.defaultFilterListEnabled.value == true {
             return dflt
         } else {
+            #if compiler(>=5)
+            let customList = try? FilterList(persistenceID: cstm)
+            if relay.defaultFilterListEnabled.value == true && customList?.downloaded == true {
+                return cstm
+            }
+            #else
             if let customList =
                 try? FilterList(persistenceID: cstm) {
                 if relay.defaultFilterListEnabled.value == true && customList?.downloaded == true {
                     return cstm
                 }
             }
+            #endif
         }
         return nil
     }
@@ -90,13 +97,20 @@ class ContentBlockerUtility {
     /// - parameter bundle: Defaults to config bundle.
     func getBundledFilterListFileURL(modelName: FilterListName,
                                      bundle: Bundle = Config().bundle()) throws -> FilterListFileURL {
+        #if compiler(>=5)
+        let filename = (try? FilterList(persistenceID: modelName))?.fileName
+        if let url = bundle.url(forResource: filename, withExtension: "") {
+            return url
+        } else { throw ABPFilterListError.notFound }
+        #else
         if let model = try? FilterList(persistenceID: modelName),
-           let filename = model?.fileName {
+            let filename = model?.fileName {
             if let url = bundle.url(forResource: filename, withExtension: "") {
                 return url
             } else { throw ABPFilterListError.notFound }
         }
         throw ABPFilterListError.notFound
+        #endif
     }
 
     /// Get bundled rules by filename only.

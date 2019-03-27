@@ -37,18 +37,24 @@ extension FilterList {
     /// V2 filter lists are first attempted to be parsed before failing over to v1 parsing.
     /// - Returns: Observable of the count while defaulting to zero on parsing failures.
     func ruleCount(bundle: Bundle = Config().bundle()) -> Observable<Int> {
-        guard let rules = try? self.rulesURL(bundle: bundle),
-              let uwRules = rules
-        else {
+        #if compiler(>=5)
+            guard let rules = try? self.rulesURL(bundle: bundle) else {
+                return Observable.just(0)
+            }
+        #else
+        guard let tryRules = try? self.rulesURL(bundle: bundle), let rules = tryRules else {
             return Observable.just(0)
         }
+        #endif
         let decoder = JSONDecoder()
-        if let data = self.filterListData(url: uwRules) {
-            if let list = try? decoder.decode(V2FilterList.self,
-                                              from: data) {
+        if let data = self.filterListData(url: rules) {
+            if let list =
+                try? decoder
+                    .decode(V2FilterList.self, from: data) {
                 return count(list.rules())
-            } else if let list = try? decoder.decode(V1FilterList.self,
-                                                     from: data) {
+            } else if let list =
+                try? decoder
+                    .decode(V1FilterList.self, from: data) {
                 return count(list.rules())
             }
         }

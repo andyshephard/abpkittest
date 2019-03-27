@@ -42,11 +42,15 @@ extension BlockListDownloader {
         guard let name = try? filterListName(for: taskID) else {
             reportError(taskID: taskID, error: .badFilterListModelName); return
         }
-        guard let result = try? filterList(withName: name),
-              var list = result
-        else {
+        #if compiler(>=5)
+        guard var list = try? filterList(withName: name) else {
             reportError(taskID: taskID, error: .badFilterListModel); return
         }
+        #else
+        guard let result = try? filterList(withName: name), var list = result else {
+            reportError(taskID: taskID, error: .badFilterListModel); return
+        }
+        #endif
         let response = downloadTask.response as? HTTPURLResponse
         if !validURLResponse(response) {
             reportError(taskID: taskID, error: .invalidResponse); return
@@ -94,11 +98,15 @@ extension BlockListDownloader {
         guard let name = try? filterListName(for: taskID) else {
             reportError(taskID: taskID, error: .badFilterListModelName); return
         }
-        guard let result = try? filterList(withName: name),
-              var list = result
-        else {
+        #if compiler(>=5)
+        guard var list = try? filterList(withName: name) else {
             reportError(taskID: taskID, error: .badFilterListModel); return
         }
+        #else
+        guard let result = try? filterList(withName: name), var list = result else {
+            reportError(taskID: taskID, error: .badFilterListModel); return
+        }
+        #endif
         list.lastUpdateFailed = true
         list.updating = false
         list.taskIdentifier = nil
@@ -106,7 +114,7 @@ extension BlockListDownloader {
         guard let _ = try? Persistor().saveFilterListModel(list) else {
             reportError(taskID: taskID, error: .failedFilterListModelSave); return
         }
-        // swiftlint:enable unused_optional_bindin
+        // swiftlint:enable unused_optional_binding
         downloadTasksByID[taskID] = nil
         if var newEvent = lastDownloadEvent(taskID: taskID) {
             if error != nil {
