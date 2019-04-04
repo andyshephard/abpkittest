@@ -148,7 +148,10 @@ class ABPWebViewBlocker {
             // Download matching is not handled here.
         } catch let err { return Observable.error(err) }
         var added: WKContentRuleList?
-        ctrl.removeAllContentRuleLists() // remove all before adds
+        // Remove all before adds - Removal requires main thread operation:
+        DispatchQueue.main.async { [weak self] in
+            self?.ctrl.removeAllContentRuleLists()
+        }
         if existing != nil {
             // Use existing rules in the store:
             return contentControllerAddBlocklistable()(existing)
