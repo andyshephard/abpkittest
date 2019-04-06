@@ -39,6 +39,12 @@ class UserBlockListDownloadTests: XCTestCase {
         } catch let err { XCTFail("Error: \(err)") }
     }
 
+    override
+    func tearDown() {
+        dler = nil
+        super.tearDown()
+    }
+
     func testRemoteBlockListCases() throws {
         let lists = try testSource.allCases
             .map { try DownloadUtility().blockListForSource()($0) }

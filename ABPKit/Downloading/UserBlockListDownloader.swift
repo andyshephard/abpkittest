@@ -18,6 +18,7 @@
 import RxSwift
 
 /// Intermediate metadata container.
+public
 struct SourceDownload {
     var task: URLSessionDownloadTask?
     var blockList: BlockList?
@@ -61,6 +62,7 @@ class UserBlockListDownloader: NSObject,
     }
 }
 
+// Status and events of the download session.
 extension UserBlockListDownloader {
     /// Return true if the status code is valid.
     func validURLResponse(_ response: HTTPURLResponse?) -> Bool {
@@ -75,7 +77,31 @@ extension UserBlockListDownloader {
     }
 }
 
+// Session handling.
 extension UserBlockListDownloader {
+    /// Examines downloads for the current instance. Throws an error upon
+    /// encountering an incomplete source download. This should never be
+    /// encountered during normal usage.
+    func sessionInvalidate() throws {
+        try srcDownloads.forEach {
+            if $0.task?.state != .completed {
+                throw ABPDownloadTaskParameterizedError.notComplete($0)
+            }
+        }
+        self.downloadSession.invalidateAndCancel()
+    }
+
+    /// Cancel all existing downloads.
+    func downloadsCancelled() -> ([SourceDownload]) -> [SourceDownload] {
+        return { dls in
+            dls.map { $0.task?.cancel(); return $0 }
+        }
+    }
+}
+
+// Download handling for a User.
+extension UserBlockListDownloader {
+    /// An Observable containing a User after downloading has finished.
     /// More than one event can have didFinishDownloading == true.
     func userAfterDownloads() -> (Observable<UserDownloadEvent>) -> Observable<User> {
         return {
@@ -83,11 +109,15 @@ extension UserBlockListDownloader {
                 .takeLast(1)
                 .filter { $0.didFinishDownloading == true }
                 .flatMap { _ -> Observable<User> in
+                    do {
+                        try self.sessionInvalidate()
+                    } catch let err { return Observable.error(err) }
                     return Observable.just(self.userDownloadStateUpdated()(self.user))
                 }
         }
     }
 
+    /// Return an updated copy of the User state after downloading operations.
     func userDownloadStateUpdated() -> (User) -> User {
         return { user in
             var copy = user
@@ -161,13 +191,6 @@ extension UserBlockListDownloader {
                 if let list = $1.blockList { return $0 + [list] }
                 return $0
             }
-        }
-    }
-
-    /// Cancel all existing downloads.
-    func downloadsCancelled() -> ([SourceDownload]) -> [SourceDownload] {
-        return { dls in
-            dls.map { $0.task?.cancel(); return $0 }
         }
     }
 

@@ -77,6 +77,13 @@ enum ABPDownloadTaskError: Error {
     case tooManyRequests
 }
 
+/// Parameterized error cases for download tasks.
+/// notComplete(SourceDownload): Incomplete source download.
+public
+enum ABPDownloadTaskParameterizedError: Error {
+    case notComplete(SourceDownload)
+}
+
 /// Error cases for filter list processing.
 /// - aaStateMismatch: Acceptable ads state is mismatched.
 /// - ambiguousModels: Model objects are not unique or are missing.

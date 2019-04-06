@@ -57,6 +57,7 @@ extension UserBlockListDownloader {
                 try mgr.removeItem(at: $0)
                 self.logWith?($0.path)
             }
+            try self.sessionInvalidate()
             return saved
         }
     }
