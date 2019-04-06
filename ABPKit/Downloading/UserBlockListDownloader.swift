@@ -37,26 +37,31 @@ class UserBlockListDownloader: NSObject,
     var srcDownloads = [SourceDownload]()
     /// Download events keyed by task ID.
     var downloadEvents = TaskDownloadEvents()
+    /// Serial queue for download session.
+    lazy var downloadQueue: OperationQueue = {
+        var queue = OperationQueue()
+        queue.name = Constants.queueDownloads
+        queue.maxConcurrentOperationCount = 1
+        return queue
+    }()
     /// For download tasks.
-    var downloadSession: URLSession!
+    lazy var downloadSession: URLSession! = {
+        URLSession(
+            configuration: URLSessionConfiguration.default,
+            delegate: self,
+            delegateQueue: downloadQueue)
+    }()
     /// For debugging.
     var logWith: ((LogType) -> Void)?
 
     init(user: User, logWith: ((LogType) -> Void)? = nil) {
         super.init()
         self.user = user
-        downloadSession = newDownloadSession()
         self.logWith = logWith
     }
 }
 
 extension UserBlockListDownloader {
-    func newDownloadSession() -> URLSession {
-        return URLSession(configuration: URLSessionConfiguration.default,
-                          delegate: self,
-                          delegateQueue: .main)
-    }
-
     /// Return true if the status code is valid.
     func validURLResponse(_ response: HTTPURLResponse?) -> Bool {
         return { response?.statusCode }().map { $0 >= 200 && $0 < 300 } ?? false

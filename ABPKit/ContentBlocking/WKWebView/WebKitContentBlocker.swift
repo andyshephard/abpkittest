@@ -101,15 +101,17 @@ class WebKitContentBlocker: Loggable {
     func rulesCompiledForIdentifier(_ identifier: String?) -> (String) -> Observable<WKContentRuleList> {
         return { rules in
             return Observable.create { observer in
-                self.rulesStore
-                    .compileContentRuleList(forIdentifier: identifier,
-                                            encodedContentRuleList: rules) { list, err in
-                        guard err == nil else { observer.onError(err!); return }
-                        if list != nil {
-                            observer.onNext(list!)
-                            observer.onCompleted()
-                        } else { observer.onError(ABPWKRuleStoreError.invalidData) }
-                    }
+                DispatchQueue.main.async { // compileContentRuleList requires main
+                    self.rulesStore
+                        .compileContentRuleList(forIdentifier: identifier,
+                                                encodedContentRuleList: rules) { list, err in
+                            guard err == nil else { observer.onError(err!); return }
+                            if list != nil {
+                                observer.onNext(list!)
+                                observer.onCompleted()
+                            } else { observer.onError(ABPWKRuleStoreError.invalidData) }
+                        }
+                }
                 return Disposables.create()
             }
         }
@@ -161,19 +163,21 @@ class WebKitContentBlocker: Loggable {
         return concatenatedRules(model: addList)
             .flatMap { result -> Observable<WKContentRuleList> in
                 return Observable.create { observer in
-                    self.rulesStore
-                        .compileContentRuleList(forIdentifier: addList.name,
-                                                encodedContentRuleList: result.0) { list, err in
-                            guard err == nil else { observer.onError(err!); return }
-                            self.rulesStore.getAvailableContentRuleListIdentifiers { (ids: [String]?) in
-                                if ids?.contains(addList.name) == false { observer.onError(ABPWKRuleStoreError.missingRuleList) }
-                                self.logWith?(ids)
+                    DispatchQueue.main.async { // compileContentRuleList requires main
+                        self.rulesStore
+                            .compileContentRuleList(forIdentifier: addList.name,
+                                                    encodedContentRuleList: result.0) { list, err in
+                                guard err == nil else { observer.onError(err!); return }
+                                self.rulesStore.getAvailableContentRuleListIdentifiers { (ids: [String]?) in
+                                    if ids?.contains(addList.name) == false { observer.onError(ABPWKRuleStoreError.missingRuleList) }
+                                    self.logWith?(ids)
+                                }
+                                if let compiled = list {
+                                    observer.onNext(compiled)
+                                    observer.onCompleted()
+                                } else { observer.onError(ABPWKRuleStoreError.invalidData) }
                             }
-                            if let compiled = list {
-                                observer.onNext(compiled)
-                                observer.onCompleted()
-                            } else { observer.onError(ABPWKRuleStoreError.invalidData) }
-                        }
+                    }
                     return Disposables.create()
                 }
             }

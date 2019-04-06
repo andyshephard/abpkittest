@@ -305,17 +305,22 @@ class WebKitContentBlockingTests: XCTestCase {
             }).disposed(by: bag)
     }
 
+    /// This private function serves to cover cases not involving a User as
+    /// required by the alternate FilterList-based processing that will be
+    /// eventually removed.
     private
     func rulesCompiled(name: String, rules: String) -> Observable<(WKContentRuleList?, Error?)> {
         guard let store = wkcb?.rulesStore else { XCTFail("Bad store."); return Observable.empty() }
         return Observable.create { observer in
-            store
-                .compileContentRuleList(forIdentifier: name,
-                                        encodedContentRuleList: rules) { list, err in
-                    if err != nil { XCTFail("Error: \(err as Error?)") }
-                    observer.onNext((list, err))
-                    observer.onCompleted()
-                }
+            DispatchQueue.main.async { // compileContentRuleList requires main
+                store
+                    .compileContentRuleList(forIdentifier: name,
+                                            encodedContentRuleList: rules) { list, err in
+                        if err != nil { XCTFail("Error: \(err as Error?)") }
+                        observer.onNext((list, err))
+                        observer.onCompleted()
+                    }
+            }
             return Disposables.create()
         }
     }

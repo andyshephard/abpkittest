@@ -39,6 +39,7 @@ struct Constants {
     static let organization = "org.adblockplus"
     static let productNameIOS = "AdblockPlusSafari"
     static let productNameMacOS = "HostApp-macOS"
+    static let queueDownloads = organization + ".OperationQueue.UserBlockListDownloader"
     static let srcAcceptableAdsNotApplicable = "aa-na"
     static let srcBundled = "bundled"
     static let srcEasylist = "easylist"
