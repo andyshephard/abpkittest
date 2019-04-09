@@ -21,3 +21,7 @@ xcuserdata
 
 # Carthage
 Carthage
+
+# Default Block Lists
+/ABPKit/Common/Resources/easylist_content_blocker.json
+/ABPKit/Common/Resources/easylist+exceptionrules_content_blocker.json

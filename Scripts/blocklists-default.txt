@@ -1,0 +1,4 @@
+# Default block list sources for scripts.
+
+EASYLIST="https://easylist-downloads.adblockplus.org/easylist_min_content_blocker.json"
+EASYLIST_PLUS_EXCEPTIONS="https://easylist-downloads.adblockplus.org/easylist_min+exceptionrules_content_blocker.json"

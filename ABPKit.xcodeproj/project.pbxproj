@@ -923,6 +923,7 @@
 				65D4C7562188C64C00B1E16F /* Headers */,
 				65D4C7572188C64C00B1E16F /* Sources */,
 				65D4C7582188C64C00B1E16F /* Frameworks */,
+				65FAF28A225C3330003D00F2 /* Download Bundled Block Lists */,
 				65D4C7592188C64C00B1E16F /* Resources */,
 				655145862189257000C8E7C2 /* Run SwiftLint */,
 			);
@@ -961,6 +962,7 @@
 				65FF7AFB216EB8B200470103 /* Headers */,
 				65FF7AFC216EB8B200470103 /* Sources */,
 				65FF7AFD216EB8B200470103 /* Frameworks */,
+				65FAF289225C2EFB003D00F2 /* Download Bundled Block Lists */,
 				65FF7AFE216EB8B200470103 /* Resources */,
 				6510D25021801F3B00E95A80 /* Run SwiftLint */,
 			);
@@ -1178,6 +1180,44 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "SWIFTLINT=\"/usr/local/bin/swiftlint\"\nif [ -f $SWIFTLINT ]\nthen\n$SWIFTLINT\nelse\necho \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		65FAF289225C2EFB003D00F2 /* Download Bundled Block Lists */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download Bundled Block Lists";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "source \"Scripts/blocklists-default.txt\"\nif [ ! -f $EASYLIST ] || [ ! -f EASYLIST_PLUS_EXCEPTIONS ] \nthen\n\"Scripts/update-bundled-blocklists.sh\"\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		65FAF28A225C3330003D00F2 /* Download Bundled Block Lists */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Download Bundled Block Lists";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "source \"Scripts/blocklists-default.txt\"\nif [ ! -f $EASYLIST ] || [ ! -f EASYLIST_PLUS_EXCEPTIONS ] \nthen\n\"Scripts/update-bundled-blocklists.sh\"\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
